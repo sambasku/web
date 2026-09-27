@@ -95,7 +95,8 @@ function HelpCard({ item }: { item: TranslationHelpPublicItem }) {
             ↑ {item.upvotes ?? 0} · Saya juga ingin tahu
           </Text>
           <Text size="xs" c="dimmed" lineClamp={1}>
-            {item.username ? `@${item.username}` : 'Pengguna'} · {formatDateId(item.created_at)}
+            {item.display_name?.trim() || item.username || 'Pengguna'} ·{' '}
+            {formatDateId(item.created_at)}
           </Text>
         </Group>
       </Stack>
@@ -158,7 +159,7 @@ export default function BantuanTerjemahanFeedPage() {
                 src="/google_play.webp"
                 alt="Dapatkan di Google Play"
                 h={40}
-                w="auto"
+                w={133}
                 fit="contain"
                 decoding="async"
               />

@@ -84,7 +84,7 @@ export function Header() {
               src="/google_play.webp"
               alt={t('common_getOnGooglePlay')}
               h={36}
-              w="auto"
+              w={120}
               fit="contain"
               decoding="async"
             />

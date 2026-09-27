@@ -26,6 +26,7 @@ import { useLocalePath } from '@/application/i18n/use-locale';
 import { formatDateId } from '@/application/utils/formatters';
 import { displayImageUrl } from '@/presentation/utils/display-image-url';
 import type { TranslationHelpReply } from '@/domain/entities/translation-help.entity';
+import { useTranslation } from 'react-i18next';
 
 const PLAY_STORE_URL =
   'https://play.google.com/store/apps/details?id=com.iamutaki.sambasku';
@@ -96,17 +97,19 @@ function sortReplies(replies: TranslationHelpReply[]): TranslationHelpReply[] {
 
 export default function BantuanTerjemahanDetailPage() {
   const lp = useLocalePath();
+  const { t } = useTranslation();
 
   const { help } = useLoaderData<typeof loader>();
   const replies = sortReplies(help.replies);
-  const author = help.username ? `@${help.username}` : 'Pengguna';
+  const author =
+    help.display_name?.trim() || help.username || 'Pengguna';
 
   return (
     <Container size="sm" py={44}>
       <Stack gap="xl">
         <Group gap={6} wrap="wrap">
           <Anchor component={Link} to={lp('/')} size="xs" c="dimmed">
-            Beranda
+            {t('word_homeCrumb')}
           </Anchor>
           <Text size="xs" c="dimmed">
             /
@@ -185,7 +188,7 @@ export default function BantuanTerjemahanDetailPage() {
                   <Stack gap="xs">
                     <Group gap="xs" wrap="wrap">
                       <Text size="sm" fw={600}>
-                        {reply.username ? `@${reply.username}` : 'Pengguna'}
+                        {reply.display_name?.trim() || reply.username || 'Pengguna'}
                       </Text>
                       {reply.is_verifier ? (
                         <Badge size="sm" color="teal" variant="light">
@@ -256,7 +259,7 @@ export default function BantuanTerjemahanDetailPage() {
                   src="/google_play.webp"
                   alt="Dapatkan di Google Play"
                   h={36}
-                  w="auto"
+                  w={120}
                   fit="contain"
                   decoding="async"
                 />

@@ -32,21 +32,24 @@ export function meta({ data, params }: Route.MetaArgs) {
   const locale = isAppLocale(params.locale) ? params.locale : DEFAULT_LOCALE;
   const t = getFixedT(locale);
   const letter = (data?.letter ?? params.letter ?? '').toLowerCase();
+  const empty = (data?.items?.length ?? 0) === 0;
   return [
     ...buildMetaTags({
       title: t('letter_seoTitle', { letter: letter.toUpperCase() }),
       description: t('letter_seoDescription', { letter: letter.toUpperCase() }),
       path: localePath(locale, `/huruf/${letter}`),
       locale,
+      // Huruf tanpa lemma: thin page - jangan diindeks (WM-11).
+      noindexAlways: empty,
     }),
     // JSON-LD hanya produksi (staging noindex); RR7 me-escape HTML
-    // untuk key script:ld+json.
-    ...(env.isProd && data?.letter
+    // untuk key script:ld+json. Skip jika kosong / noindex.
+    ...(env.isProd && data?.letter && !empty
       ? [
           {
             'script:ld+json': buildLetterJsonLd(
               data.letter,
-              (data.items ?? []).filter((word) => word.is_verified),
+              data.items ?? [],
               locale,
             ),
           },
@@ -73,21 +76,22 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   try {
     const res = await listWordsAtoZ({
       letter,
+      isVerified: true,
       cursor,
-      limit: 25,
+      limit: 50,
       signal: request.signal,
     });
     return {
       letter,
       items: res.data,
-      meta: res.meta ?? { limit: 25, next_cursor: null, has_more: false },
+      meta: res.meta ?? { limit: 50, next_cursor: null, has_more: false },
     };
   } catch {
     // Halaman browse tidak fail-closed: tampil kosong, bukan error 500.
     return {
       letter,
       items: [] as WordSummary[],
-      meta: { limit: 25, next_cursor: null, has_more: false },
+      meta: { limit: 50, next_cursor: null, has_more: false },
     };
   }
 }

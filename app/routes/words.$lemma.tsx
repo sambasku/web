@@ -38,6 +38,7 @@ import { pickSafePrimaryImageUrl } from '@/domain/image-content-warnings';
 import { WordTypeBadge } from '@/presentation/components/word/word-type-badge';
 import { UsageLabelsBadges } from '@/presentation/components/word/usage-labels-badges';
 import { WordImagesGallery } from '@/presentation/components/word/word-images-gallery';
+import '@/presentation/styles/fonts-italic.css';
 import { WordAudioPlayer } from '@/presentation/components/word/pronunciation-player';
 import { formatWordClass } from '@/application/utils/formatters';
 import {
@@ -108,6 +109,15 @@ export async function loader({ params, request }: Route.LoaderArgs) {
     const status = (error as { statusCode?: number }).statusCode ?? 404;
     throw new Response('Kata tidak ditemukan', { status });
   }
+}
+
+
+function attributionLabel(person: {
+  username: string;
+  display_name?: string;
+}): string {
+  const name = person.display_name?.trim();
+  return name || person.username;
 }
 
 export default function WordDetailPage() {
@@ -433,7 +443,7 @@ export default function WordDetailPage() {
               <Group gap={6} wrap="wrap">
                 <Text size="xs" c="dimmed">
                   {t('word_createdVerifiedBy', {
-                    username: word.created_by.username,
+                    username: attributionLabel(word.created_by),
                   })}
                 </Text>
                 {['admin', 'editor', 'root', 'reviewer'].includes(
@@ -449,14 +459,14 @@ export default function WordDetailPage() {
                 {word.created_by?.username ? (
                   <Text size="xs" c="dimmed">
                     {t('word_createdBy', {
-                      username: word.created_by.username,
+                      username: attributionLabel(word.created_by),
                     })}
                   </Text>
                 ) : null}
                 {word.is_verified && word.verified_by?.username ? (
                   <Text size="xs" c="dimmed">
                     {t('word_verifiedBy', {
-                      username: word.verified_by.username,
+                      username: attributionLabel(word.verified_by),
                     })}
                   </Text>
                 ) : null}
