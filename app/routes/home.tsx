@@ -64,7 +64,7 @@ export default function Home() {
   return (
     <Container size="md" py={44}>
       <Stack gap={44}>
-        <Stack align="center" gap="md" maw={640} mx="auto" pt="sm">
+        <Stack align="center" gap="md" maw={640} mx="auto">
           <Badge
             variant="light"
             color="yellow"
@@ -85,20 +85,22 @@ export default function Home() {
           <SearchBar autoFocus />
         </Stack>
 
-        <Stack gap="sm" maw={640} mx="auto">
+        <WordOfTheDaySection />
+
+        <Stack gap="sm">
           <Title order={2} size="h4" fw={700}>
             {t('home_aboutHeading')}
           </Title>
           <Text size="sm" c="dimmed">
             {t('home_aboutBody')}
           </Text>
-          <Title order={2} size="h5" fw={600}>
+          <Title order={2} size="h5" fw={600} mt="xs">
             {t('home_howHeading')}
           </Title>
           <Text size="sm" c="dimmed">
             {t('home_howBody')}
           </Text>
-          <Title order={2} size="h5" fw={600}>
+          <Title order={2} size="h5" fw={600} mt="xs">
             {t('home_examplesHeading')}
           </Title>
           <Text size="sm" c="dimmed">
@@ -127,8 +129,6 @@ export default function Home() {
           </Group>
         </Stack>
 
-        <WordOfTheDaySection />
-
         <Stack gap="sm">
           <Group justify="space-between">
             <Title order={2} size="h5" c="dimmed" tt="uppercase" fw={600}>
@@ -139,7 +139,7 @@ export default function Home() {
             </Anchor>
           </Group>
 
-          <Group gap="xs">
+          <Group gap="xs" justify="center">
             {ALPHABETS.map((letter) => (
               <ActionIcon
                 key={letter}

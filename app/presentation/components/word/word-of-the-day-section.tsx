@@ -44,7 +44,7 @@ export function WordOfTheDaySection() {
   if (status === 'empty') return null;
 
   return (
-    <Stack gap="xs" className="wotd-section">
+    <Stack gap="sm" className="wotd-section">
       <Title order={2} size="h5" c="dimmed" tt="uppercase" fw={600}>
         {t('home_wotdHeading')}
       </Title>
