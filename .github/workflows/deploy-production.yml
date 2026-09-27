@@ -80,6 +80,8 @@ jobs:
           VITE_API_BASE_URL_FALLBACKS: https://deno.sambasku.com/api/v1,https://render.sambasku.com/api/v1
           VITE_APP_URL: https://sambasku.com
           VITE_APP_NAME: SambasKu
+          # GA4 Measurement ID (publik, ikut di bundle JS).
+          VITE_GA_MEASUREMENT_ID: G-P47BPQ00YP
 
       # --name sambasku-web-prod: Worker produksi terpisah dari staging
       # (sambasku-web-staging) maupun default (sambasku-web).

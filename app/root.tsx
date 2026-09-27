@@ -32,6 +32,7 @@ import {
 import { getFixedT } from '@/application/i18n/i18n-instance';
 import { AppError } from './infrastructure/api/api-client';
 import { env } from './infrastructure/config/env';
+import { GoogleAnalytics } from './presentation/components/google-analytics';
 import './presentation/styles/app.css';
 
 const theme = createTheme({
@@ -116,7 +117,12 @@ export default function App() {
       });
     }
   }, []);
-  return <Outlet />;
+  return (
+    <>
+      <GoogleAnalytics />
+      <Outlet />
+    </>
+  );
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {

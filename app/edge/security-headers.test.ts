@@ -81,6 +81,17 @@ describe('buildCsp', () => {
     }
   });
 
+  it('CSP mengizinkan host GA4 gtag', () => {
+    const csp = buildCsp({ apiConnectOrigins: [], isProd: true });
+    for (const host of [
+      'https://www.googletagmanager.com',
+      'https://www.google-analytics.com',
+      'https://analytics.google.com',
+    ]) {
+      assert.ok(csp.includes(host), `CSP tidak memuat ${host}`);
+    }
+  });
+
   // BH-02: foto stock lewat wsrv.nl, jadi img-src tidak perlu host baru.
   // Widening ke `img-src https:` akan membuka Allowlist W-09.
   it('img-src tetap sempit dan memuat wsrv.nl', () => {

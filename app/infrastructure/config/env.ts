@@ -38,6 +38,12 @@ export const env = {
   apiBaseUrlFallbacks,
   appUrl: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_APP_URL) || DEFAULT_APP_URL,
   appName: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_APP_NAME) || DEFAULT_APP_NAME,
+  /**
+   * GA4 Measurement ID (`G-XXXXXXXX`). Kosong = analytics tidak dimuat.
+   * Hanya dipakai di produksi bersama `isProd` (lihat GoogleAnalytics).
+   */
+  gaMeasurementId:
+    (typeof import.meta !== 'undefined' && import.meta.env?.VITE_GA_MEASUREMENT_ID) || '',
   mode,
   /**
    * SEO (sitemap, JSON-LD, index) HANYA aktif di build produksi.

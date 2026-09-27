@@ -95,7 +95,7 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
       'Kami menggunakan penyedia yang membantu menjalankan SambasKu. Mereka memproses data sesuai kebijakan masing-masing dan hanya sejauh diperlukan untuk layanan yang kami aktifkan:',
     ],
     bullets: [
-      'Google: masuk dengan Google, Firebase (analitik dan pemberitahuan push), serta Google Fonts',
+      'Google: masuk dengan Google, Firebase (analitik dan pemberitahuan push di aplikasi mobile), Google Analytics 4 di situs web (statistik kunjungan halaman), serta Google Fonts',
       'Cloudflare: hosting dan jaringan pengiriman layanan',
       'Turso: penyimpanan basis data aplikasi',
       'Resend: pengiriman email (kode verifikasi dan reset kata sandi)',

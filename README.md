@@ -33,6 +33,8 @@ Kontrak response mengikuti `docs/api/*`.
 
 Nilai `VITE_*` di-inline saat build dari `.env.development` /
 `.env.staging` / `.env.production`. Tidak ada secret di bundle.
+`VITE_GA_MEASUREMENT_ID` (GA4, `G-XXXXXXXX`) hanya dipakai di produksi;
+kosong = analytics tidak dimuat.
 
 Dev: Vite mem-proxy `/api` ke API staging (same-origin, bebas CORS).
 
