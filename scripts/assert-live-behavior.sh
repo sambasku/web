@@ -28,8 +28,10 @@ fail() {
 }
 
 # x-cache dari GET tanpa body: header ke stdout, body di-/dev/null.
+# --path-as-is: jangan biarkan curl menggabungkan /./ atau /../ sebelum
+# request - assertion BH-04 harus menguji normalisasi di worker.
 get_headers() {
-  curl -fsS -D - -o /dev/null --max-time 30 "$BASE$1" 2>/dev/null || true
+  curl -fsS -D - -o /dev/null --path-as-is --max-time 30 "$BASE$1" 2>/dev/null || true
 }
 
 # curl -w sudah mencetak 000 saat koneksi gagal. Jangan tambah `|| echo 000`:
@@ -37,7 +39,7 @@ get_headers() {
 # pernah menyala.
 get_status() {
   local code
-  code="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 30 "$BASE$1" 2>/dev/null)" || true
+  code="$(curl -sS -o /dev/null -w '%{http_code}' --path-as-is --max-time 30 "$BASE$1" 2>/dev/null)" || true
   if [ -z "$code" ] || [ "$code" = "000" ]; then
     echo "000"
   else
@@ -49,6 +51,22 @@ xcache_of() {
   get_headers "$1" | tr -d '\r' | awk 'tolower($1) == "x-cache:" { print $2 }' | tail -1
 }
 
+# Satu GET: cetak "status x-cache" (status 000 jika gagal koneksi).
+status_and_xcache() {
+  local path="$1"
+  local tmp hdrs code xc
+  tmp="$(mktemp)"
+  hdrs="$(curl -sS -D - -o "$tmp" --path-as-is --max-time 30 "$BASE$path" 2>/dev/null | tr -d '\r')" || true
+  rm -f "$tmp"
+  code="$(printf '%s\n' "$hdrs" | awk 'NR==1{print $2}')"
+  xc="$(printf '%s\n' "$hdrs" | awk 'tolower($1)=="x-cache:"{print $2}' | tail -1)"
+  if [ -z "$code" ] || [ "$code" = "000" ]; then
+    echo "000 "
+  else
+    echo "$code ${xc:-}"
+  fi
+}
+
 assert_xcache() {
   local path="$1" expect="$2" reason="$3"
   local got
@@ -58,6 +76,31 @@ assert_xcache() {
   else
     fail "$path: x-cache '$got', diharapkan '$expect' ($reason)"
   fi
+}
+
+# BH-04: varian path harus berbagi entry yang sudah di-warm. Cache API
+# Cloudflare bersifat per-colo: curl baru tiap assertion bisa pindah anycast
+# ke colo yang belum punya entry → `miss` palsu. Setelah worker
+# `withCanonicalPath`, miss di colo baru merender 200 (bukan 404 beracun);
+# request berikutnya di colo itu wajib hit. Terima hit langsung ATAU
+# miss→hit dalam satu colo, dan status harus 200.
+assert_shared_cache() {
+  local path="$1" reason="$2"
+  local got status
+  read -r status got <<<"$(status_and_xcache "$path")"
+  if { [ "$got" = "hit" ] || [ "$got" = "swr" ]; } && [ "$status" = "200" ]; then
+    echo "ok   $path -> x-cache: $got"
+    return
+  fi
+  # Miss di colo dingin: entry kanonik baru saja ditulis; coba lagi.
+  if [ "$got" = "miss" ] && [ "$status" = "200" ]; then
+    read -r status got <<<"$(status_and_xcache "$path")"
+    if { [ "$got" = "hit" ] || [ "$got" = "swr" ]; } && [ "$status" = "200" ]; then
+      echo "ok   $path -> x-cache: $got (colo dihangatkan)"
+      return
+    fi
+  fi
+  fail "$path: x-cache '$got' status '$status', diharapkan hit/swr + 200 ($reason)"
 }
 
 echo "== Verifikasi perilaku cache edge: $BASE (profil: $PROFILE) =="
@@ -114,11 +157,12 @@ if check_word_page; then
   assert_xcache "/id/words/$LEMMA" "hit" "cache HTML tidak berfungsi (G-01/G-02)"
 
   # --- BH-04: varian path harus berbagi satu entry ---------------------------
-  # Semua varian di bawah kontennya identik. Kalau `canonicalCachePath` tidak
-  # bekerja, masing-masing jadi entry terpisah dan selalu `miss`.
-  assert_xcache "/id/words/$LEMMA/" "hit" "trailing slash harus berbagi entry cache"
-  assert_xcache "/id//words//$LEMMA" "hit" "slash ganda harus berbagi entry cache"
-  assert_xcache "/id/./words/$LEMMA" "hit" "segmen '.' harus berbagi entry cache"
+  # Semua varian di bawah kontennya identik. Kalau `canonicalCachePath` /
+  # `withCanonicalPath` tidak bekerja, masing-masing jadi entry terpisah
+  # atau merender 404 yang meracuni kunci kanonik.
+  assert_shared_cache "/id/words/$LEMMA/" "trailing slash harus berbagi entry cache"
+  assert_shared_cache "/id//words//$LEMMA" "slash ganda harus berbagi entry cache"
+  assert_shared_cache "/id/./words/$LEMMA" "segmen '.' harus berbagi entry cache"
 fi
 
 # Beranda per-locale juga harus ikut cache. Pakai locale non-default supaya
