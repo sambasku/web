@@ -10,7 +10,9 @@
           "/reset-password/*",
           "/hapus-akun",
           "/hapus-akun/*",
-          "/users/*"
+          "/users/*",
+          "/oauth/github",
+          "/oauth/github/*"
         ]
       }
     ]

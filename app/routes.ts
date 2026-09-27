@@ -17,6 +17,8 @@ export default [
   route('rss.xml', 'routes/rss[.]xml.ts'),
   route('llms-full.txt', 'routes/llms-full[.]txt.ts'),
   route('reset-password', 'routes/reset-password.tsx'),
+  // Callback OAuth GitHub (AppAuth HTTPS) - tanpa locale, sama deeplink.
+  route('oauth/github', 'routes/oauth.github.tsx'),
 
   // Legacy tanpa locale → 301/302 ke /{defaultLocale}/...
   route('search', 'routes/legacy-redirect.tsx', { id: 'legacy-search' }),
