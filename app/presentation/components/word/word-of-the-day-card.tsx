@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import {
   Anchor,
@@ -19,25 +20,46 @@ import { useLocalePath } from '@/application/i18n/use-locale';
 import type { WordOfTheDay } from '@/domain/entities/word.entity';
 
 const MASCOT_SRC = '/paksamku-maskot-pakaian-adat-melayu.webp';
+/** Samakan dengan CSS: tampil hanya di atas Mantine md (62em). */
+const DESKTOP_MQ = '(min-width: 62.0625em)';
+
+function useDesktopMascot() {
+  const [show, setShow] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia(DESKTOP_MQ);
+    const sync = () => setShow(mq.matches);
+    sync();
+    mq.addEventListener('change', sync);
+    return () => mq.removeEventListener('change', sync);
+  }, []);
+
+  return show;
+}
 
 export function WordOfTheDayCard({ wordOfDay }: { wordOfDay: WordOfTheDay }) {
   const word = wordOfDay.word;
   const lp = useLocalePath();
   const { t } = useTranslation();
+  const showMascot = useDesktopMascot();
   if (!word) return null;
 
   const firstMeaning = word.meanings[0];
 
   return (
     <Box className="wotd-card-wrap">
-      <Image
-        className="wotd-mascot"
-        src={MASCOT_SRC}
-        alt={t('home_wotdMascotAlt')}
-        w="auto"
-        fit="contain"
-        decoding="async"
-      />
+      {showMascot && (
+        <Image
+          className="wotd-mascot"
+          src={MASCOT_SRC}
+          alt={t('home_wotdMascotAlt')}
+          w="auto"
+          fit="contain"
+          decoding="async"
+          loading="lazy"
+          fetchPriority="low"
+        />
+      )}
       <Card withBorder padding="lg" radius="md" className="wotd-card">
         <Stack gap="md">
           <Group justify="space-between" gap="sm" wrap="wrap">

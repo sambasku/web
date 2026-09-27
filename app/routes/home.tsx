@@ -1,4 +1,4 @@
-import { Link, useLoaderData } from 'react-router';
+import { Link } from 'react-router';
 import {
   ActionIcon,
   Anchor,
@@ -17,11 +17,10 @@ import {
 import { Sparkles, PlusCircle, Languages } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { Route } from './+types/home';
-import { getWordOfDay } from '../application/use-cases/word.use-case';
 import { buildHomeJsonLd, buildMetaTags } from '../application/utils/seo';
 import { env } from '../infrastructure/config/env';
 import { SearchBar } from '../presentation/components/word/search-bar';
-import { WordOfTheDayCard } from '../presentation/components/word/word-of-the-day-card';
+import { WordOfTheDaySection } from '../presentation/components/word/word-of-the-day-section';
 import {
   DEFAULT_LOCALE,
   isAppLocale,
@@ -44,9 +43,9 @@ export function meta({ params }: Route.MetaArgs) {
   ];
 }
 
-export async function loader({ request }: Route.LoaderArgs) {
-  const wordOfDay = await getWordOfDay(request.signal);
-  return { wordOfDay };
+/** Tanpa subrequest API: HTML hero bisa di-cache/paint cepat untuk LCP. */
+export function loader(_args: Route.LoaderArgs) {
+  return null;
 }
 
 const ALPHABETS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
@@ -56,7 +55,6 @@ const WHATSAPP_GROUP_URL =
   'https://chat.whatsapp.com/Kw64lxFEGXfK5gw6T6GEoN?mode=gi_t';
 
 export default function Home() {
-  const { wordOfDay } = useLoaderData<typeof loader>();
   const { t } = useTranslation();
   const lp = useLocalePath();
 
@@ -84,14 +82,7 @@ export default function Home() {
           <SearchBar autoFocus />
         </Stack>
 
-        {wordOfDay.word && (
-          <Stack gap="xs" className="wotd-section">
-            <Title order={2} size="h5" c="dimmed" tt="uppercase" fw={600}>
-              {t('home_wotdHeading')}
-            </Title>
-            <WordOfTheDayCard wordOfDay={wordOfDay} />
-          </Stack>
-        )}
+        <WordOfTheDaySection />
 
         <Stack gap="sm">
           <Group justify="space-between">

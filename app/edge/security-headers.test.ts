@@ -160,4 +160,17 @@ describe('public/_headers (BH-06)', () => {
     assert.ok(!file.includes('sambasku-staging'));
     assert.ok(!file.includes('iamutaki.com'));
   });
+
+  it('logo.png longgar CORP + cache sehari untuk email/proxy', () => {
+    assert.ok(file.includes('/logo.png'));
+    const logoBlock = file.slice(file.indexOf('/logo.png'));
+    assert.ok(
+      logoBlock.includes('Cross-Origin-Resource-Policy: cross-origin'),
+      'logo.png harus CORP cross-origin',
+    );
+    assert.ok(
+      logoBlock.includes('Cache-Control: public, max-age=86400'),
+      'logo.png harus cache sehari',
+    );
+  });
 });
