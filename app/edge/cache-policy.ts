@@ -36,6 +36,23 @@ export function canonicalCachePath(pathname: string): string {
   return `/${out.join('/')}`;
 }
 
+/**
+ * Samakan pathname request dengan kunci cache sebelum lookup/render.
+ *
+ * Kunci cache saja tidak cukup: React Router melihat path mentah, jadi
+ * `/id//words//x` (segmen kosong) tidak match `words/:lemma` dan merender
+ * 404. Negative cache lalu menulis 404 di bawah kunci kanonik yang sama
+ * dengan halaman 200 - meracuni entry (BH-04). Rewrite internal (bukan
+ * redirect) supaya varian path tetap bisa `x-cache: hit` berbagi entry.
+ */
+export function withCanonicalPath(request: Request): Request {
+  const url = new URL(request.url);
+  const canonical = canonicalCachePath(url.pathname);
+  if (canonical === url.pathname) return request;
+  url.pathname = canonical;
+  return new Request(url, request);
+}
+
 /// HTML SSR memuat URL chunk ber-hash. Cache tanpa id deploy tetap
 /// menyajikan HTML lama setelah wrangler deploy menghapus file itu (404).
 ///

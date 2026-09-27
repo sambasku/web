@@ -4,14 +4,16 @@ import {
   STALE_MAX_S,
   cacheKeyRequest,
   cacheTtlSeconds,
+  canonicalCachePath,
   freshSeconds,
   isCacheableRequest,
+  isOgImagePath,
+  withCanonicalPath,
 } from './edge/cache-policy';
 import {
   apiConnectOriginsFrom,
   buildSecurityHeaders,
 } from './edge/security-headers';
-import { isOgImagePath } from './edge/cache-policy';
 
 const requestHandler = createRequestHandler(
   () => import('virtual:react-router/server-build'),
@@ -151,17 +153,30 @@ function inboundHttp(request: Request): boolean {
 
 export default {
   async fetch(request, env: EdgeEnv, ctx): Promise<Response> {
-    const { method } = request;
-    const url = new URL(request.url);
-    const { pathname } = url;
+    const inboundUrl = new URL(request.url);
 
     // www hanya alias; apex kanonikal (pentest W-11).
     // Di Cloudflare, request.url selalu https. Skema klien ada di CF-Visitor.
-    if (url.hostname === 'www.sambasku.com' || (inboundHttp(request) && httpsOnlyHost(url.hostname))) {
-      url.protocol = 'https:';
-      if (url.hostname === 'www.sambasku.com') url.hostname = 'sambasku.com';
-      return Response.redirect(url.toString(), 301);
+    if (
+      inboundUrl.hostname === 'www.sambasku.com' ||
+      (inboundHttp(request) && httpsOnlyHost(inboundUrl.hostname))
+    ) {
+      inboundUrl.protocol = 'https:';
+      if (inboundUrl.hostname === 'www.sambasku.com') {
+        inboundUrl.hostname = 'sambasku.com';
+      }
+      // Path ikut dikanonikalkan di Location supaya klien tidak menyimpan
+      // bookmark dengan slash ganda / trailing slash.
+      inboundUrl.pathname = canonicalCachePath(inboundUrl.pathname);
+      return Response.redirect(inboundUrl.toString(), 301);
     }
+
+    // Samakan path dengan kunci cache sebelum lookup/render (BH-04): tanpa ini
+    // `/id//words//x` merender 404 lalu negative-cache meracuni entry 200.
+    request = withCanonicalPath(request);
+    const { method } = request;
+    const url = new URL(request.url);
+    const { pathname } = url;
 
     if (!isCacheableRequest(method, pathname, url.search)) {
       return forHead(request, forBrowser(await render(request), 'bypass'));

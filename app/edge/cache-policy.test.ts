@@ -9,6 +9,7 @@ import {
   isCacheableRequest,
   isOgImagePath,
   isSitemapPath,
+  withCanonicalPath,
 } from './cache-policy.ts';
 
 describe('canonicalCachePath (pentest BH-04)', () => {
@@ -48,6 +49,39 @@ describe('canonicalCachePath (pentest BH-04)', () => {
       variants.map((p) => cacheKeyUrl('https://sambasku.com', p, 'v1')),
     );
     assert.equal(keys.size, 1);
+  });
+});
+
+describe('withCanonicalPath (pentest BH-04)', () => {
+  it('rewrite slash ganda / trailing slash / segmen . ke path kanonik', () => {
+    const cases = [
+      ['/id//words//x', '/id/words/x'],
+      ['/id/words/x/', '/id/words/x'],
+      ['/id/./words/x', '/id/words/x'],
+    ] as const;
+    for (const [raw, want] of cases) {
+      const rewritten = withCanonicalPath(
+        new Request(`https://sambasku.com${raw}`),
+      );
+      assert.equal(new URL(rewritten.url).pathname, want);
+    }
+  });
+
+  it('mengembalikan request yang sama jika path sudah kanonik', () => {
+    const original = new Request('https://sambasku.com/id/words/x');
+    assert.equal(withCanonicalPath(original), original);
+  });
+
+  it('mempertahankan method, header, dan query string', () => {
+    const original = new Request('https://sambasku.com/id//words//x?utm=1', {
+      method: 'HEAD',
+      headers: { 'x-test': '1' },
+    });
+    const rewritten = withCanonicalPath(original);
+    assert.equal(rewritten.method, 'HEAD');
+    assert.equal(rewritten.headers.get('x-test'), '1');
+    assert.equal(new URL(rewritten.url).search, '?utm=1');
+    assert.equal(new URL(rewritten.url).pathname, '/id/words/x');
   });
 });
 
