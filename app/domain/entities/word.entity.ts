@@ -113,10 +113,12 @@ export interface WordDetail {
   self_verified?: boolean;
   created_by?: {
     username: string;
+    display_name?: string;
     role: string;
   } | null;
   verified_by?: {
     username: string;
+    display_name?: string;
     role: string;
   } | null;
   verified_at?: string | null;

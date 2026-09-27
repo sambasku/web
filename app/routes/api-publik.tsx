@@ -36,6 +36,7 @@ import {
 import { getFixedT } from '@/application/i18n/i18n-instance';
 import { useLocalePath } from '@/application/i18n/use-locale';
 import { CodeHighlightProvider } from '@/presentation/components/code-highlight-provider';
+import '@/presentation/styles/code-highlight.css';
 
 export function meta({ params }: Route.MetaArgs) {
   const locale = isAppLocale(params.locale) ? params.locale : DEFAULT_LOCALE;

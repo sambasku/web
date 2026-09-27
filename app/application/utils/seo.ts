@@ -289,12 +289,17 @@ export function buildLetterJsonLd(
     inLanguage: locale,
     mainEntity: {
       '@type': 'ItemList',
-      itemListElement: words.map((word, i) => ({
-        '@type': 'ListItem',
-        position: i + 1,
-        name: word.lemma,
-        url: `${env.appUrl}${localePath(locale, `/words/${encodeURIComponent(word.lemma)}`)}`,
-      })),
+      itemListElement: words.map((word, i) => {
+        const sense = word.sense?.trim();
+        const name = sense ? `${word.lemma} - ${sense}` : word.lemma;
+        return {
+          '@type': 'ListItem',
+          position: i + 1,
+          name,
+          ...(sense ? { description: sense } : {}),
+          url: `${env.appUrl}${localePath(locale, `/words/${encodeURIComponent(word.lemma)}`)}`,
+        };
+      }),
     },
   };
 

@@ -54,6 +54,9 @@ const PLAY_STORE_URL =
 const WHATSAPP_GROUP_URL =
   'https://chat.whatsapp.com/Kw64lxFEGXfK5gw6T6GEoN?mode=gi_t';
 
+/** Lemma contoh di beranda (tautan internal ke entri kamus). */
+const HOME_EXAMPLE_LEMMAS = ['cawan', 'masok', 'pelam'] as const;
+
 export default function Home() {
   const { t } = useTranslation();
   const lp = useLocalePath();
@@ -80,6 +83,48 @@ export default function Home() {
           </Text>
 
           <SearchBar autoFocus />
+        </Stack>
+
+        <Stack gap="sm" maw={640} mx="auto">
+          <Title order={2} size="h4" fw={700}>
+            {t('home_aboutHeading')}
+          </Title>
+          <Text size="sm" c="dimmed">
+            {t('home_aboutBody')}
+          </Text>
+          <Title order={2} size="h5" fw={600}>
+            {t('home_howHeading')}
+          </Title>
+          <Text size="sm" c="dimmed">
+            {t('home_howBody')}
+          </Text>
+          <Title order={2} size="h5" fw={600}>
+            {t('home_examplesHeading')}
+          </Title>
+          <Text size="sm" c="dimmed">
+            {t('home_examplesLead')}{' '}
+            {HOME_EXAMPLE_LEMMAS.map((lemma, index) => (
+              <span key={lemma}>
+                {index > 0 ? ', ' : null}
+                <Anchor
+                  component={Link}
+                  to={lp(`/words/${encodeURIComponent(lemma)}`)}
+                  size="sm"
+                >
+                  {lemma}
+                </Anchor>
+              </span>
+            ))}
+            .
+          </Text>
+          <Group gap="md">
+            <Anchor component={Link} to={lp('/words')} size="sm" fw={500}>
+              {t('home_examplesMore')}
+            </Anchor>
+            <Anchor component={Link} to={lp('/faq')} size="sm" fw={500}>
+              {t('home_aboutFaqLink')}
+            </Anchor>
+          </Group>
         </Stack>
 
         <WordOfTheDaySection />
@@ -173,7 +218,7 @@ export default function Home() {
                     src="/google_play.webp"
                     alt={t('common_getOnGooglePlay')}
                     h={36}
-                    w="auto"
+                    w={120}
                     fit="contain"
                     decoding="async"
                   />

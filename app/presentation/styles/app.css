@@ -46,112 +46,22 @@
 @import '@mantine/core/styles/Combobox.css';
 @import '@mantine/core/styles/SegmentedControl.css';
 @import '@mantine/core/styles/Accordion.css';
-@import '@mantine/code-highlight/styles.css';
-
-/* Token highlight.js - mengikuti skema Mantine (bukan tema CDN tetap). */
-.hljs-comment,
-.hljs-quote {
-  color: var(--mantine-color-dimmed);
-  font-style: italic;
-}
-
-.hljs-keyword,
-.hljs-selector-tag,
-.hljs-literal,
-.hljs-section,
-.hljs-link {
-  color: var(--mantine-color-violet-7);
-}
-
-:where([data-mantine-color-scheme='dark']) .hljs-keyword,
-:where([data-mantine-color-scheme='dark']) .hljs-selector-tag,
-:where([data-mantine-color-scheme='dark']) .hljs-literal,
-:where([data-mantine-color-scheme='dark']) .hljs-section,
-:where([data-mantine-color-scheme='dark']) .hljs-link {
-  color: var(--mantine-color-violet-3);
-}
-
-.hljs-string,
-.hljs-doctag,
-.hljs-regexp,
-.hljs-template-variable {
-  color: var(--mantine-color-teal-7);
-}
-
-:where([data-mantine-color-scheme='dark']) .hljs-string,
-:where([data-mantine-color-scheme='dark']) .hljs-doctag,
-:where([data-mantine-color-scheme='dark']) .hljs-regexp,
-:where([data-mantine-color-scheme='dark']) .hljs-template-variable {
-  color: var(--mantine-color-teal-3);
-}
-
-.hljs-number,
-.hljs-bullet,
-.hljs-meta {
-  color: var(--mantine-color-orange-7);
-}
-
-:where([data-mantine-color-scheme='dark']) .hljs-number,
-:where([data-mantine-color-scheme='dark']) .hljs-bullet,
-:where([data-mantine-color-scheme='dark']) .hljs-meta {
-  color: var(--mantine-color-orange-3);
-}
-
-.hljs-attr,
-.hljs-attribute,
-.hljs-variable,
-.hljs-params,
-.hljs-title,
-.hljs-built_in {
-  color: var(--mantine-color-blue-7);
-}
-
-:where([data-mantine-color-scheme='dark']) .hljs-attr,
-:where([data-mantine-color-scheme='dark']) .hljs-attribute,
-:where([data-mantine-color-scheme='dark']) .hljs-variable,
-:where([data-mantine-color-scheme='dark']) .hljs-params,
-:where([data-mantine-color-scheme='dark']) .hljs-title,
-:where([data-mantine-color-scheme='dark']) .hljs-built_in {
-  color: var(--mantine-color-blue-3);
-}
-
-.hljs-symbol,
-.hljs-name,
-.hljs-selector-id,
-.hljs-selector-class,
-.hljs-type {
-  color: var(--mantine-color-pink-7);
-}
-
-:where([data-mantine-color-scheme='dark']) .hljs-symbol,
-:where([data-mantine-color-scheme='dark']) .hljs-name,
-:where([data-mantine-color-scheme='dark']) .hljs-selector-id,
-:where([data-mantine-color-scheme='dark']) .hljs-selector-class,
-:where([data-mantine-color-scheme='dark']) .hljs-type {
-  color: var(--mantine-color-pink-3);
-}
+/* code-highlight: hanya di routes/api-publik via code-highlight.css
+   (jangan tarik ke critical path beranda - FCP/LCP + italic font). */
 
 /* Self-host: hapus DNS/TLS ke fonts.googleapis.com + fonts.gstatic.com.
    File = subset latin variable font (400-800), identik dengan yang
    dilayani Google. unicode-range tetap diset agar fallback benar.
    font-display: optional (W-SEO-05): LCP hero tidak menunggu swap font;
    kunjungan pertama memakai fallback sistem, kunjungan berikut font
-   terpasang dari cache tanpa reflow. */
+   terpasang dari cache tanpa reflow.
+   Italic face: fonts-italic.css (hanya route yang memakai fs="italic"). */
 @font-face {
   font-family: 'Plus Jakarta Sans';
   font-style: normal;
   font-display: optional;
   font-weight: 400 800;
   src: url('/fonts/pjs-latin-var.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-
-@font-face {
-  font-family: 'Plus Jakarta Sans';
-  font-style: italic;
-  font-display: optional;
-  font-weight: 400 800;
-  src: url('/fonts/pjs-latin-var-italic.woff2') format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 

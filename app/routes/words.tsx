@@ -1,6 +1,7 @@
 import { useLoaderData, useNavigation, useSearchParams, Link } from 'react-router';
 import {
   ActionIcon,
+  Anchor,
   Box,
   Button,
   Container,
@@ -64,6 +65,9 @@ export async function loader({ request }: Route.LoaderArgs) {
       q: letter ? undefined : q || undefined,
       letter: letter || undefined,
       wordType,
+      // Browse A-Z (termasuk ?letter=): hanya terverifikasi (selaras copy + sitemap).
+      // Pencarian `q`: semua yang tayang supaya lemma draf masih ketemu.
+      isVerified: q ? undefined : true,
       cursor,
       limit: 25,
       signal: request.signal,
@@ -128,6 +132,18 @@ export default function WordsPage() {
   return (
     <Container size="md" py="xl">
       <Stack gap="lg">
+        <Group gap={6} wrap="wrap">
+          <Anchor component={Link} to={lp('/')} size="xs" c="dimmed">
+            {t('word_homeCrumb')}
+          </Anchor>
+          <Text size="xs" c="dimmed">
+            /
+          </Text>
+          <Text size="xs" fw={500}>
+            {t('word_wordsCrumb')}
+          </Text>
+        </Group>
+
         {/* Header */}
         <Stack gap="sm">
           <Group justify="space-between" gap="md" wrap="wrap" align="flex-start">
