@@ -173,37 +173,39 @@ export default {
 
     // Samakan path dengan kunci cache sebelum lookup/render (BH-04): tanpa ini
     // `/id//words//x` merender 404 lalu negative-cache meracuni entry 200.
-    request = withCanonicalPath(request);
-    const { method } = request;
-    const url = new URL(request.url);
+    // Variabel baru (bukan reassign `request`): `new Request(url, req)` di
+    // Workers bertipe `CfProperties`, bukan `IncomingRequestCfProperties`.
+    const canonical = withCanonicalPath(request);
+    const { method } = canonical;
+    const url = new URL(canonical.url);
     const { pathname } = url;
 
     if (!isCacheableRequest(method, pathname, url.search)) {
-      return forHead(request, forBrowser(await render(request), 'bypass'));
+      return forHead(canonical, forBrowser(await render(canonical), 'bypass'));
     }
 
     const versionId = env.CF_VERSION_METADATA?.id ?? 'dev';
-    const key = cacheKeyRequest(request, versionId);
+    const key = cacheKeyRequest(canonical, versionId);
     const cached = await edgeCache.match(key);
     if (cached) {
       const ttlS = Number(cached.headers.get('x-cache-ttl') ?? STALE_MAX_S);
       const ageS =
         (Date.now() - Number(cached.headers.get('x-cached-at') ?? 0)) / 1000;
       if (ageS >= ttlS) {
-        const response = await renderAndCache(request, ctx, versionId);
-        return forHead(request, forBrowser(response, 'miss'));
+        const response = await renderAndCache(canonical, ctx, versionId);
+        return forHead(canonical, forBrowser(response, 'miss'));
       }
       const freshS = Math.min(freshSeconds(pathname), ttlS);
       if (ageS > freshS) {
-        ctx.waitUntil(renderAndCache(request, ctx, versionId));
+        ctx.waitUntil(renderAndCache(canonical, ctx, versionId));
       }
       return forHead(
-        request,
+        canonical,
         forBrowser(cached, ageS <= freshS ? 'hit' : 'swr'),
       );
     }
 
-    const response = await renderAndCache(request, ctx, versionId);
-    return forHead(request, forBrowser(response, 'miss'));
+    const response = await renderAndCache(canonical, ctx, versionId);
+    return forHead(canonical, forBrowser(response, 'miss'));
   },
 } satisfies ExportedHandler<EdgeEnv>;
