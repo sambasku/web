@@ -1,11 +1,11 @@
 import { Suspense, lazy, useState } from 'react';
 import { Link, useLocation } from 'react-router';
 import { Anchor, Box, Burger, Container, Group, Image } from '@mantine/core';
-import { Search, List, CircleHelp, Languages } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { ThemeToggle } from '../theme-toggle';
 import { Logo } from './logo';
 import { LanguageSwitcher } from './language-switcher';
+import { primaryNavItems } from './primary-nav-items';
 import { useLocalePath } from '@/application/i18n/use-locale';
 import { stripLocalePrefix } from '@/application/i18n/locales';
 
@@ -16,18 +16,7 @@ export function Header() {
   const [menuOpened, setMenuOpened] = useState(false);
   const { t } = useTranslation();
   const lp = useLocalePath();
-
-  const navItems = [
-    { to: lp('/words'), bare: '/words', label: t('nav_words'), icon: List },
-    { to: lp('/search'), bare: '/search', label: t('nav_search'), icon: Search },
-    {
-      to: lp('/bantuan-terjemahan'),
-      bare: '/bantuan-terjemahan',
-      label: t('nav_ask'),
-      icon: Languages,
-    },
-    { to: lp('/faq'), bare: '/faq', label: t('nav_faq'), icon: CircleHelp },
-  ];
+  const navItems = primaryNavItems(t, lp);
 
   const isActive = (bare: string) => {
     const { path } = stripLocalePrefix(location.pathname);
