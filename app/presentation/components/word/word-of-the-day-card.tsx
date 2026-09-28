@@ -18,6 +18,10 @@ import { WordTypeBadge } from './word-type-badge';
 import { formatDateId } from '@/application/utils/formatters';
 import { useLocalePath } from '@/application/i18n/use-locale';
 import type { WordOfTheDay } from '@/domain/entities/word.entity';
+import {
+  AnalyticsEvents,
+  trackEvent,
+} from '@/infrastructure/analytics/analytics';
 
 const MASCOT_SRC = '/paksamku-maskot-pakaian-adat-melayu.webp';
 /** Samakan dengan CSS: tampil hanya di atas Mantine md (62em). */
@@ -45,6 +49,10 @@ export function WordOfTheDayCard({ wordOfDay }: { wordOfDay: WordOfTheDay }) {
   if (!word) return null;
 
   const firstMeaning = word.meanings[0];
+
+  const onWotdTap = () => {
+    trackEvent(AnalyticsEvents.wotdTap, { word_id: word.id });
+  };
 
   return (
     <Box className="wotd-card-wrap">
@@ -89,6 +97,8 @@ export function WordOfTheDayCard({ wordOfDay }: { wordOfDay: WordOfTheDay }) {
               <Anchor
                 component={Link}
                 to={lp(`/words/${encodeURIComponent(word.lemma)}`)}
+                state={{ analyticsSource: 'wotd' }}
+                onClick={onWotdTap}
                 underline="never"
                 c="var(--mantine-color-text)"
               >
@@ -121,6 +131,8 @@ export function WordOfTheDayCard({ wordOfDay }: { wordOfDay: WordOfTheDay }) {
           <Button
             component={Link}
             to={lp(`/words/${encodeURIComponent(word.lemma)}`)}
+            state={{ analyticsSource: 'wotd' }}
+            onClick={onWotdTap}
             variant="light"
             leftSection={<BookOpen size={16} />}
             rightSection={<ArrowRight size={16} />}

@@ -12,6 +12,7 @@ import {
 } from '@mantine/core';
 import { List, ArrowRight, AlertCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useEffect } from 'react';
 import type { Route } from './+types/huruf.$letter';
 import { listWordsAtoZ } from '../application/use-cases/word.use-case';
 import { buildLetterJsonLd, buildMetaTags } from '../application/utils/seo';
@@ -25,6 +26,10 @@ import {
 } from '@/application/i18n/locales';
 import { getFixedT } from '@/application/i18n/i18n-instance';
 import { useLocalePath } from '@/application/i18n/use-locale';
+import {
+  AnalyticsEvents,
+  trackEvent,
+} from '@/infrastructure/analytics/analytics';
 
 const ALPHABET = 'abcdefghijklmnopqrstuvwxyz'.split('');
 
@@ -104,6 +109,12 @@ export default function HurufPage() {
   const isLoading = navigation.state === 'loading';
   const displayLetter = letter.toUpperCase();
 
+  useEffect(() => {
+    trackEvent(AnalyticsEvents.letterBrowse, {
+      letter: letter.toLowerCase(),
+    });
+  }, [letter]);
+
   return (
     <Container size="md" py="xl">
       <Stack gap="lg">
@@ -164,7 +175,7 @@ export default function HurufPage() {
           <Stack gap="lg">
             <Stack gap="xs">
               {items.map((word) => (
-                <WordCard key={word.id} word={word} />
+                <WordCard key={word.id} word={word} analyticsSource="letter" />
               ))}
             </Stack>
 

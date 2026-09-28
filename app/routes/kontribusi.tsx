@@ -53,6 +53,10 @@ import {
 } from '../presentation/components/media-explorer/contribution-images-field';
 import { isAllowedDisplayImageUrl } from '../presentation/utils/display-image-url';
 import {
+  AnalyticsEvents,
+  trackEvent,
+} from '@/infrastructure/analytics/analytics';
+import {
   listDialects,
   listLanguages,
   listWordClasses,
@@ -498,6 +502,15 @@ export default function KontribusiPage() {
   const umumWordClassId = pickUmumWordClassId(wordClasses);
   const defaultDialectId = pickDefaultDialectId(dialects);
 
+  useEffect(() => {
+    trackEvent(AnalyticsEvents.contributeStart, {
+      guest: true,
+      from: searchParams.get('from')?.trim() || 'direct',
+    });
+    // Hanya sekali saat mount halaman form.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only
+  }, []);
+
   const [lemma, setLemma] = useState(searchParams.get('q')?.trim() ?? '');
   /** false = Sederhana (lemma + terjemahan). true = form makna lengkap. */
   const [advanced, setAdvanced] = useState(false);
@@ -596,6 +609,7 @@ export default function KontribusiPage() {
       return;
     }
     setSubmitting(true);
+    trackEvent(AnalyticsEvents.contributeSubmit, { guest: true });
     try {
       const word = lemma.trim();
       const def = standardDefinition.trim();
@@ -667,6 +681,7 @@ export default function KontribusiPage() {
             : {}),
         }),
       });
+      trackEvent(AnalyticsEvents.contributeSuccess, { guest: true });
       setSuccess(word);
       setLemma('');
       setUsageLabels([]);
@@ -676,6 +691,10 @@ export default function KontribusiPage() {
       setMaknaList([{ ...emptyMakna, wordClassId: umumWordClassId }]);
       setImages([]);
     } catch (err) {
+      trackEvent(AnalyticsEvents.contributeFail, {
+        guest: true,
+        error_code: err instanceof AppError ? err.code : 'UNKNOWN',
+      });
       if (err instanceof AppError && err.details?.length) {
         setError(err.details.map((d) => d.message).join('. '));
       } else {

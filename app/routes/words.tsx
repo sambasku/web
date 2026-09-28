@@ -225,7 +225,7 @@ export default function WordsPage() {
 
                 <Stack gap="xs">
                   {groupedItems[groupLetter].map((word) => (
-                    <WordCard key={word.id} word={word} />
+                    <WordCard key={word.id} word={word} analyticsSource="list" />
                   ))}
                 </Stack>
               </Stack>

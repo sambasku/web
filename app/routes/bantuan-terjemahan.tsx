@@ -27,6 +27,11 @@ import { useLocalePath } from '@/application/i18n/use-locale';
 import { formatDateId } from '@/application/utils/formatters';
 import { displayImageUrl } from '@/presentation/utils/display-image-url';
 import type { TranslationHelpPublicItem } from '@/domain/entities/translation-help.entity';
+import { useEffect } from 'react';
+import {
+  AnalyticsEvents,
+  trackEvent,
+} from '@/infrastructure/analytics/analytics';
 
 const PLAY_STORE_URL =
   'https://play.google.com/store/apps/details?id=com.iamutaki.sambasku';
@@ -111,6 +116,16 @@ export default function BantuanTerjemahanFeedPage() {
   const isLoading =
     navigation.state === 'loading' &&
     stripLocalePrefix(navigation.location.pathname).path === '/bantuan-terjemahan';
+
+  useEffect(() => {
+    trackEvent(AnalyticsEvents.translationHelpView, {
+      view: 'feed',
+      sort,
+      result_count: items.length,
+    });
+    // Mount / ganti sort (bukan setiap pagination cursor).
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- feed view once per sort
+  }, [sort]);
 
   const setSort = (next: 'latest' | 'popular') => {
     const nextParams = new URLSearchParams(searchParams);

@@ -6,6 +6,10 @@ import {
   useMantineColorScheme,
 } from '@mantine/core';
 import { Sun, Moon } from 'lucide-react';
+import {
+  AnalyticsEvents,
+  trackEvent,
+} from '@/infrastructure/analytics/analytics';
 
 function subscribeNoop() {
   return () => {};
@@ -29,7 +33,11 @@ export function ThemeToggle() {
         variant="default"
         size="lg"
         aria-label="Ganti tema"
-        onClick={() => setColorScheme(computed === 'dark' ? 'light' : 'dark')}
+        onClick={() => {
+          const next = computed === 'dark' ? 'light' : 'dark';
+          setColorScheme(next);
+          trackEvent(AnalyticsEvents.themeChange, { mode: next });
+        }}
       >
         {isDark ? <Sun size={16} /> : <Moon size={16} />}
       </ActionIcon>

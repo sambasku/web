@@ -17,6 +17,10 @@ import {
   swapLocalePath,
 } from '@/application/i18n/locales';
 import { useLocale } from '@/application/i18n/use-locale';
+import {
+  AnalyticsEvents,
+  trackEvent,
+} from '@/infrastructure/analytics/analytics';
 
 function useLocaleSwitch() {
   const locale = useLocale();
@@ -26,6 +30,10 @@ function useLocaleSwitch() {
 
   const onSelect = (next: AppLocale) => {
     if (next === locale) return;
+    trackEvent(AnalyticsEvents.localeChange, {
+      from: locale,
+      to: next,
+    });
     navigate(swapLocalePath(location.pathname, location.search, next));
   };
 
