@@ -527,6 +527,15 @@ export default function KontribusiPage() {
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [images, setImages] = useState<ContributionImageSlot[]>([]);
+  const [duplicateModal, setDuplicateModal] = useState<{
+    wordId: string;
+    meaningId: string;
+    lemma: string;
+    definition?: string;
+    translationText?: string;
+  } | null>(null);
+  const [duplicateVoting, setDuplicateVoting] = useState(false);
+  const [duplicateMessage, setDuplicateMessage] = useState<string | null>(null);
 
   const usageLabelsConflict = hasConflictingUsageLabels(usageLabels);
 
@@ -695,7 +704,31 @@ export default function KontribusiPage() {
         guest: true,
         error_code: err instanceof AppError ? err.code : 'UNKNOWN',
       });
-      if (err instanceof AppError && err.details?.length) {
+      if (
+        err instanceof AppError &&
+        err.code === 'DUPLICATE_MEANING' &&
+        err.data &&
+        typeof err.data.word_id === 'string' &&
+        typeof err.data.meaning_id === 'string'
+      ) {
+        setDuplicateModal({
+          wordId: err.data.word_id,
+          meaningId: err.data.meaning_id,
+          lemma:
+            typeof err.data.lemma === 'string' && err.data.lemma.trim()
+              ? err.data.lemma
+              : lemma.trim() || 'kata ini',
+          definition:
+            typeof err.data.definition === 'string'
+              ? err.data.definition
+              : undefined,
+          translationText:
+            typeof err.data.translation_text === 'string'
+              ? err.data.translation_text
+              : undefined,
+        });
+        setError(null);
+      } else if (err instanceof AppError && err.details?.length) {
         setError(err.details.map((d) => d.message).join('. '));
       } else {
         setError(
@@ -704,6 +737,41 @@ export default function KontribusiPage() {
       }
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  async function confirmDuplicateVote(value: 1 | -1) {
+    if (!duplicateModal) return;
+    setDuplicateVoting(true);
+    setError(null);
+    try {
+      const res = await apiClient<{ message: string }>(
+        '/contributions/duplicate-confirm',
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            word_id: duplicateModal.wordId,
+            meaning_id: duplicateModal.meaningId,
+            value,
+          }),
+        },
+      );
+      setDuplicateModal(null);
+      setSuccess(null);
+      setError(null);
+      setDuplicateMessage(res.data.message);
+    } catch (err) {
+      if (err instanceof AppError && err.statusCode === 401) {
+        setError(
+          'Masuk dulu untuk mendukung atau menolak makna yang sudah ada. Gunakan aplikasi SambasKu.',
+        );
+      } else {
+        setError(
+          err instanceof Error ? err.message : 'Gagal mencatat dukungan.',
+        );
+      }
+    } finally {
+      setDuplicateVoting(false);
     }
   }
 
@@ -717,6 +785,71 @@ export default function KontribusiPage() {
           Dikirim sebagai tamu. Kata belum tayang. Tim akan memeriksanya dulu.
           Terima kasih menjaga bahasa Sambas tetap hidup.
         </Text>
+
+        <Modal
+          opened={duplicateModal !== null}
+          onClose={() => setDuplicateModal(null)}
+          title="Kata ini sudah ditemukan"
+          centered
+        >
+          {duplicateModal && (
+            <Stack gap="md">
+              <Text size="sm">
+                Pilih dukunganmu agar tercatat di riwayat perubahan{' '}
+                <Text span fw={600}>
+                  {duplicateModal.lemma}
+                </Text>
+                .
+              </Text>
+              {(duplicateModal.definition || duplicateModal.translationText) && (
+                <Text size="sm" c="dimmed">
+                  {[duplicateModal.definition, duplicateModal.translationText]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </Text>
+              )}
+              <Text size="sm" c="dimmed">
+                Vote memerlukan akun. Tamu: buka aplikasi SambasKu, atau lihat
+                entri yang sudah ada.
+              </Text>
+              <Group grow>
+                <Button
+                  loading={duplicateVoting}
+                  onClick={() => void confirmDuplicateVote(1)}
+                >
+                  Dukung
+                </Button>
+                <Button
+                  variant="default"
+                  loading={duplicateVoting}
+                  onClick={() => void confirmDuplicateVote(-1)}
+                >
+                  Tidak dukung
+                </Button>
+              </Group>
+              <Button
+                variant="subtle"
+                component={Link}
+                to={lp(`/words/${encodeURIComponent(duplicateModal.lemma)}`)}
+                onClick={() => setDuplicateModal(null)}
+              >
+                Buka halaman kata
+              </Button>
+            </Stack>
+          )}
+        </Modal>
+
+        {duplicateMessage && (
+          <Alert
+            color="teal"
+            variant="light"
+            title="Tercatat di riwayat"
+            onClose={() => setDuplicateMessage(null)}
+            withCloseButton
+          >
+            {duplicateMessage}
+          </Alert>
+        )}
 
         {success && (
           <Paper withBorder radius="md" p="md">

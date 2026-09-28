@@ -6,7 +6,7 @@
 - [Daftar Kata A-Z](https://sambasku.com/id/words): katalog kosakata yang tayang
 - [Halaman per huruf](https://sambasku.com/id/huruf/a): daftar kata berawalan huruf tertentu (a sampai z)
 - [FAQ](https://sambasku.com/id/faq): tentang SambasKu dan pelestarian bahasa Sambas
-- [Bantuan Terjemahan](https://sambasku.com/id/bantuan-terjemahan): tanya jawab terjemahan bahasa Sambas oleh komunitas
+- [Ruang Diskusi](https://sambasku.com/id/ruang-diskusi): thread komunitas bahasa Sambas (teks/foto, balasan, vote)
 - [Kontribusi kata](https://sambasku.com/id/kontribusi): form usul kata baru (tanpa akun)
 
 ## Data

@@ -13,8 +13,8 @@ import {
   Title,
 } from '@mantine/core';
 import { Languages, Smartphone } from 'lucide-react';
-import type { Route } from './+types/bantuan-terjemahan';
-import { listPublishedTranslationHelps } from '@/application/use-cases/translation-help.use-case';
+import type { Route } from './+types/ruang-diskusi';
+import { listPublishedDiscussions } from '@/application/use-cases/discussion.use-case';
 import { buildMetaTags } from '@/application/utils/seo';
 import {
   DEFAULT_LOCALE,
@@ -26,7 +26,8 @@ import { useLocalePath } from '@/application/i18n/use-locale';
 
 import { formatDateId } from '@/application/utils/formatters';
 import { displayImageUrl } from '@/presentation/utils/display-image-url';
-import type { TranslationHelpPublicItem } from '@/domain/entities/translation-help.entity';
+import { hasViolenceWarning } from '@/domain/image-content-warnings';
+import type { DiscussionPublicItem } from '@/domain/entities/discussion.entity';
 import { useEffect } from 'react';
 import {
   AnalyticsEvents,
@@ -39,10 +40,10 @@ const PLAY_STORE_URL =
 export function meta({ params }: Route.MetaArgs) {
   const locale = isAppLocale(params.locale) ? params.locale : DEFAULT_LOCALE;
   return buildMetaTags({
-    title: 'Tanya Terjemahan',
+    title: 'Ruang Diskusi',
     description:
-      'Baca pertanyaan terjemahan bahasa Sambas yang sudah tayang. Ajukan pertanyaan atau balas lewat aplikasi SambasKu.',
-    path: localePath(locale, '/bantuan-terjemahan'),
+      'Baca thread Ruang Diskusi bahasa Sambas yang sudah tayang. Buka atau balas thread lewat aplikasi SambasKu.',
+    path: localePath(locale, '/ruang-diskusi'),
     locale,
   });
 }
@@ -54,7 +55,7 @@ export async function loader({ request }: Route.LoaderArgs) {
   const sort = sortParam === 'popular' ? 'popular' : 'latest';
 
   try {
-    const res = await listPublishedTranslationHelps({
+    const res = await listPublishedDiscussions({
       limit: 20,
       cursor,
       sort,
@@ -67,22 +68,25 @@ export async function loader({ request }: Route.LoaderArgs) {
     };
   } catch {
     return {
-      items: [] as TranslationHelpPublicItem[],
+      items: [] as DiscussionPublicItem[],
       meta: { limit: 20, next_cursor: null, has_more: false },
       sort,
     };
   }
 }
 
-function HelpCard({ item }: { item: TranslationHelpPublicItem }) {
+function HelpCard({ item }: { item: DiscussionPublicItem }) {
   const lp = useLocalePath();
   const preview = item.body?.trim() || 'Pertanyaan dengan gambar';
-  const thumb = displayImageUrl(item.images[0]?.public_url, { width: 320, height: 200 });
+  const safeThumb = item.images.find((img) => !hasViolenceWarning(img.content_warnings));
+  const thumb = displayImageUrl(safeThumb?.public_url, { width: 320, height: 200 });
+  const hasViolenceOnly =
+    item.images.length > 0 && !safeThumb && item.images.some((img) => hasViolenceWarning(img.content_warnings));
 
   return (
     <Card
       component={Link}
-      to={lp(`/bantuan-terjemahan/${encodeURIComponent(item.id)}`)}
+      to={lp(`/ruang-diskusi/${encodeURIComponent(item.id)}`)}
       withBorder
       padding="md"
       radius="md"
@@ -91,6 +95,10 @@ function HelpCard({ item }: { item: TranslationHelpPublicItem }) {
       <Stack gap="sm">
         {thumb ? (
           <Image src={thumb} alt="" radius="sm" h={140} fit="cover" />
+        ) : hasViolenceOnly ? (
+          <Text size="xs" c="dimmed">
+            Foto berisi peringatan kekerasan - buka detail untuk melihat.
+          </Text>
         ) : null}
         <Text size="sm" lineClamp={3}>
           {preview}
@@ -109,16 +117,16 @@ function HelpCard({ item }: { item: TranslationHelpPublicItem }) {
   );
 }
 
-export default function BantuanTerjemahanFeedPage() {
+export default function RuangDiskusiFeedPage() {
   const { items, meta, sort } = useLoaderData<typeof loader>();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigation = useNavigation();
   const isLoading =
     navigation.state === 'loading' &&
-    stripLocalePrefix(navigation.location.pathname).path === '/bantuan-terjemahan';
+    stripLocalePrefix(navigation.location.pathname).path === '/ruang-diskusi';
 
   useEffect(() => {
-    trackEvent(AnalyticsEvents.translationHelpView, {
+    trackEvent(AnalyticsEvents.discussionView, {
       view: 'feed',
       sort,
       result_count: items.length,
@@ -142,12 +150,12 @@ export default function BantuanTerjemahanFeedPage() {
           <Group gap="xs">
             <Languages size={22} />
             <Title order={1} fw={800}>
-              Tanya Terjemahan
+              Ruang Diskusi
             </Title>
           </Group>
           <Text c="dimmed" maw={560}>
-            Feed pertanyaan terjemahan yang sudah ditayangkan. Membaca
-            bebas di web; mengajukan atau membalas hanya lewat aplikasi SambasKu.
+            Feed thread Ruang Diskusi yang sudah ditayangkan. Membaca bebas
+            di web; membuka atau membalas thread hanya lewat aplikasi SambasKu.
           </Text>
         </Stack>
 
@@ -156,11 +164,11 @@ export default function BantuanTerjemahanFeedPage() {
             <Stack gap={4} maw={480}>
               <Group gap={6}>
                 <Smartphone size={16} />
-                <Text fw={600}>Ingin tanya terjemahan?</Text>
+                <Text fw={600}>Ingin ikut diskusi?</Text>
               </Group>
               <Text size="sm" c="dimmed">
-                Ajukan pertanyaan (teks atau foto) dan balas diskusi di aplikasi
-                mobile SambasKu.
+                Buka thread (teks atau foto) dan balas di aplikasi mobile
+                SambasKu.
               </Text>
             </Stack>
             <Anchor
@@ -209,7 +217,7 @@ export default function BantuanTerjemahanFeedPage() {
               Belum ada yang tayang
             </Badge>
             <Text c="dimmed" ta="center" maw={420}>
-              Belum ada tanya terjemahan yang dipublikasikan. Ajukan lewat
+              Belum ada diskusi yang dipublikasikan. Mulai lewat
               aplikasi SambasKu.
             </Text>
             <Button

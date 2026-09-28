@@ -26,7 +26,7 @@ export const AnalyticsEvents = {
   letterBrowse: 'letter_browse',
   themeChange: 'theme_change',
   localeChange: 'locale_change',
-  translationHelpView: 'translation_help_view',
+  discussionView: 'discussion_view',
 } as const;
 
 export type AnalyticsEventName =

@@ -164,7 +164,7 @@ export default function Home() {
                       {t('home_askBody')}{' '}
                       <Anchor
                         component={Link}
-                        to={lp('/bantuan-terjemahan')}
+                        to={lp('/ruang-diskusi')}
                         size="xs"
                       >
                         {t('home_askFeedLink')}

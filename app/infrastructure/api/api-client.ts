@@ -20,6 +20,7 @@ export class AppError extends Error {
     message: string,
     public readonly statusCode: number,
     public readonly details?: Array<{ field?: string; message: string }>,
+    public readonly data?: Record<string, unknown> | null,
   ) {
     super(message);
     this.name = 'AppError';
@@ -53,7 +54,12 @@ export interface UnwrappedResult<T> {
   meta?: CursorMeta;
 }
 
-type ErrorPayload = { error_code?: string; message?: string; details?: ApiErrorDetail[] };
+type ErrorPayload = {
+  error_code?: string;
+  message?: string;
+  details?: ApiErrorDetail[];
+  data?: Record<string, unknown> | null;
+};
 
 /** Menandai kegagalan yang layak dicoba di tier berikutnya. */
 class InfraFailure extends Error {
@@ -137,8 +143,14 @@ async function attempt<T>(
       const code = nested?.code ?? payload.error_code ?? 'UNKNOWN_ERROR';
       const message = nested?.message ?? payload.message ?? 'Terjadi kesalahan sistem';
       const details = nested?.details ?? payload.details;
+      const data =
+        'data' in payload && payload.data && typeof payload.data === 'object'
+          ? (payload.data as Record<string, unknown>)
+          : null;
       const appError =
-        res.status === 404 ? new NotFoundError(message) : new AppError(code, message, res.status, details);
+        res.status === 404
+          ? new NotFoundError(message)
+          : new AppError(code, message, res.status, details, data);
       if (isInfraStatus(res.status, payload)) throw new InfraFailure(appError);
       throw appError;
     }
