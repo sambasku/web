@@ -17,6 +17,7 @@ export function WordAudioPlayer({
   // data API/kontribusi - hanya https: yang boleh jadi src/href.
   if (!audio.url.startsWith('https:')) return null;
   const speaker = audio.speaker_name?.trim();
+  const pendingReview = audio.is_verified === false;
 
   const onPlay = () => {
     trackEvent(AnalyticsEvents.audioPlay, {
@@ -36,10 +37,13 @@ export function WordAudioPlayer({
       >
         <a href={audio.url}>Unduh audio</a>
       </audio>
-      {speaker ? (
-        <Text size="xs" c="dimmed">
-          {speaker}
-        </Text>
+      <Text size="xs" c="dimmed">
+        {speaker || 'Anonim'}
+      </Text>
+      {pendingReview ? (
+        <Badge size="xs" color="yellow" variant="light">
+          Menunggu pengecekan
+        </Badge>
       ) : null}
       {audio.is_primary ? (
         <Badge size="xs" variant="light">
