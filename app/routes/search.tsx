@@ -14,6 +14,7 @@ import {
 } from '@mantine/core';
 import { Search, AlertCircle, PlusCircle, ArrowRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useEffect, useRef } from 'react';
 import type { Route } from './+types/search';
 import { searchWords } from '../application/use-cases/word.use-case';
 import { buildMetaTags } from '../application/utils/seo';
@@ -28,6 +29,10 @@ import {
 } from '@/application/i18n/locales';
 import { getFixedT } from '@/application/i18n/i18n-instance';
 import { useLocalePath } from '@/application/i18n/use-locale';
+import {
+  AnalyticsEvents,
+  trackEvent,
+} from '@/infrastructure/analytics/analytics';
 
 export function meta({ data, params }: Route.MetaArgs) {
   const locale = isAppLocale(params.locale) ? params.locale : DEFAULT_LOCALE;
@@ -94,6 +99,19 @@ export default function SearchPage() {
   const isLoading =
     navigation.state === 'loading' &&
     stripLocalePrefix(navigation.location.pathname).path === '/search';
+  const trackedQuery = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!q) return;
+    const key = `${q}|${searchIn}|${wordType ?? ''}`;
+    if (trackedQuery.current === key) return;
+    trackedQuery.current = key;
+    trackEvent(AnalyticsEvents.searchSubmit, {
+      query_len: q.length,
+      search_in: searchIn,
+      has_results: items.length > 0,
+    });
+  }, [q, searchIn, wordType, items.length]);
 
   const typeOptions = [
     { label: t('search_typeAll'), value: '' },
@@ -179,7 +197,7 @@ export default function SearchPage() {
 
             <Stack gap="sm">
               {items.map((word) => (
-                <WordCard key={word.id} word={word} />
+                <WordCard key={word.id} word={word} analyticsSource="search" />
               ))}
             </Stack>
 

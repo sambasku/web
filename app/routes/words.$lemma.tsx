@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useLoaderData, useNavigation, Link } from 'react-router';
+import { useState, useEffect, useRef } from 'react';
+import { useLoaderData, useNavigation, Link, useLocation } from 'react-router';
 import {
   Anchor,
   Badge,
@@ -50,6 +50,10 @@ import {
 import { getFixedT } from '@/application/i18n/i18n-instance';
 import { useLocale, useLocalePath } from '@/application/i18n/use-locale';
 import { useTranslation } from 'react-i18next';
+import {
+  AnalyticsEvents,
+  trackEvent,
+} from '@/infrastructure/analytics/analytics';
 
 export function meta({ data, params }: Route.MetaArgs) {
   const locale = isAppLocale(params.locale) ? params.locale : DEFAULT_LOCALE;
@@ -123,10 +127,29 @@ function attributionLabel(person: {
 export default function WordDetailPage() {
   const { word } = useLoaderData<typeof loader>();
   const navigation = useNavigation();
+  const location = useLocation();
   const [copied, setCopied] = useState(false);
   const { t } = useTranslation();
   const lp = useLocalePath();
   const locale = useLocale();
+  const trackedOpen = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (trackedOpen.current === word.id) return;
+    trackedOpen.current = word.id;
+    const stateSource =
+      location.state &&
+      typeof location.state === 'object' &&
+      'analyticsSource' in location.state &&
+      typeof (location.state as { analyticsSource?: unknown }).analyticsSource ===
+        'string'
+        ? (location.state as { analyticsSource: string }).analyticsSource
+        : undefined;
+    trackEvent(AnalyticsEvents.wordOpen, {
+      word_id: word.id,
+      source: stateSource ?? 'direct',
+    });
+  }, [word.id, location.state]);
 
   // Saat pindah ke kata terkait (route sama, :id beda) loader berjalan -
   // tampilkan skeleton agar data kata lama tidak tampil sesaat.
@@ -154,6 +177,7 @@ export default function WordDetailPage() {
   const jsonLd = buildWordJsonLd(word, locale);
 
   const handleShare = async () => {
+    trackEvent(AnalyticsEvents.shareStart, { word_id: word.id });
     // Web Share API (mobile): share sheet native. Fallback clipboard.
     if (typeof navigator !== 'undefined' && navigator.share) {
       try {
@@ -163,6 +187,10 @@ export default function WordDetailPage() {
           text: shareTitle,
           url: window.location.href,
         });
+        trackEvent(AnalyticsEvents.shareComplete, {
+          word_id: word.id,
+          method: 'native',
+        });
         return;
       } catch {
         // dibatalkan user atau gagal: lanjut fallback clipboard
@@ -171,6 +199,10 @@ export default function WordDetailPage() {
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
       await navigator.clipboard.writeText(window.location.href);
       setCopied(true);
+      trackEvent(AnalyticsEvents.shareComplete, {
+        word_id: word.id,
+        method: 'clipboard',
+      });
       setTimeout(() => setCopied(false), 2000);
     }
   };
@@ -279,7 +311,7 @@ export default function WordDetailPage() {
             {(word.audios ?? []).length > 0 && (
               <Stack gap={6}>
                 {(word.audios ?? []).map((a) => (
-                  <WordAudioPlayer key={a.id} audio={a} />
+                  <WordAudioPlayer key={a.id} audio={a} wordId={word.id} />
                 ))}
               </Stack>
             )}
@@ -368,7 +400,7 @@ export default function WordDetailPage() {
                           {(ex.audios ?? []).length > 0 && (
                             <Stack gap={4} pl="md">
                               {(ex.audios ?? []).map((a) => (
-                                <WordAudioPlayer key={a.id} audio={a} />
+                                <WordAudioPlayer key={a.id} audio={a} wordId={word.id} />
                               ))}
                             </Stack>
                           )}
@@ -398,6 +430,7 @@ export default function WordDetailPage() {
                   key={rel.word_id}
                   component={Link}
                   to={lp(`/words/${encodeURIComponent(rel.lemma)}`)}
+                  state={{ analyticsSource: 'related' }}
                   size="lg"
                   variant="outline"
                 >

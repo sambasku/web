@@ -19,7 +19,14 @@ function glossLines(word: WordSummary): string[] {
   return lines;
 }
 
-export function WordCard({ word }: { word: WordSummary }) {
+export function WordCard({
+  word,
+  analyticsSource,
+}: {
+  word: WordSummary;
+  /** Sumber navigasi untuk `word_open` (search, letter, list, ...). */
+  analyticsSource?: string;
+}) {
   const { t } = useTranslation();
   const lp = useLocalePath();
   const gloss = glossLines(word);
@@ -28,6 +35,9 @@ export function WordCard({ word }: { word: WordSummary }) {
     <Card
       component={Link}
       to={lp(`/words/${encodeURIComponent(word.lemma)}`)}
+      state={
+        analyticsSource ? { analyticsSource } : undefined
+      }
       withBorder
       padding="sm"
       radius="md"

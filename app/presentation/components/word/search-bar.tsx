@@ -73,7 +73,9 @@ export function SearchBar({
 
   const goWord = (word: WordSummary) => {
     setOpen(false);
-    navigate(lp(`/words/${encodeURIComponent(word.lemma)}`));
+    navigate(lp(`/words/${encodeURIComponent(word.lemma)}`), {
+      state: { analyticsSource: 'search' },
+    });
   };
 
   const handleSearch = (e: React.FormEvent) => {
@@ -175,6 +177,7 @@ export function SearchBar({
                   key={word.id}
                   component={Link}
                   to={lp(`/words/${encodeURIComponent(word.lemma)}`)}
+                  state={{ analyticsSource: 'search' }}
                   onClick={() => setOpen(false)}
                   w="100%"
                   px="sm"

@@ -27,6 +27,11 @@ import { formatDateId } from '@/application/utils/formatters';
 import { displayImageUrl } from '@/presentation/utils/display-image-url';
 import type { TranslationHelpReply } from '@/domain/entities/translation-help.entity';
 import { useTranslation } from 'react-i18next';
+import { useEffect } from 'react';
+import {
+  AnalyticsEvents,
+  trackEvent,
+} from '@/infrastructure/analytics/analytics';
 
 const PLAY_STORE_URL =
   'https://play.google.com/store/apps/details?id=com.iamutaki.sambasku';
@@ -103,6 +108,14 @@ export default function BantuanTerjemahanDetailPage() {
   const replies = sortReplies(help.replies);
   const author =
     help.display_name?.trim() || help.username || 'Pengguna';
+
+  useEffect(() => {
+    trackEvent(AnalyticsEvents.translationHelpView, {
+      view: 'detail',
+      help_id: help.id,
+      reply_count: replies.length,
+    });
+  }, [help.id, replies.length]);
 
   return (
     <Container size="sm" py={44}>
