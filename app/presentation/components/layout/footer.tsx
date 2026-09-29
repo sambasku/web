@@ -13,7 +13,7 @@ export function Footer() {
   const links = [
     { to: lp('/words'), label: t('nav_words') },
     { to: lp('/kontribusi'), label: t('nav_contribute') },
-    { to: lp('/bantuan-terjemahan'), label: t('nav_ask') },
+    { to: lp('/ruang-diskusi'), label: t('nav_ask') },
     { to: lp('/faq'), label: t('nav_faq') },
     { to: lp('/api-publik'), label: t('nav_apiPublik') },
     { to: lp('/privacy-policy'), label: t('nav_privacy') },
@@ -50,7 +50,7 @@ export function Footer() {
             </Anchor>
           ))}
           <Anchor
-            href="https://github.com/sambasku"
+            href="https://github.com/sambasku#organisasi"
             target="_blank"
             rel="noopener noreferrer"
             size="xs"

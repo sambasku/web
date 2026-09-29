@@ -5,9 +5,9 @@ import {
   Box,
   Button,
   Group,
-  Loader,
   Modal,
   SimpleGrid,
+  Skeleton,
   Stack,
   Text,
   TextInput,
@@ -27,6 +27,8 @@ export interface MediaExplorerModalProps {
   open: boolean;
   onClose: () => void;
   onSelect: (item: ShareBackgroundItem) => void;
+  /** Query awal (mis. padanan + kategori untuk Bagikan kartu). */
+  initialQuery?: string;
 }
 
 function isAbortError(err: unknown): boolean {
@@ -36,6 +38,22 @@ function isAbortError(err: unknown): boolean {
       err !== null &&
       'name' in err &&
       (err as { name: string }).name === 'AbortError')
+  );
+}
+
+const PAGE_SIZE = 12;
+const SKELETON_COUNT = 6;
+
+function ExplorerGridSkeleton({ count = SKELETON_COUNT }: { count?: number }) {
+  return (
+    <SimpleGrid cols={{ base: 2, sm: 3 }} spacing="md" verticalSpacing="lg">
+      {Array.from({ length: count }, (_, i) => (
+        <Stack key={i} gap="sm">
+          <Skeleton radius={12} style={{ aspectRatio: '4 / 3', width: '100%' }} />
+          <Skeleton height={12} width="65%" radius="sm" />
+        </Stack>
+      ))}
+    </SimpleGrid>
   );
 }
 
@@ -53,6 +71,7 @@ export function MediaExplorerModal({
   open,
   onClose,
   onSelect,
+  initialQuery = '',
 }: MediaExplorerModalProps) {
   return (
     <Modal
@@ -61,9 +80,15 @@ export function MediaExplorerModal({
       title="Media Explorer"
       size="lg"
       centered
+      padding="lg"
+      radius="md"
     >
       {open ? (
-        <MediaExplorerSession onSelect={onSelect} onClose={onClose} />
+        <MediaExplorerSession
+          onSelect={onSelect}
+          onClose={onClose}
+          initialQuery={initialQuery}
+        />
       ) : null}
     </Modal>
   );
@@ -76,8 +101,6 @@ type LoadOptions = {
   append: boolean;
 };
 
-const PAGE_SIZE = 12;
-
 /**
  * State hidup satu sesi eksplorasi: di-mount hanya saat modal terbuka dan
  * di-unmount saat ditutup, sehingga `abortRef` di-effect cleanup membatalkan
@@ -86,13 +109,16 @@ const PAGE_SIZE = 12;
 function MediaExplorerSession({
   onSelect,
   onClose,
+  initialQuery = '',
 }: {
   onSelect: (item: ShareBackgroundItem) => void;
   onClose: () => void;
+  initialQuery?: string;
 }) {
+  const seeded = initialQuery.trim();
   const [provider, setProvider] = useState<StockPhotoProvider>('pixabay');
-  const [query, setQuery] = useState('');
-  const [activeQuery, setActiveQuery] = useState('');
+  const [query, setQuery] = useState(seeded);
+  const [activeQuery, setActiveQuery] = useState(seeded);
   const [page, setPage] = useState(1);
   const [items, setItems] = useState<ShareBackgroundItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -162,7 +188,7 @@ function MediaExplorerSession({
     abortRef.current = ac;
     const initial: LoadOptions = {
       page: 1,
-      query: '',
+      query: seeded,
       provider: 'pixabay',
       append: false,
     };
@@ -182,7 +208,7 @@ function MediaExplorerSession({
       // user sudah searching, `load()` sudah menggantinya di `abortRef`.
       abortRef.current?.abort();
     };
-  }, [applyError, applyResult, fetchPage]);
+  }, [applyError, applyResult, fetchPage, seeded]);
 
   const changeProvider = (id: StockPhotoProvider) => {
     setProvider(id);
@@ -205,14 +231,15 @@ function MediaExplorerSession({
   };
 
   return (
-    <Stack gap="sm">
-      <Text size="sm" c="dimmed">
+    <Stack gap="md">
+      <Text size="sm" c="dimmed" lh={1.5}>
         Pilih foto stock sebagai ilustrasi kata (URL eksternal, tanpa upload).
       </Text>
 
-      <Group gap="xs" align="flex-end" wrap="nowrap">
+      <Group gap="sm" align="flex-end" wrap="nowrap">
         <TextInput
           flex={1}
+          size="md"
           placeholder="Cari (kosong = populer)"
           value={query}
           onChange={(e) => setQuery(e.currentTarget.value)}
@@ -223,20 +250,21 @@ function MediaExplorerSession({
             }
           }}
         />
-        <Button leftSection={<Search size={16} />} onClick={onSearch}>
+        <Button size="md" leftSection={<Search size={16} />} onClick={onSearch}>
           Cari
         </Button>
       </Group>
 
-      <Group gap={6}>
+      <Group gap="sm">
         {STOCK_PHOTO_PROVIDERS.map((id) => (
           <Badge
             key={id}
             component="button"
             type="button"
+            size="lg"
             variant={provider === id ? 'filled' : 'light'}
             color={provider === id ? 'blue' : 'gray'}
-            style={{ cursor: 'pointer', border: 'none' }}
+            style={{ cursor: 'pointer', border: 'none', paddingInline: 14 }}
             onClick={() => changeProvider(id)}
           >
             {STOCK_PROVIDER_LABELS[id]}
@@ -256,19 +284,20 @@ function MediaExplorerSession({
       ) : null}
 
       {loading ? (
-        <Box py={40} style={{ textAlign: 'center' }}>
-          <Loader size="sm" />
-        </Box>
+        <ExplorerGridSkeleton />
       ) : items.length === 0 ? (
-        <Text size="sm" c="dimmed">
-          Tidak ada hasil.
-        </Text>
+        <Box py="xl" style={{ textAlign: 'center' }}>
+          <Text size="sm" c="dimmed">
+            Tidak ada hasil.
+          </Text>
+        </Box>
       ) : (
-        <>
+        <Stack gap="md">
           <SimpleGrid
-            cols={{ base: 2, xs: 3 }}
-            spacing="xs"
-            style={{ maxHeight: 420, overflowY: 'auto' }}
+            cols={{ base: 2, sm: 3 }}
+            spacing="md"
+            verticalSpacing="lg"
+            style={{ maxHeight: 460, overflowY: 'auto', paddingRight: 4 }}
           >
             {items.map((item) => (
               <UnstyledButton
@@ -279,26 +308,39 @@ function MediaExplorerSession({
                 }}
                 style={{
                   border: '1px solid var(--mantine-color-default-border)',
-                  borderRadius: 'var(--mantine-radius-md)',
+                  borderRadius: 12,
                   overflow: 'hidden',
                   background: 'var(--mantine-color-body)',
                   textAlign: 'left',
+                  display: 'block',
                 }}
               >
-                <img
-                  src={displayImageUrl(item.preview_url || item.url, {
-                    width: 320,
-                    height: 220,
-                  })}
-                  alt={item.photographer}
+                <Box
                   style={{
+                    position: 'relative',
                     width: '100%',
-                    height: 110,
-                    objectFit: 'cover',
-                    display: 'block',
+                    paddingBottom: '75%',
+                    background: 'var(--mantine-color-default-hover)',
                   }}
-                />
-                <Text size="xs" px={6} py={4} lineClamp={1}>
+                >
+                  <img
+                    src={displayImageUrl(item.preview_url || item.url, {
+                      width: 480,
+                      height: 360,
+                    })}
+                    alt={item.photographer}
+                    loading="lazy"
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      display: 'block',
+                    }}
+                  />
+                </Box>
+                <Text size="xs" px="sm" py="xs" c="dimmed" lineClamp={1}>
                   {item.photographer || STOCK_PROVIDER_LABELS[item.provider]}
                 </Text>
               </UnstyledButton>
@@ -306,7 +348,8 @@ function MediaExplorerSession({
           </SimpleGrid>
           {hasMore ? (
             <Button
-              variant="subtle"
+              variant="light"
+              fullWidth
               onClick={loadMore}
               loading={loadingMore}
               disabled={loadingMore}
@@ -314,7 +357,8 @@ function MediaExplorerSession({
               Muat lebih banyak
             </Button>
           ) : null}
-        </>
+          {loadingMore ? <ExplorerGridSkeleton count={3} /> : null}
+        </Stack>
       )}
     </Stack>
   );

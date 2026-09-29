@@ -43,6 +43,8 @@ export interface WordAudio {
   duration_ms: number | null;
   is_primary: boolean;
   mime_type: string;
+  /** false = Menunggu pengecekan. Default true bila field absen. */
+  is_verified?: boolean;
 }
 
 export interface WordExample {

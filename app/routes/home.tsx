@@ -54,9 +54,6 @@ const PLAY_STORE_URL =
 const WHATSAPP_GROUP_URL =
   'https://chat.whatsapp.com/Kw64lxFEGXfK5gw6T6GEoN?mode=gi_t';
 
-/** Lemma contoh di beranda (tautan internal ke entri kamus). */
-const HOME_EXAMPLE_LEMMAS = ['cawan', 'masok', 'pelam'] as const;
-
 export default function Home() {
   const { t } = useTranslation();
   const lp = useLocalePath();
@@ -83,51 +80,19 @@ export default function Home() {
           </Text>
 
           <SearchBar autoFocus />
+
+          <Button
+            component={Link}
+            to={lp('/kontribusi', '?from=home_hero')}
+            variant="light"
+            size="sm"
+            leftSection={<PlusCircle size={16} />}
+          >
+            {t('home_ctaButton')}
+          </Button>
         </Stack>
 
         <WordOfTheDaySection />
-
-        <Stack gap="sm">
-          <Title order={2} size="h4" fw={700}>
-            {t('home_aboutHeading')}
-          </Title>
-          <Text size="sm" c="dimmed">
-            {t('home_aboutBody')}
-          </Text>
-          <Title order={2} size="h5" fw={600} mt="xs">
-            {t('home_howHeading')}
-          </Title>
-          <Text size="sm" c="dimmed">
-            {t('home_howBody')}
-          </Text>
-          <Title order={2} size="h5" fw={600} mt="xs">
-            {t('home_examplesHeading')}
-          </Title>
-          <Text size="sm" c="dimmed">
-            {t('home_examplesLead')}{' '}
-            {HOME_EXAMPLE_LEMMAS.map((lemma, index) => (
-              <span key={lemma}>
-                {index > 0 ? ', ' : null}
-                <Anchor
-                  component={Link}
-                  to={lp(`/words/${encodeURIComponent(lemma)}`)}
-                  size="sm"
-                >
-                  {lemma}
-                </Anchor>
-              </span>
-            ))}
-            .
-          </Text>
-          <Group gap="md">
-            <Anchor component={Link} to={lp('/words')} size="sm" fw={500}>
-              {t('home_examplesMore')}
-            </Anchor>
-            <Anchor component={Link} to={lp('/faq')} size="sm" fw={500}>
-              {t('home_aboutFaqLink')}
-            </Anchor>
-          </Group>
-        </Stack>
 
         <Stack gap="sm">
           <Group justify="space-between">
@@ -177,7 +142,7 @@ export default function Home() {
                 </Group>
                 <Button
                   component={Link}
-                  to={lp('/kontribusi')}
+                  to={lp('/kontribusi', '?from=home_join')}
                   variant="light"
                   size="compact-sm"
                   leftSection={<PlusCircle size={16} />}
@@ -199,7 +164,7 @@ export default function Home() {
                       {t('home_askBody')}{' '}
                       <Anchor
                         component={Link}
-                        to={lp('/bantuan-terjemahan')}
+                        to={lp('/ruang-diskusi')}
                         size="xs"
                       >
                         {t('home_askFeedLink')}
@@ -285,14 +250,23 @@ export default function Home() {
               </Group>
             </Stack>
           </Card>
+        </Stack>
 
-          <Text size="xs" c="dimmed">
-            {t('home_ctaFaqPrefix')}{' '}
-            <Anchor component={Link} to={lp('/faq')}>
-              {t('home_ctaFaqLink')}
-            </Anchor>
-            {t('home_ctaFaqSuffix')}
+        <Stack gap="sm">
+          <Title order={2} size="h4" fw={700}>
+            {t('home_aboutHeading')}
+          </Title>
+          <Text size="sm" c="dimmed">
+            {t('home_aboutBody')}
           </Text>
+          <Group gap="md">
+            <Anchor component={Link} to={lp('/words')} size="sm" fw={500}>
+              {t('home_examplesMore')}
+            </Anchor>
+            <Anchor component={Link} to={lp('/faq')} size="sm" fw={500}>
+              {t('home_aboutFaqLink')}
+            </Anchor>
+          </Group>
         </Stack>
       </Stack>
     </Container>

@@ -23,10 +23,20 @@ export default [
   // Legacy tanpa locale → 301/302 ke /{defaultLocale}/...
   route('search', 'routes/legacy-redirect.tsx', { id: 'legacy-search' }),
   route('kontribusi', 'routes/legacy-redirect.tsx', { id: 'legacy-kontribusi' }),
-  route('bantuan-terjemahan', 'routes/legacy-redirect.tsx', {
+  route('kontribusi/massal', 'routes/legacy-redirect.tsx', {
+    id: 'legacy-kontribusi-massal',
+  }),
+  route('ruang-diskusi', 'routes/legacy-redirect.tsx', {
+    id: 'legacy-ruang-diskusi',
+  }),
+  route('ruang-diskusi/:id', 'routes/legacy-redirect.tsx', {
+    id: 'legacy-ruang-diskusi-id',
+  }),
+  // Path lama Bantuan Terjemahan → Ruang Diskusi
+  route('bantuan-terjemahan', 'routes/bantuan-terjemahan-redirect.tsx', {
     id: 'legacy-bantuan',
   }),
-  route('bantuan-terjemahan/:id', 'routes/legacy-redirect.tsx', {
+  route('bantuan-terjemahan/:id', 'routes/bantuan-terjemahan-redirect.tsx', {
     id: 'legacy-bantuan-id',
   }),
   route('faq', 'routes/legacy-redirect.tsx', { id: 'legacy-faq' }),
@@ -42,8 +52,15 @@ export default [
     index('routes/home.tsx'),
     route('search', 'routes/search.tsx'),
     route('kontribusi', 'routes/kontribusi.tsx'),
-    route('bantuan-terjemahan', 'routes/bantuan-terjemahan.tsx'),
-    route('bantuan-terjemahan/:id', 'routes/bantuan-terjemahan.$id.tsx'),
+    route('kontribusi/massal', 'routes/kontribusi.massal.tsx'),
+    route('ruang-diskusi', 'routes/ruang-diskusi.tsx'),
+    route('ruang-diskusi/:id', 'routes/ruang-diskusi.$id.tsx'),
+    route('bantuan-terjemahan', 'routes/bantuan-terjemahan-redirect.tsx', {
+      id: 'locale-legacy-bantuan',
+    }),
+    route('bantuan-terjemahan/:id', 'routes/bantuan-terjemahan-redirect.tsx', {
+      id: 'locale-legacy-bantuan-id',
+    }),
     route('faq', 'routes/faq.tsx'),
     route('api-publik', 'routes/api-publik.tsx'),
     route('privacy-policy', 'routes/privacy-policy.tsx'),

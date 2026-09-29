@@ -21,12 +21,14 @@ export const AnalyticsEvents = {
   contributeSubmit: 'contribute_submit',
   contributeSuccess: 'contribute_success',
   contributeFail: 'contribute_fail',
+  /** Klik CTA "kirim banyak kata" di halaman /kontribusi. */
+  contributeMassalCta: 'contribute_massal_cta',
   shareStart: 'share_start',
   shareComplete: 'share_complete',
   letterBrowse: 'letter_browse',
   themeChange: 'theme_change',
   localeChange: 'locale_change',
-  translationHelpView: 'translation_help_view',
+  discussionView: 'discussion_view',
 } as const;
 
 export type AnalyticsEventName =

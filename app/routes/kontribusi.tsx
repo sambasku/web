@@ -23,7 +23,7 @@ import {
   Title,
   Tooltip,
 } from '@mantine/core';
-import { BookOpenText, Check, Info, Plus, Send, Trash2 } from 'lucide-react';
+import { BookOpenText, Check, Info, ListPlus, Plus, Send, Trash2 } from 'lucide-react';
 import type { Route } from './+types/kontribusi';
 import { buildMetaTags } from '../application/utils/seo';
 import {
@@ -102,6 +102,8 @@ const emptyMakna: MaknaForm = {
   padanan: '',
   contoh: '',
 };
+
+type ContributeMode = 'sederhana' | 'lengkap';
 
 // Kode kelas kata KBBI lebih pendek dari DB (a vs adj, p vs part) -
 // alias + fallback nama label agar auto-fill tetap jalan.
@@ -512,8 +514,11 @@ export default function KontribusiPage() {
   }, []);
 
   const [lemma, setLemma] = useState(searchParams.get('q')?.trim() ?? '');
-  /** false = Sederhana (lemma + terjemahan). true = form makna lengkap. */
-  const [advanced, setAdvanced] = useState(false);
+  /** Nama orang opsional (tamu) → API contributor_name → guest_display_name */
+  const [contributorName, setContributorName] = useState('');
+  /** sederhana | lengkap */
+  const [mode, setMode] = useState<ContributeMode>('sederhana');
+  const advanced = mode === 'lengkap';
   const [standardPadanan, setStandardPadanan] = useState('');
   const [standardDefinition, setStandardDefinition] = useState('');
   const [standardWordClassId, setStandardWordClassId] =
@@ -527,12 +532,20 @@ export default function KontribusiPage() {
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [images, setImages] = useState<ContributionImageSlot[]>([]);
+  const [duplicateModal, setDuplicateModal] = useState<{
+    wordId: string;
+    meaningId: string;
+    lemma: string;
+    definition?: string;
+    translationText?: string;
+  } | null>(null);
+  const [duplicateVoting, setDuplicateVoting] = useState(false);
+  const [duplicateMessage, setDuplicateMessage] = useState<string | null>(null);
 
   const usageLabelsConflict = hasConflictingUsageLabels(usageLabels);
 
-  function switchMode(nextAdvanced: boolean) {
-    const turningOn = nextAdvanced && !advanced;
-    if (turningOn) {
+  function switchMode(next: ContributeMode) {
+    if (next === 'lengkap' && mode !== 'lengkap') {
       setMaknaList((list) => {
         const first = list[0] ?? {
           ...emptyMakna,
@@ -552,7 +565,9 @@ export default function KontribusiPage() {
         return list.length ? [seeded, ...list.slice(1)] : [seeded];
       });
     }
-    setAdvanced(nextAdvanced);
+    setMode(next);
+    setError(null);
+    setSuccess(null);
   }
 
   function toggleUsageLabel(code: UsageLabel) {
@@ -584,6 +599,7 @@ export default function KontribusiPage() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+
     if (hasConflictingUsageLabels(usageLabels)) {
       setError('Halus dan Kasar tidak bisa dipilih bersamaan.');
       return;
@@ -612,6 +628,7 @@ export default function KontribusiPage() {
     trackEvent(AnalyticsEvents.contributeSubmit, { guest: true });
     try {
       const word = lemma.trim();
+      const name = contributorName.trim();
       const def = standardDefinition.trim();
       const meanings = advanced
         ? maknaList.map((m, i) => ({
@@ -668,6 +685,7 @@ export default function KontribusiPage() {
           word_type: 'word',
           usage_labels: usageLabels,
           meanings,
+          ...(name ? { contributor_name: name } : {}),
           ...(safeImages.length > 0
             ? {
                 images: safeImages.map((img) => ({
@@ -684,6 +702,7 @@ export default function KontribusiPage() {
       trackEvent(AnalyticsEvents.contributeSuccess, { guest: true });
       setSuccess(word);
       setLemma('');
+      setContributorName('');
       setUsageLabels([]);
       setStandardPadanan('');
       setStandardDefinition('');
@@ -695,7 +714,31 @@ export default function KontribusiPage() {
         guest: true,
         error_code: err instanceof AppError ? err.code : 'UNKNOWN',
       });
-      if (err instanceof AppError && err.details?.length) {
+      if (
+        err instanceof AppError &&
+        err.code === 'DUPLICATE_MEANING' &&
+        err.data &&
+        typeof err.data.word_id === 'string' &&
+        typeof err.data.meaning_id === 'string'
+      ) {
+        setDuplicateModal({
+          wordId: err.data.word_id,
+          meaningId: err.data.meaning_id,
+          lemma:
+            typeof err.data.lemma === 'string' && err.data.lemma.trim()
+              ? err.data.lemma
+              : lemma.trim() || 'kata ini',
+          definition:
+            typeof err.data.definition === 'string'
+              ? err.data.definition
+              : undefined,
+          translationText:
+            typeof err.data.translation_text === 'string'
+              ? err.data.translation_text
+              : undefined,
+        });
+        setError(null);
+      } else if (err instanceof AppError && err.details?.length) {
         setError(err.details.map((d) => d.message).join('. '));
       } else {
         setError(
@@ -704,6 +747,41 @@ export default function KontribusiPage() {
       }
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  async function confirmDuplicateVote(value: 1 | -1) {
+    if (!duplicateModal) return;
+    setDuplicateVoting(true);
+    setError(null);
+    try {
+      const res = await apiClient<{ message: string }>(
+        '/contributions/duplicate-confirm',
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            word_id: duplicateModal.wordId,
+            meaning_id: duplicateModal.meaningId,
+            value,
+          }),
+        },
+      );
+      setDuplicateModal(null);
+      setSuccess(null);
+      setError(null);
+      setDuplicateMessage(res.data.message);
+    } catch (err) {
+      if (err instanceof AppError && err.statusCode === 401) {
+        setError(
+          'Masuk dulu untuk mendukung atau menolak makna yang sudah ada. Gunakan aplikasi SambasKu.',
+        );
+      } else {
+        setError(
+          err instanceof Error ? err.message : 'Gagal mencatat dukungan.',
+        );
+      }
+    } finally {
+      setDuplicateVoting(false);
     }
   }
 
@@ -717,6 +795,71 @@ export default function KontribusiPage() {
           Dikirim sebagai tamu. Kata belum tayang. Tim akan memeriksanya dulu.
           Terima kasih menjaga bahasa Sambas tetap hidup.
         </Text>
+
+        <Modal
+          opened={duplicateModal !== null}
+          onClose={() => setDuplicateModal(null)}
+          title="Kata ini sudah ditemukan"
+          centered
+        >
+          {duplicateModal && (
+            <Stack gap="md">
+              <Text size="sm">
+                Pilih dukunganmu agar tercatat di riwayat perubahan{' '}
+                <Text span fw={600}>
+                  {duplicateModal.lemma}
+                </Text>
+                .
+              </Text>
+              {(duplicateModal.definition || duplicateModal.translationText) && (
+                <Text size="sm" c="dimmed">
+                  {[duplicateModal.definition, duplicateModal.translationText]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </Text>
+              )}
+              <Text size="sm" c="dimmed">
+                Vote memerlukan akun. Tamu: buka aplikasi SambasKu, atau lihat
+                entri yang sudah ada.
+              </Text>
+              <Group grow>
+                <Button
+                  loading={duplicateVoting}
+                  onClick={() => void confirmDuplicateVote(1)}
+                >
+                  Dukung
+                </Button>
+                <Button
+                  variant="default"
+                  loading={duplicateVoting}
+                  onClick={() => void confirmDuplicateVote(-1)}
+                >
+                  Tidak dukung
+                </Button>
+              </Group>
+              <Button
+                variant="subtle"
+                component={Link}
+                to={lp(`/words/${encodeURIComponent(duplicateModal.lemma)}`)}
+                onClick={() => setDuplicateModal(null)}
+              >
+                Buka halaman kata
+              </Button>
+            </Stack>
+          )}
+        </Modal>
+
+        {duplicateMessage && (
+          <Alert
+            color="teal"
+            variant="light"
+            title="Tercatat di riwayat"
+            onClose={() => setDuplicateMessage(null)}
+            withCloseButton
+          >
+            {duplicateMessage}
+          </Alert>
+        )}
 
         {success && (
           <Paper withBorder radius="md" p="md">
@@ -763,8 +906,8 @@ export default function KontribusiPage() {
                 </Text>
                 <SegmentedControl
                   fullWidth
-                  value={advanced ? 'lengkap' : 'sederhana'}
-                  onChange={(v) => switchMode(v === 'lengkap')}
+                  value={mode}
+                  onChange={(v) => switchMode(v as ContributeMode)}
                   data={[
                     { label: 'Sederhana', value: 'sederhana' },
                     { label: 'Lengkap', value: 'lengkap' },
@@ -778,6 +921,15 @@ export default function KontribusiPage() {
                 required
                 value={lemma}
                 onChange={(e) => setLemma(e.currentTarget.value)}
+              />
+
+              <TextInput
+                label="Nama (opsional)"
+                placeholder="Nama untuk atribusi"
+                description="Jika kosong, tercatat sebagai Anonim"
+                value={contributorName}
+                onChange={(e) => setContributorName(e.currentTarget.value)}
+                maxLength={80}
               />
 
               {exact && (
@@ -961,6 +1113,37 @@ export default function KontribusiPage() {
             </Stack>
           </form>
         </Card>
+
+        <Paper withBorder radius="md" p="md">
+          <Stack gap="sm">
+            <Group gap="sm" wrap="nowrap" align="flex-start">
+              <ThemeIcon variant="light" color="teal" size="lg" radius="md">
+                <ListPlus size={18} />
+              </ThemeIcon>
+              <div>
+                <Text fw={600}>Punya banyak kata?</Text>
+                <Text size="sm" c="dimmed">
+                  Kirim puluhan pasangan Sambas-Indonesia sekaligus. Langsung
+                  tayang di SambasKu.
+                </Text>
+              </div>
+            </Group>
+            <Button
+              component={Link}
+              to={lp('/kontribusi/massal', '?from=cta')}
+              variant="light"
+              color="teal"
+              leftSection={<ListPlus size={16} />}
+              onClick={() =>
+                trackEvent(AnalyticsEvents.contributeMassalCta, {
+                  from: 'kontribusi',
+                })
+              }
+            >
+              Buka input massal
+            </Button>
+          </Stack>
+        </Paper>
       </Stack>
     </Container>
   );

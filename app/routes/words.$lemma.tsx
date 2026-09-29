@@ -22,7 +22,6 @@ import {
   ArrowLeft,
   CheckCircle2,
   Share2,
-  Check,
   BookOpen,
   Layers,
   Sparkles,
@@ -40,6 +39,7 @@ import { UsageLabelsBadges } from '@/presentation/components/word/usage-labels-b
 import { WordImagesGallery } from '@/presentation/components/word/word-images-gallery';
 import '@/presentation/styles/fonts-italic.css';
 import { WordAudioPlayer } from '@/presentation/components/word/pronunciation-player';
+import { WordShareSheet } from '@/presentation/components/share/share-sheet';
 import { formatWordClass } from '@/application/utils/formatters';
 import {
   DEFAULT_LOCALE,
@@ -128,7 +128,7 @@ export default function WordDetailPage() {
   const { word } = useLoaderData<typeof loader>();
   const navigation = useNavigation();
   const location = useLocation();
-  const [copied, setCopied] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
   const { t } = useTranslation();
   const lp = useLocalePath();
   const locale = useLocale();
@@ -176,37 +176,6 @@ export default function WordDetailPage() {
 
   const jsonLd = buildWordJsonLd(word, locale);
 
-  const handleShare = async () => {
-    trackEvent(AnalyticsEvents.shareStart, { word_id: word.id });
-    // Web Share API (mobile): share sheet native. Fallback clipboard.
-    if (typeof navigator !== 'undefined' && navigator.share) {
-      try {
-        const { title: shareTitle } = buildWordSeoCopy(word, locale);
-        await navigator.share({
-          title: word.lemma,
-          text: shareTitle,
-          url: window.location.href,
-        });
-        trackEvent(AnalyticsEvents.shareComplete, {
-          word_id: word.id,
-          method: 'native',
-        });
-        return;
-      } catch {
-        // dibatalkan user atau gagal: lanjut fallback clipboard
-      }
-    }
-    if (typeof navigator !== 'undefined' && navigator.clipboard) {
-      await navigator.clipboard.writeText(window.location.href);
-      setCopied(true);
-      trackEvent(AnalyticsEvents.shareComplete, {
-        word_id: word.id,
-        method: 'clipboard',
-      });
-      setTimeout(() => setCopied(false), 2000);
-    }
-  };
-
   return (
     <Container size="sm" py="xl">
       {/* Inject Schema.org JSON-LD untuk search engine - HANYA produksi
@@ -220,6 +189,13 @@ export default function WordDetailPage() {
           }}
         />
       )}
+
+      <WordShareSheet
+        opened={shareOpen}
+        onClose={() => setShareOpen(false)}
+        word={word}
+        locale={locale}
+      />
 
       <Stack gap="lg">
         {/* Breadcrumb SSR - selaras BreadcrumbList JSON-LD */}
@@ -256,11 +232,10 @@ export default function WordDetailPage() {
           <Button
             variant="light"
             size="compact-sm"
-            onClick={handleShare}
-            leftSection={copied ? <Check size={15} /> : <Share2 size={15} />}
-            color={copied ? 'teal' : undefined}
+            onClick={() => setShareOpen(true)}
+            leftSection={<Share2 size={15} />}
           >
-            {copied ? t('word_shareCopied') : t('word_share')}
+            {t('word_share')}
           </Button>
         </Group>
 

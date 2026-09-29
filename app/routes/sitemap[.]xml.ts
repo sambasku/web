@@ -79,7 +79,7 @@ export async function loader() {
           changefreq: 'weekly',
         }) satisfies SitemapItem,
     ),
-    { bare: '/bantuan-terjemahan', priority: '0.7', changefreq: 'daily' },
+    { bare: '/ruang-diskusi', priority: '0.7', changefreq: 'daily' },
     { bare: '/faq', priority: '0.8', changefreq: 'monthly' },
     { bare: '/api-publik', priority: '0.6', changefreq: 'monthly' },
     { bare: '/privacy-policy', priority: '0.5', changefreq: 'yearly' },

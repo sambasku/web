@@ -13,8 +13,8 @@ import {
   Title,
 } from '@mantine/core';
 import { ArrowLeft, Languages, Pin, Smartphone } from 'lucide-react';
-import type { Route } from './+types/bantuan-terjemahan.$id';
-import { getTranslationHelpDetail } from '@/application/use-cases/translation-help.use-case';
+import type { Route } from './+types/ruang-diskusi.$id';
+import { getDiscussionDetail } from '@/application/use-cases/discussion.use-case';
 import { buildMetaTags } from '@/application/utils/seo';
 import {
   DEFAULT_LOCALE,
@@ -25,13 +25,14 @@ import { useLocalePath } from '@/application/i18n/use-locale';
 
 import { formatDateId } from '@/application/utils/formatters';
 import { displayImageUrl } from '@/presentation/utils/display-image-url';
-import type { TranslationHelpReply } from '@/domain/entities/translation-help.entity';
+import type { DiscussionReply } from '@/domain/entities/discussion.entity';
 import { useTranslation } from 'react-i18next';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
   AnalyticsEvents,
   trackEvent,
 } from '@/infrastructure/analytics/analytics';
+import { hasViolenceWarning } from '@/domain/image-content-warnings';
 
 const PLAY_STORE_URL =
   'https://play.google.com/store/apps/details?id=com.iamutaki.sambasku';
@@ -40,23 +41,26 @@ export function meta({ data, params }: Route.MetaArgs) {
   const locale = isAppLocale(params.locale) ? params.locale : DEFAULT_LOCALE;
   if (!data?.help) {
     return buildMetaTags({
-      title: 'Tanya Terjemahan Tidak Ditemukan',
-      description: 'Pertanyaan terjemahan tidak ditemukan atau belum tayang.',
-      path: localePath(locale, '/bantuan-terjemahan'),
+      title: 'Ruang Diskusi Tidak Ditemukan',
+      description: 'Baca thread Ruang Diskusi bahasa Sambas. Buka atau balas lewat aplikasi SambasKu.',
+      path: localePath(locale, '/ruang-diskusi'),
     locale,
     });
   }
 
   const excerpt =
     data.help.body?.trim().slice(0, 140) ||
-    'Pertanyaan terjemahan bahasa Sambas.';
-  const rawImage = data.help.images[0]?.public_url;
+    'Thread Ruang Diskusi bahasa Sambas.';
+  const safeImage = data.help.images.find(
+    (img) => !hasViolenceWarning(img.content_warnings),
+  );
+  const rawImage = safeImage?.public_url;
   const ogImage = displayImageUrl(rawImage, { width: 1200 });
 
   return buildMetaTags({
-    title: 'Tanya Terjemahan',
+    title: 'Ruang Diskusi',
     description: excerpt,
-    path: localePath(locale, `/bantuan-terjemahan/${encodeURIComponent(data.help.id)}`),
+    path: localePath(locale, `/ruang-diskusi/${encodeURIComponent(data.help.id)}`),
     image: ogImage,
     type: 'article',
     locale,
@@ -72,15 +76,15 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   }
 
   try {
-    const help = await getTranslationHelpDetail(id, request.signal);
+    const help = await getDiscussionDetail(id, request.signal);
     return { help };
   } catch (error) {
     const status = (error as { statusCode?: number }).statusCode ?? 404;
-    throw new Response('Tanya terjemahan tidak ditemukan', { status });
+    throw new Response('Ruang diskusi tidak ditemukan', { status });
   }
 }
 
-function replyBodyLabel(reply: TranslationHelpReply): string {
+function replyBodyLabel(reply: DiscussionReply): string {
   if (reply.status === 'taken_down') {
     return 'Balasan ini telah diturunkan oleh moderasi.';
   }
@@ -90,7 +94,7 @@ function replyBodyLabel(reply: TranslationHelpReply): string {
   return reply.body?.trim() || '';
 }
 
-function sortReplies(replies: TranslationHelpReply[]): TranslationHelpReply[] {
+function sortReplies(replies: DiscussionReply[]): DiscussionReply[] {
   return [...replies].sort((a, b) => {
     if (a.is_pinned !== b.is_pinned) return a.is_pinned ? -1 : 1;
     const netA = (a.upvotes ?? 0) - (a.downvotes ?? 0);
@@ -100,9 +104,10 @@ function sortReplies(replies: TranslationHelpReply[]): TranslationHelpReply[] {
   });
 }
 
-export default function BantuanTerjemahanDetailPage() {
+export default function RuangDiskusiDetailPage() {
   const lp = useLocalePath();
   const { t } = useTranslation();
+  const [violenceRevealed, setViolenceRevealed] = useState(false);
 
   const { help } = useLoaderData<typeof loader>();
   const replies = sortReplies(help.replies);
@@ -110,9 +115,9 @@ export default function BantuanTerjemahanDetailPage() {
     help.display_name?.trim() || help.username || 'Pengguna';
 
   useEffect(() => {
-    trackEvent(AnalyticsEvents.translationHelpView, {
+    trackEvent(AnalyticsEvents.discussionView, {
       view: 'detail',
-      help_id: help.id,
+      discussion_id: help.id,
       reply_count: replies.length,
     });
   }, [help.id, replies.length]);
@@ -127,14 +132,14 @@ export default function BantuanTerjemahanDetailPage() {
           <Text size="xs" c="dimmed">
             /
           </Text>
-          <Anchor component={Link} to={lp('/bantuan-terjemahan')} size="xs" c="dimmed">
-            Tanya Terjemahan
+          <Anchor component={Link} to={lp('/ruang-diskusi')} size="xs" c="dimmed">
+            Ruang Diskusi
           </Anchor>
         </Group>
 
         <Button
           component={Link}
-          to={lp('/bantuan-terjemahan')}
+          to={lp('/ruang-diskusi')}
           variant="subtle"
           size="compact-sm"
           leftSection={<ArrowLeft size={15} />}
@@ -147,7 +152,7 @@ export default function BantuanTerjemahanDetailPage() {
           <Group gap="xs">
             <Languages size={20} />
             <Title order={1} fw={800} size="h2">
-              Tanya Terjemahan
+              Ruang Diskusi
             </Title>
           </Group>
 
@@ -162,15 +167,68 @@ export default function BantuanTerjemahanDetailPage() {
             </Text>
           ) : null}
 
+          {help.link_url?.trim() ? (
+            <Anchor
+              href={help.link_url.trim()}
+              target="_blank"
+              rel="noopener noreferrer"
+              size="sm"
+            >
+              {help.link_url.trim()}
+            </Anchor>
+          ) : null}
+
           {help.images.length > 0 ? (
             <SimpleGrid cols={{ base: 1, xs: 2 }} spacing="sm">
               {help.images.map((img) => {
                 const src = displayImageUrl(img.public_url, { width: 800 });
+                const violent = hasViolenceWarning(img.content_warnings);
+                if (violent && !violenceRevealed) {
+                  return (
+                    <Button
+                      key={img.public_url}
+                      variant="default"
+                      h={200}
+                      onClick={() => setViolenceRevealed(true)}
+                      styles={{
+                        root: {
+                          position: 'relative',
+                          overflow: 'hidden',
+                          padding: 0,
+                        },
+                      }}
+                    >
+                      <Image
+                        src={src}
+                        alt=""
+                        h={200}
+                        w="100%"
+                        fit="cover"
+                        style={{ filter: 'blur(24px)', transform: 'scale(1.08)' }}
+                      />
+                      <Text
+                        size="sm"
+                        fw={600}
+                        c="white"
+                        style={{
+                          position: 'absolute',
+                          inset: 0,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          background: 'rgba(0,0,0,0.45)',
+                        }}
+                      >
+                        Konten kekerasan · ketuk untuk lihat
+                      </Text>
+                    </Button>
+                  );
+                }
                 return (
                   <Image
                     key={img.public_url}
                     src={src}
-                    alt="Lampiran tanya terjemahan"
+                    alt="Lampiran ruang diskusi"
                     radius="md"
                     fit="cover"
                     mah={320}
