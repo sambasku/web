@@ -53,9 +53,10 @@ export function buildCsp({
 }: SecurityHeaderConfig): string {
   return [
     "default-src 'self'",
-    // GA4 gtag: script dari googletagmanager; beacon ke google-analytics /
-    // analytics.google.com. Cloudflare Insights tetap untuk Web Analytics.
-    `script-src 'self' 'unsafe-inline'${isProd ? '' : " 'unsafe-eval'"} https://static.cloudflareinsights.com https://www.googletagmanager.com`,
+    // GA4 gtag: script dari googletagmanager; beacon ke subdomain regional
+    // (mis. region1.google-analytics.com), jadi wajib wildcard sesuai panduan
+    // CSP Google. Cloudflare Insights tetap untuk Web Analytics.
+    `script-src 'self' 'unsafe-inline'${isProd ? '' : " 'unsafe-eval'"} https://static.cloudflareinsights.com https://*.googletagmanager.com`,
     "style-src 'self' 'unsafe-inline'",
     "font-src 'self' data:",
     // Allowlist host gambar aktual (pentest W-09): jsDelivr = media repo
@@ -63,9 +64,9 @@ export function buildCsp({
     // Foto stock Media Explorer (flickr/pixabay/openverse) juga lewat wsrv.nl,
     // jadi CSP ini TIDAK perlu host baru - dan tidak perlu dilonggarkan
     // (pentest BH-02). GA4 kadang memakai pixel collect di img-src.
-    "img-src 'self' data: blob: https://ik.imagekit.io https://cdn.jsdelivr.net https://wsrv.nl https://www.google-analytics.com https://www.googletagmanager.com",
+    "img-src 'self' data: blob: https://ik.imagekit.io https://cdn.jsdelivr.net https://wsrv.nl https://*.google-analytics.com https://*.googletagmanager.com",
     "media-src 'self' blob: https://cdn.jsdelivr.net",
-    `connect-src 'self' ${apiConnectOrigins.join(' ')} https://cloudflareinsights.com https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com`,
+    `connect-src 'self' ${apiConnectOrigins.join(' ')} https://cloudflareinsights.com https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com`,
     "frame-ancestors 'none'",
   ].join('; ');
 }

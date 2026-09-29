@@ -1,4 +1,5 @@
 import { env } from '@/infrastructure/config/env';
+import { createGtag } from './gtag-stub';
 
 declare global {
   interface Window {
@@ -75,9 +76,7 @@ export function ensureGtagLoaded(): void {
   const id = measurementId();
   window.dataLayer = window.dataLayer ?? [];
   if (typeof window.gtag !== 'function') {
-    window.gtag = function gtag(...args: unknown[]) {
-      window.dataLayer?.push(args);
-    };
+    window.gtag = createGtag(window.dataLayer);
     window.gtag('js', new Date());
   }
 
