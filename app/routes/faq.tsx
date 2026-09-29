@@ -86,6 +86,14 @@ export default function FaqPage() {
           <Anchor component={Link} to={lp('/')}>
             {t('faq_footerHome')}
           </Anchor>
+          {' · '}
+          <Anchor
+            href="https://github.com/sambasku"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {t('faq_footerOrganization')}
+          </Anchor>
         </Text>
       </Stack>
     </Container>

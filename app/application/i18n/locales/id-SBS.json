@@ -124,6 +124,7 @@
   "faq_footerWords": "Bukak daftar kate A-Z",
   "faq_footerContribute": "Daftarkan kate baru",
   "faq_footerHome": "Balik ke Kamus Sambas",
+  "faq_footerOrganization": "Organisasi di GitHub",
   "faq_jsonLdName": "FAQ Kamus Sambas",
   "faq_items": [
     {
@@ -164,7 +165,7 @@
     },
     {
       "question": "Apeke akses pencarea'an bebayar ? Dimane kode sumbernye ",
-      "answer": "Situs dan aplikasiny iye ditujukan untok akses publik daan pakai barai. Kode sumber proyekny tesedie di GitHub (github.com/sambasku) biar transparan dan dapat dikambangkan besame komunitas."
+      "answer": "Pencarea'an di situs dan aplikasinye ditujukan untok akses publik daan pakai barai. SambasKu ye organisasi terbuka di GitHub (github.com/sambasku): identitas, care ikut serta, sponsor, dan kode sumbernye ade di sinin biar kerajaan tatap transparan dan bise dikambangkan besame komunitas."
     },
     {
       "question": "Ade ke aplikasi hapenye ?",

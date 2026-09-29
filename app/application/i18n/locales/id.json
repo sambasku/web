@@ -28,7 +28,7 @@
   "nav_apiPublik": "API publik",
   "nav_privacy": "Privasi",
   "nav_contribute": "Daftarkan kata",
-  "nav_github": "GitHub",
+  "nav_github": "Organisasi di GitHub",
   "nav_rss": "RSS",
   "nav_language": "Bahasa",
   "nav_languageSwitcher": "Pilih bahasa antarmuka",
@@ -124,6 +124,7 @@
   "faq_footerWords": "Buka daftar kata A-Z",
   "faq_footerContribute": "Daftarkan kata baru",
   "faq_footerHome": "Kembali ke Kamus Sambas",
+  "faq_footerOrganization": "Organisasi di GitHub",
   "faq_jsonLdName": "FAQ Kamus Sambas",
   "faq_items": [
     {
@@ -164,7 +165,7 @@
     },
     {
       "question": "Apakah akses pencarian berbayar? Di mana kode sumbernya?",
-      "answer": "Situs dan aplikasi ditujukan untuk akses publik tanpa biaya pencarian. Kode sumber proyek tersedia di GitHub (github.com/sambasku) agar transparan dan dapat dikembangkan bersama komunitas."
+      "answer": "Pencarian di situs dan aplikasi ditujukan untuk akses publik tanpa biaya. SambasKu adalah organisasi terbuka di GitHub (github.com/sambasku): identitas, cara ikut serta, sponsor, dan kode sumber ada di sana supaya pekerjaan tetap transparan dan bisa dikembangkan bersama komunitas."
     },
     {
       "question": "Ada aplikasi mobile-nya?",

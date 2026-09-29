@@ -50,7 +50,7 @@ export function Footer() {
             </Anchor>
           ))}
           <Anchor
-            href="https://github.com/sambasku"
+            href="https://github.com/sambasku#organisasi"
             target="_blank"
             rel="noopener noreferrer"
             size="xs"

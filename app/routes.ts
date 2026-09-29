@@ -23,6 +23,9 @@ export default [
   // Legacy tanpa locale → 301/302 ke /{defaultLocale}/...
   route('search', 'routes/legacy-redirect.tsx', { id: 'legacy-search' }),
   route('kontribusi', 'routes/legacy-redirect.tsx', { id: 'legacy-kontribusi' }),
+  route('kontribusi/massal', 'routes/legacy-redirect.tsx', {
+    id: 'legacy-kontribusi-massal',
+  }),
   route('ruang-diskusi', 'routes/legacy-redirect.tsx', {
     id: 'legacy-ruang-diskusi',
   }),
@@ -49,6 +52,7 @@ export default [
     index('routes/home.tsx'),
     route('search', 'routes/search.tsx'),
     route('kontribusi', 'routes/kontribusi.tsx'),
+    route('kontribusi/massal', 'routes/kontribusi.massal.tsx'),
     route('ruang-diskusi', 'routes/ruang-diskusi.tsx'),
     route('ruang-diskusi/:id', 'routes/ruang-diskusi.$id.tsx'),
     route('bantuan-terjemahan', 'routes/bantuan-terjemahan-redirect.tsx', {

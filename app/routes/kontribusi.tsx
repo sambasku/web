@@ -16,7 +16,6 @@ import {
   Paper,
   Select,
   Stack,
-  Table,
   Text,
   Textarea,
   TextInput,
@@ -24,7 +23,7 @@ import {
   Title,
   Tooltip,
 } from '@mantine/core';
-import { BookOpenText, Check, Info, Plus, Send, Trash2 } from 'lucide-react';
+import { BookOpenText, Check, Info, ListPlus, Plus, Send, Trash2 } from 'lucide-react';
 import type { Route } from './+types/kontribusi';
 import { buildMetaTags } from '../application/utils/seo';
 import {
@@ -104,23 +103,7 @@ const emptyMakna: MaknaForm = {
   contoh: '',
 };
 
-type ContributeMode = 'sederhana' | 'lengkap' | 'massal';
-
-type MassRow = {
-  id: string;
-  sambas: string;
-  indonesia: string;
-};
-
-function blankMassRows(count: number): MassRow[] {
-  return Array.from({ length: count }, (_, i) => ({
-    id: `m-${Date.now()}-${i}`,
-    sambas: '',
-    indonesia: '',
-  }));
-}
-
-const BATCH_MAX_ROWS = 50;
+type ContributeMode = 'sederhana' | 'lengkap';
 
 // Kode kelas kata KBBI lebih pendek dari DB (a vs adj, p vs part) -
 // alias + fallback nama label agar auto-fill tetap jalan.
@@ -531,7 +514,7 @@ export default function KontribusiPage() {
   }, []);
 
   const [lemma, setLemma] = useState(searchParams.get('q')?.trim() ?? '');
-  /** sederhana | lengkap | massal */
+  /** sederhana | lengkap */
   const [mode, setMode] = useState<ContributeMode>('sederhana');
   const advanced = mode === 'lengkap';
   const [standardPadanan, setStandardPadanan] = useState('');
@@ -543,9 +526,6 @@ export default function KontribusiPage() {
   const [maknaList, setMaknaList] = useState<MaknaForm[]>([
     { ...emptyMakna, wordClassId: umumWordClassId },
   ]);
-  const [massRows, setMassRows] = useState<MassRow[]>(() => blankMassRows(5));
-  const [contributorName, setContributorName] = useState('');
-  const [batchProgress, setBatchProgress] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -586,7 +566,6 @@ export default function KontribusiPage() {
     setMode(next);
     setError(null);
     setSuccess(null);
-    setBatchProgress(null);
   }
 
   function toggleUsageLabel(code: UsageLabel) {
@@ -615,93 +594,9 @@ export default function KontribusiPage() {
     label: wc.alias ? `${wc.name} (${wc.alias})` : wc.name,
   }));
 
-  async function onSubmitMassal() {
-    const filled = massRows
-      .map((row) => ({
-        sambas: row.sambas.trim(),
-        indonesia: row.indonesia.trim(),
-      }))
-      .filter((row) => row.sambas.length > 0 || row.indonesia.length > 0);
-
-    if (filled.length === 0) {
-      setError('Isi minimal satu baris (Sambas + Indonesia).');
-      return;
-    }
-
-    const incomplete = filled.find((row) => !row.sambas || !row.indonesia);
-    if (incomplete) {
-      setError('Setiap baris yang diisi harus punya Kata Sambas dan Padanan Indonesia.');
-      return;
-    }
-
-    if (filled.length > BATCH_MAX_ROWS) {
-      setError(`Maksimal ${BATCH_MAX_ROWS} kata per kiriman.`);
-      return;
-    }
-
-    setSubmitting(true);
-    setSuccess(null);
-    setBatchProgress(`Mengirim ${filled.length} kata…`);
-    trackEvent(AnalyticsEvents.contributeSubmit, { guest: true, mode: 'massal' });
-    try {
-      const name = contributorName.trim();
-      const res = await apiClient<{
-        session_id: string;
-        total: number;
-        created_count: number;
-        duplicates_count: number;
-        meanings_added_count: number;
-        invalid_count: number;
-      }>('/contributions/words/batch', {
-        method: 'POST',
-        body: JSON.stringify({
-          ...(name ? { contributor_name: name } : {}),
-          rows: filled,
-        }),
-      });
-      const data = res.data;
-      trackEvent(AnalyticsEvents.contributeSuccess, {
-        guest: true,
-        mode: 'massal',
-        created: data.created_count,
-      });
-      setSuccess(
-        `${data.created_count} kata baru tayang` +
-          (data.meanings_added_count
-            ? `, ${data.meanings_added_count} makna ditambah`
-            : '') +
-          (data.duplicates_count ? `, ${data.duplicates_count} duplikat dilewati` : '') +
-          (data.invalid_count ? `, ${data.invalid_count} tidak valid` : '') +
-          '.',
-      );
-      setBatchProgress(null);
-      setMassRows(blankMassRows(5));
-    } catch (err) {
-      trackEvent(AnalyticsEvents.contributeFail, {
-        guest: true,
-        mode: 'massal',
-        error_code: err instanceof AppError ? err.code : 'UNKNOWN',
-      });
-      setBatchProgress(null);
-      setError(
-        err instanceof AppError
-          ? err.message
-          : 'Gagal mengirim batch. Coba lagi nanti.',
-      );
-    } finally {
-      setSubmitting(false);
-    }
-  }
-
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    setBatchProgress(null);
-
-    if (mode === 'massal') {
-      await onSubmitMassal();
-      return;
-    }
 
     if (hasConflictingUsageLabels(usageLabels)) {
       setError('Halus dan Kasar tidak bisa dipilih bersamaan.');
@@ -1011,138 +906,10 @@ export default function KontribusiPage() {
                   data={[
                     { label: 'Sederhana', value: 'sederhana' },
                     { label: 'Lengkap', value: 'lengkap' },
-                    { label: 'Massal', value: 'massal' },
                   ]}
                 />
               </Stack>
 
-              {mode === 'massal' ? (
-                <Stack gap="md">
-                  <Alert color="blue" variant="light" title="Langsung tayang">
-                    Kata yang dikirim langsung masuk kamus. Tim bisa menarik
-                    seluruh batch dari riwayat impor bila perlu. Kosongkan nama
-                    jika ingin tercatat sebagai Anonim.
-                  </Alert>
-                  <TextInput
-                    label="Nama (opsional)"
-                    placeholder="Nama untuk atribusi"
-                    description="Jika kosong, tercatat sebagai Anonim"
-                    value={contributorName}
-                    onChange={(e) => setContributorName(e.currentTarget.value)}
-                    maxLength={80}
-                  />
-                  <Table.ScrollContainer minWidth={480}>
-                    <Table striped withTableBorder withColumnBorders>
-                      <Table.Thead>
-                        <Table.Tr>
-                          <Table.Th style={{ width: 48 }}>No</Table.Th>
-                          <Table.Th>Sambas</Table.Th>
-                          <Table.Th>Indonesia</Table.Th>
-                          <Table.Th style={{ width: 56 }}> </Table.Th>
-                        </Table.Tr>
-                      </Table.Thead>
-                      <Table.Tbody>
-                        {massRows.map((row, index) => (
-                          <Table.Tr key={row.id}>
-                            <Table.Td>
-                              <Text size="sm" c="dimmed">
-                                {index + 1}
-                              </Text>
-                            </Table.Td>
-                            <Table.Td>
-                              <TextInput
-                                placeholder="Kata Sambas"
-                                value={row.sambas}
-                                onChange={(e) => {
-                                  const value = e.currentTarget.value;
-                                  setMassRows((rows) =>
-                                    rows.map((r) =>
-                                      r.id === row.id
-                                        ? { ...r, sambas: value }
-                                        : r,
-                                    ),
-                                  );
-                                }}
-                              />
-                            </Table.Td>
-                            <Table.Td>
-                              <TextInput
-                                placeholder="Padanan Indonesia"
-                                value={row.indonesia}
-                                onChange={(e) => {
-                                  const value = e.currentTarget.value;
-                                  setMassRows((rows) =>
-                                    rows.map((r) =>
-                                      r.id === row.id
-                                        ? { ...r, indonesia: value }
-                                        : r,
-                                    ),
-                                  );
-                                }}
-                              />
-                            </Table.Td>
-                            <Table.Td>
-                              <ActionIcon
-                                variant="subtle"
-                                color="red"
-                                aria-label="Hapus baris"
-                                disabled={massRows.length <= 1}
-                                onClick={() =>
-                                  setMassRows((rows) =>
-                                    rows.length <= 1
-                                      ? rows
-                                      : rows.filter((r) => r.id !== row.id),
-                                  )
-                                }
-                              >
-                                <Trash2 size={16} />
-                              </ActionIcon>
-                            </Table.Td>
-                          </Table.Tr>
-                        ))}
-                      </Table.Tbody>
-                    </Table>
-                  </Table.ScrollContainer>
-                  <Group justify="space-between">
-                    <Button
-                      variant="light"
-                      color="gray"
-                      leftSection={<Plus size={16} />}
-                      disabled={massRows.length >= BATCH_MAX_ROWS}
-                      onClick={() =>
-                        setMassRows((rows) => [
-                          ...rows,
-                          {
-                            id: `m-${Date.now()}-${rows.length}`,
-                            sambas: '',
-                            indonesia: '',
-                          },
-                        ])
-                      }
-                    >
-                      Tambah baris
-                    </Button>
-                    <Text size="xs" c="dimmed">
-                      Maks. {BATCH_MAX_ROWS} baris
-                    </Text>
-                  </Group>
-                  {batchProgress && (
-                    <Text size="sm" c="dimmed">
-                      {batchProgress}
-                    </Text>
-                  )}
-                  <Group justify="flex-end">
-                    <Button
-                      type="submit"
-                      loading={submitting}
-                      leftSection={<Send size={16} />}
-                    >
-                      Kirim batch
-                    </Button>
-                  </Group>
-                </Stack>
-              ) : (
-                <>
               <TextInput
                 label="Kata / ungkapan Sambas"
                 placeholder="Isi kata, peribahasa, atau ungkapan"
@@ -1329,11 +1096,40 @@ export default function KontribusiPage() {
                   Kirim Kontribusi
                 </Button>
               </Group>
-                </>
-              )}
             </Stack>
           </form>
         </Card>
+
+        <Paper withBorder radius="md" p="md">
+          <Stack gap="sm">
+            <Group gap="sm" wrap="nowrap" align="flex-start">
+              <ThemeIcon variant="light" color="teal" size="lg" radius="md">
+                <ListPlus size={18} />
+              </ThemeIcon>
+              <div>
+                <Text fw={600}>Punya banyak kata?</Text>
+                <Text size="sm" c="dimmed">
+                  Kirim puluhan pasangan Sambas-Indonesia sekaligus. Langsung
+                  tayang; tim bisa menarik batch bila perlu.
+                </Text>
+              </div>
+            </Group>
+            <Button
+              component={Link}
+              to={lp('/kontribusi/massal', '?from=cta')}
+              variant="light"
+              color="teal"
+              leftSection={<ListPlus size={16} />}
+              onClick={() =>
+                trackEvent(AnalyticsEvents.contributeMassalCta, {
+                  from: 'kontribusi',
+                })
+              }
+            >
+              Buka input massal
+            </Button>
+          </Stack>
+        </Paper>
       </Stack>
     </Container>
   );
