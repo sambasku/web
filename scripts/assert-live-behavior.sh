@@ -7,6 +7,12 @@
 # `x-cache: miss`, tapi tidak ada assertion yang gagal. Skrip ini
 # menguji hasilnya: apakah request kedua benar-benar `hit`.
 #
+# Cache API Cloudflare (caches.default) hanya ada di colo yang menulisnya.
+# Dua proses curl terpisah membuka dua TCP, dan anycast bisa menaruhnya di
+# colo berbeda: request kedua `miss` padahal entry di colo pertama sudah
+# tertulis. Pasangan miss-lalu-hit memakai satu koneksi HTTP/1.1 (keep-alive)
+# supaya keduanya mendarat di colo yang sama.
+#
 # Semua probe hanya GET/HEAD ke halaman publik yang sudah ada - tidak ada
 # request yang mengubah state.
 #
@@ -51,20 +57,41 @@ xcache_of() {
   get_headers "$1" | tr -d '\r' | awk 'tolower($1) == "x-cache:" { print $2 }' | tail -1
 }
 
-# Satu GET: cetak "status x-cache" (status 000 jika gagal koneksi).
-status_and_xcache() {
+# Dua GET berurutan pada satu koneksi. Cetak:
+# status1 xcache1 colo1 status2 xcache2 colo2
+# Field kosong diganti placeholder supaya `read` tidak geser kolom.
+same_colo_pair() {
   local path="$1"
-  local tmp hdrs code xc
-  tmp="$(mktemp)"
-  hdrs="$(curl -sS -D - -o "$tmp" --path-as-is --max-time 30 "$BASE$path" 2>/dev/null | tr -d '\r')" || true
-  rm -f "$tmp"
-  code="$(printf '%s\n' "$hdrs" | awk 'NR==1{print $2}')"
-  xc="$(printf '%s\n' "$hdrs" | awk 'tolower($1)=="x-cache:"{print $2}' | tail -1)"
-  if [ -z "$code" ] || [ "$code" = "000" ]; then
-    echo "000 "
-  else
-    echo "$code ${xc:-}"
-  fi
+  local h1 h2 clean1 clean2
+  h1="$(mktemp)"
+  h2="$(mktemp)"
+  # URL pertama harus sebelum --next. Keep-alive HTTP/1.1 menempel di satu
+  # colo. Proses curl baru membuka TCP baru, dan anycast bisa pindah colo.
+  curl -sS --path-as-is --http1.1 --max-time 90 -D "$h1" -o /dev/null \
+    "$BASE$path" \
+    --next --path-as-is -D "$h2" -o /dev/null \
+    "$BASE$path" >/dev/null 2>&1 || true
+  clean1="$(tr -d '\r' < "$h1")"
+  clean2="$(tr -d '\r' < "$h2")"
+  rm -f "$h1" "$h2"
+  local s1 c1 ray1 colo1 s2 c2 ray2 colo2
+  s1="$(printf '%s\n' "$clean1" | awk 'NR==1 { print $2 }')"
+  c1="$(printf '%s\n' "$clean1" | awk 'tolower($1)=="x-cache:" { print $2 }' | tail -1)"
+  ray1="$(printf '%s\n' "$clean1" | awk 'tolower($1)=="cf-ray:" { print $2 }' | tail -1)"
+  s2="$(printf '%s\n' "$clean2" | awk 'NR==1 { print $2 }')"
+  c2="$(printf '%s\n' "$clean2" | awk 'tolower($1)=="x-cache:" { print $2 }' | tail -1)"
+  ray2="$(printf '%s\n' "$clean2" | awk 'tolower($1)=="cf-ray:" { print $2 }' | tail -1)"
+  colo1="${ray1##*-}"
+  colo2="${ray2##*-}"
+  [ -n "$s1" ] || s1=000
+  [ -n "$c1" ] || c1=-
+  [ -n "$ray1" ] || colo1=-
+  [ -n "$colo1" ] || colo1=-
+  [ -n "$s2" ] || s2=000
+  [ -n "$c2" ] || c2=-
+  [ -n "$ray2" ] || colo2=-
+  [ -n "$colo2" ] || colo2=-
+  printf '%s %s %s %s %s %s\n' "$s1" "$c1" "$colo1" "$s2" "$c2" "$colo2"
 }
 
 assert_xcache() {
@@ -78,29 +105,37 @@ assert_xcache() {
   fi
 }
 
-# BH-04: varian path harus berbagi entry yang sudah di-warm. Cache API
-# Cloudflare bersifat per-colo: curl baru tiap assertion bisa pindah anycast
-# ke colo yang belum punya entry → `miss` palsu. Setelah worker
-# `withCanonicalPath`, miss di colo baru merender 200 (bukan 404 beracun);
-# request berikutnya di colo itu wajib hit. Terima hit langsung ATAU
-# miss→hit dalam satu colo, dan status harus 200.
-assert_shared_cache() {
+# Pasca-deploy, kunci cache baru (build id baru) jadi request pertama di
+# colo itu `miss` dan yang kedua, pada koneksi yang sama, wajib `hit`.
+assert_cache_fill() {
   local path="$1" reason="$2"
-  local got status
-  read -r status got <<<"$(status_and_xcache "$path")"
-  if { [ "$got" = "hit" ] || [ "$got" = "swr" ]; } && [ "$status" = "200" ]; then
-    echo "ok   $path -> x-cache: $got"
+  local s1 c1 colo1 s2 c2 colo2
+  read -r s1 c1 colo1 s2 c2 colo2 <<<"$(same_colo_pair "$path")"
+  if [ "$c1" = "miss" ] && [ "$c2" = "hit" ]; then
+    echo "ok   $path -> x-cache: miss"
+    echo "ok   $path -> x-cache: hit"
     return
   fi
-  # Miss di colo dingin: entry kanonik baru saja ditulis; coba lagi.
-  if [ "$got" = "miss" ] && [ "$status" = "200" ]; then
-    read -r status got <<<"$(status_and_xcache "$path")"
-    if { [ "$got" = "hit" ] || [ "$got" = "swr" ]; } && [ "$status" = "200" ]; then
-      echo "ok   $path -> x-cache: $got (colo dihangatkan)"
-      return
-    fi
+  fail "$path: x-cache '$c1' lalu '$c2' (colo $colo1/$colo2, status $s1/$s2), diharapkan miss lalu hit ($reason)"
+}
+
+# BH-04: varian path harus berbagi entry yang sudah di-warm. Miss di colo
+# dingin merender 200 (bukan 404 beracun); request berikutnya pada koneksi
+# yang sama wajib hit. Terima hit langsung ATAU miss-lalu-hit, status 200.
+assert_shared_cache() {
+  local path="$1" reason="$2"
+  local s1 c1 colo1 s2 c2 colo2
+  read -r s1 c1 colo1 s2 c2 colo2 <<<"$(same_colo_pair "$path")"
+  if { [ "$c1" = "hit" ] || [ "$c1" = "swr" ]; } && [ "$s1" = "200" ]; then
+    echo "ok   $path -> x-cache: $c1"
+    return
   fi
-  fail "$path: x-cache '$got' status '$status', diharapkan hit/swr + 200 ($reason)"
+  if [ "$c1" = "miss" ] && [ "$s1" = "200" ] &&
+    { [ "$c2" = "hit" ] || [ "$c2" = "swr" ]; } && [ "$s2" = "200" ]; then
+    echo "ok   $path -> x-cache: $c2 (colo dihangatkan)"
+    return
+  fi
+  fail "$path: x-cache '$c1' lalu '$c2' status '$s1'/'$s2' (colo $colo1/$colo2), diharapkan hit/swr + 200 ($reason)"
 }
 
 echo "== Verifikasi perilaku cache edge: $BASE (profil: $PROFILE) =="
@@ -151,10 +186,10 @@ assert_xcache "/" "bypass" "path redirect tidak boleh di-cache (BH-08)"
 assert_xcache "/words/$LEMMA" "bypass" "redirect legacy tidak boleh di-cache (BH-08)"
 
 # --- G-01/G-02: cache harus benar-benar bekerja ------------------------------
-# Request pertama mengisi entry; request kedua (build ID sama) WAJIB hit.
+# Request pertama mengisi entry; request kedua pada koneksi yang sama
+# (build ID sama, colo sama) WAJIB hit.
 if check_word_page; then
-  assert_xcache "/id/words/$LEMMA" "miss" "request pertama mengisi entry"
-  assert_xcache "/id/words/$LEMMA" "hit" "cache HTML tidak berfungsi (G-01/G-02)"
+  assert_cache_fill "/id/words/$LEMMA" "cache HTML tidak berfungsi (G-01/G-02)"
 
   # --- BH-04: varian path harus berbagi satu entry ---------------------------
   # Semua varian di bawah kontennya identik. Kalau `canonicalCachePath` /
@@ -167,13 +202,11 @@ fi
 
 # Beranda per-locale juga harus ikut cache. Pakai locale non-default supaya
 # entry-nya belum ada di cache lama, jadi "miss" lalu "hit" deterministik.
-assert_xcache "/id-SBS" "miss" "request pertama mengisi beranda id-SBS"
-assert_xcache "/id-SBS" "hit" "cache beranda per-locale tidak berfungsi"
+assert_cache_fill "/id-SBS" "cache beranda per-locale tidak berfungsi"
 
 # --- halaman huruf: cacheable, varian liar bypass -----------------------------
 if check_word_page; then
-  assert_xcache "/id/huruf/k" "miss" "request pertama mengisi halaman huruf"
-  assert_xcache "/id/huruf/k" "hit" "cache halaman huruf tidak berfungsi"
+  assert_cache_fill "/id/huruf/k" "cache halaman huruf tidak berfungsi"
   # Uppercase 301 ke lowercase: redirect tidak boleh melakukan lookup cache.
   assert_xcache "/id/huruf/K" "bypass" "redirect kanonik huruf tidak boleh di-cache"
   # Query cursor (halaman 2+) tidak boleh memakai entry halaman 1.
@@ -182,15 +215,13 @@ fi
 
 # --- G-02: negative cache 404 kata ------------------------------------------
 MISSING="pentest-negative-cache-canary-$$"
-assert_xcache "/id/words/$MISSING" "miss" "404 pertama tidak di-cache"
-assert_xcache "/id/words/$MISSING" "hit" "negative cache 404 kata tidak berfungsi (G-02)"
+assert_cache_fill "/id/words/$MISSING" "negative cache 404 kata tidak berfungsi (G-02)"
 
 # --- sitemap: index 200 + cache; lokasi lama 301 bypass -----------------------
 if check_sitemap; then
   # Isi kanonik: satu urlset. Request pertama mengisi; kedua wajib hit.
   # Jangan GET status dulu - itu menghangatkan cache dan merusak assert miss.
-  assert_xcache "/sitemap.xml" "miss" "request pertama mengisi sitemap index"
-  assert_xcache "/sitemap.xml" "hit" "cache sitemap index tidak berfungsi"
+  assert_cache_fill "/sitemap.xml" "cache sitemap index tidak berfungsi"
   SITEMAP_STATUS="$(get_status "/sitemap.xml")"
   if [ "$SITEMAP_STATUS" != "200" ]; then
     fail "/sitemap.xml: status $SITEMAP_STATUS, diharapkan 200"
@@ -222,8 +253,7 @@ if check_sitemap; then
 
   # RSS feed publik: 200, content-type benar, dan ter-cache di edge.
   # Urutan: miss→hit dulu (jangan warm), baru cek status/content-type.
-  assert_xcache "/rss.xml" "miss" "request pertama mengisi feed"
-  assert_xcache "/rss.xml" "hit" "cache feed tidak berfungsi"
+  assert_cache_fill "/rss.xml" "cache feed tidak berfungsi"
   RSS_STATUS="$(get_status "/rss.xml")"
   if [ "$RSS_STATUS" != "200" ]; then
     fail "/rss.xml: status $RSS_STATUS, diharapkan 200"
@@ -245,8 +275,7 @@ if check_sitemap; then
   fi
 
   # Kartu OG per kata: miss→hit dulu, baru cek content-type (jangan warm).
-  assert_xcache "/og/words/$LEMMA" "miss" "render pertama kartu OG"
-  assert_xcache "/og/words/$LEMMA" "hit" "cache kartu OG tidak berfungsi"
+  assert_cache_fill "/og/words/$LEMMA" "cache kartu OG tidak berfungsi"
   OG_CT="$(get_headers "/og/words/$LEMMA" | tr -d '\r' | awk 'BEGIN{IGNORECASE=1} /^content-type:/ {
     sub(/^content-type:[[:space:]]*/, "", $0)
     sub(/;.*/, "", $0)
