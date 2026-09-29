@@ -187,6 +187,7 @@ export function buildHomeJsonLd(localeInput?: string) {
         '@id': organizationId,
         name: env.appName,
         url: env.appUrl,
+        foundingDate: '2019',
         logo: {
           '@type': 'ImageObject',
           url: `${env.appUrl}/favicon-192.png`,
