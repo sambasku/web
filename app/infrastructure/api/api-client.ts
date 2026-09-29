@@ -13,6 +13,7 @@ import {
   releaseApiSlot,
   releaseColdSlot,
 } from './failover';
+import { getRateLimitDeviceId } from './rate-limit-device-id';
 
 export class AppError extends Error {
   constructor(
@@ -189,7 +190,12 @@ export async function apiClient<T>(
   const { baseUrl, timeoutMs, headers, signal, ...restOptions } = options;
   const init: RequestInit = {
     ...restOptions,
-    headers: { Accept: 'application/json', 'Content-Type': 'application/json', ...headers },
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      'X-Device-Id': getRateLimitDeviceId(),
+      ...headers,
+    },
   };
 
   // baseUrl eksplisit = pemanggil memaksa satu host; hormati dan jangan failover.

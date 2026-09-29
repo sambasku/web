@@ -514,6 +514,8 @@ export default function KontribusiPage() {
   }, []);
 
   const [lemma, setLemma] = useState(searchParams.get('q')?.trim() ?? '');
+  /** Nama orang opsional (tamu) → API contributor_name → guest_display_name */
+  const [contributorName, setContributorName] = useState('');
   /** sederhana | lengkap */
   const [mode, setMode] = useState<ContributeMode>('sederhana');
   const advanced = mode === 'lengkap';
@@ -626,6 +628,7 @@ export default function KontribusiPage() {
     trackEvent(AnalyticsEvents.contributeSubmit, { guest: true });
     try {
       const word = lemma.trim();
+      const name = contributorName.trim();
       const def = standardDefinition.trim();
       const meanings = advanced
         ? maknaList.map((m, i) => ({
@@ -682,6 +685,7 @@ export default function KontribusiPage() {
           word_type: 'word',
           usage_labels: usageLabels,
           meanings,
+          ...(name ? { contributor_name: name } : {}),
           ...(safeImages.length > 0
             ? {
                 images: safeImages.map((img) => ({
@@ -698,6 +702,7 @@ export default function KontribusiPage() {
       trackEvent(AnalyticsEvents.contributeSuccess, { guest: true });
       setSuccess(word);
       setLemma('');
+      setContributorName('');
       setUsageLabels([]);
       setStandardPadanan('');
       setStandardDefinition('');
@@ -918,6 +923,15 @@ export default function KontribusiPage() {
                 onChange={(e) => setLemma(e.currentTarget.value)}
               />
 
+              <TextInput
+                label="Nama (opsional)"
+                placeholder="Nama untuk atribusi"
+                description="Jika kosong, tercatat sebagai Anonim"
+                value={contributorName}
+                onChange={(e) => setContributorName(e.currentTarget.value)}
+                maxLength={80}
+              />
+
               {exact && (
                 <Alert
                   icon={<Info size={18} />}
@@ -1110,7 +1124,7 @@ export default function KontribusiPage() {
                 <Text fw={600}>Punya banyak kata?</Text>
                 <Text size="sm" c="dimmed">
                   Kirim puluhan pasangan Sambas-Indonesia sekaligus. Langsung
-                  tayang; tim bisa menarik batch bila perlu.
+                  tayang di SambasKu.
                 </Text>
               </div>
             </Group>
