@@ -81,15 +81,18 @@ describe('buildCsp', () => {
     }
   });
 
-  it('CSP mengizinkan host GA4 gtag', () => {
+  it('CSP mengizinkan host GA4 gtag termasuk subdomain regional', () => {
     const csp = buildCsp({ apiConnectOrigins: [], isProd: true });
+    const connectSrc = csp.split('; ').find((d) => d.startsWith('connect-src'));
+    assert.ok(connectSrc);
     for (const host of [
-      'https://www.googletagmanager.com',
-      'https://www.google-analytics.com',
-      'https://analytics.google.com',
+      'https://*.googletagmanager.com',
+      'https://*.google-analytics.com',
+      'https://*.analytics.google.com',
     ]) {
-      assert.ok(csp.includes(host), `CSP tidak memuat ${host}`);
+      assert.ok(connectSrc.includes(host), `connect-src tidak memuat ${host}`);
     }
+    assert.ok(csp.includes("script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com https://*.googletagmanager.com"));
   });
 
   // BH-02: foto stock lewat wsrv.nl, jadi img-src tidak perlu host baru.
