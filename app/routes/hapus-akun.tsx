@@ -115,7 +115,7 @@ export default function HapusAkunPage() {
             <List.Item>
               Ketik HAPUS. Jika akun memakai email dan kata sandi, isi kata sandi.
             </List.Item>
-            <List.Item>Akun langsung dihapus dan kamu keluar dari aplikasi.</List.Item>
+            <List.Item>Akun langsung dihapus dan Anda keluar dari aplikasi.</List.Item>
           </List>
         </Stack>
 
@@ -132,8 +132,8 @@ export default function HapusAkunPage() {
           {done ? (
             <Card withBorder padding="lg" radius="md">
               <Text size="sm">
-                Akun dan data pribadi berhasil dihapus. Entri kamus yang sudah tayang
-                tetap ada tanpa nama akun.
+                Akun dan data pribadi berhasil dihapus. Entri kamus, komentar, dan
+                kontribusi yang sudah tayang tetap tersimpan, tanpa nama akun.
               </Text>
             </Card>
           ) : (
@@ -218,11 +218,11 @@ export default function HapusAkunPage() {
             Data yang tetap ada
           </Title>
           <Text size="sm" lh={1.7}>
-            Entri kamus, komentar, dan kontribusi yang sudah dipublikasikan tetap
-            tersimpan karena menjadi bagian kamus bersama. Nama akun pada konten itu
-            diganti menjadi penanda pengguna yang dihapus. Log teknis server untuk
-            keamanan disimpan dalam jangka waktu wajar, tanpa dipakai untuk
-            mengidentifikasi akun yang sudah dihapus.
+            Entri kamus, komentar, dan kontribusi yang sudah tayang tetap tersimpan
+            sebagai bagian kamus di dalam SambasKu. Nama akun pada konten itu diganti
+            menjadi penanda pengguna yang dihapus. Log teknis untuk keamanan disimpan
+            dalam jangka waktu yang wajar, dan tidak dipakai untuk mengidentifikasi
+            akun yang sudah dihapus.
           </Text>
         </Stack>
 

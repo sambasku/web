@@ -33,7 +33,7 @@ export function meta({ params }: Route.MetaArgs) {
   return buildMetaTags({
     title: 'Syarat dan Ketentuan',
     description:
-      'Syarat dan Ketentuan SambasKu: data akun, kontribusi, notifikasi, dan layanan pihak ketiga.',
+      'Syarat dan Ketentuan SambasKu: pemakaian layanan, kontribusi, dan penghapusan akun.',
     path: localePath(locale, '/syarat-ketentuan'),
     locale,
   });

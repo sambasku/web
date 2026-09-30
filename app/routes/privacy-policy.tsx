@@ -104,7 +104,7 @@ export default function PrivacyPolicyPage() {
 
         <Text size="sm" c="dimmed">
           <Anchor component={Link} to={lp('/syarat-ketentuan')}>
-            Syarat Ketentuan
+            Syarat dan Ketentuan
           </Anchor>
           {' · '}
           <Anchor component={Link} to={lp('/hapus-akun')}>
