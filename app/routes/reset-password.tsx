@@ -75,7 +75,7 @@ export default function ResetPasswordPage() {
   const canSubmit = token
     ? passwordOk && confirmPassword === newPassword && !submitting
     : email.includes('@') &&
-      codeNormalized.length === 8 &&
+      codeNormalized.length === 6 &&
       passwordOk &&
       confirmPassword === newPassword &&
       !submitting;
@@ -111,7 +111,7 @@ export default function ResetPasswordPage() {
               ? 'Silakan masuk lagi di aplikasi SambasKu dengan password baru.'
               : token
                 ? 'Tautan cadangan. Buat password baru, sekali pakai.'
-                : 'Masukkan kode 8 karakter 0-9A-Z dari email (berlaku 10 menit), lalu password baru.'}
+                : 'Masukkan kode 6 karakter 0-9A-Z dari email (berlaku 10 menit), lalu password baru.'}
           </Text>
         </Stack>
 
@@ -140,7 +140,7 @@ export default function ResetPasswordPage() {
                     label="Kode Reset Password"
                     value={code}
                     onChange={(e) => setCode(e.target.value)}
-                    placeholder="01AB-23CD"
+                    placeholder="A4K-9M2"
                     autoComplete="one-time-code"
                   />
                 </>

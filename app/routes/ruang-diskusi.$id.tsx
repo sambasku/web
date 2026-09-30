@@ -5,6 +5,7 @@ import {
   Button,
   Card,
   Container,
+  Flex,
   Group,
   Image,
   SimpleGrid,
@@ -25,6 +26,7 @@ import { useLocalePath } from '@/application/i18n/use-locale';
 
 import { formatDateId } from '@/application/utils/formatters';
 import { displayImageUrl } from '@/presentation/utils/display-image-url';
+import { AppDownloadBadges } from '@/presentation/components/layout/app-download-badges';
 import type { DiscussionReply } from '@/domain/entities/discussion.entity';
 import { useTranslation } from 'react-i18next';
 import { useEffect, useState } from 'react';
@@ -308,7 +310,13 @@ export default function RuangDiskusiDetailPage() {
               Menulis balasan dan memberi vote hanya tersedia di aplikasi
               SambasKu. Unduh di Google Play untuk ikut membantu.
             </Text>
-            <Group gap="md" wrap="wrap">
+            <Flex
+              gap="md"
+              wrap="wrap"
+              direction={{ base: 'column', sm: 'row' }}
+              align="center"
+              justify={{ base: 'center', sm: 'flex-start' }}
+            >
               <Button
                 component="a"
                 href={PLAY_STORE_URL}
@@ -319,23 +327,8 @@ export default function RuangDiskusiDetailPage() {
               >
                 Balas di aplikasi
               </Button>
-              <Anchor
-                href={PLAY_STORE_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                underline="never"
-                aria-label="Dapatkan aplikasi SambasKu di Google Play"
-              >
-                <Image
-                  src="/google_play.webp"
-                  alt="Dapatkan di Google Play"
-                  h={36}
-                  w={120}
-                  fit="contain"
-                  decoding="async"
-                />
-              </Anchor>
-            </Group>
+              <AppDownloadBadges h={36} />
+            </Flex>
           </Stack>
         </Card>
       </Stack>

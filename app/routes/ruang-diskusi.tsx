@@ -1,10 +1,10 @@
 import { Link, useLoaderData, useNavigation, useSearchParams } from 'react-router';
 import {
-  Anchor,
   Badge,
   Button,
   Card,
   Container,
+  Flex,
   Group,
   Image,
   SimpleGrid,
@@ -26,6 +26,7 @@ import { useLocalePath } from '@/application/i18n/use-locale';
 
 import { formatDateId } from '@/application/utils/formatters';
 import { displayImageUrl } from '@/presentation/utils/display-image-url';
+import { AppDownloadBadges } from '@/presentation/components/layout/app-download-badges';
 import { hasViolenceWarning } from '@/domain/image-content-warnings';
 import type { DiscussionPublicItem } from '@/domain/entities/discussion.entity';
 import { useEffect } from 'react';
@@ -160,7 +161,13 @@ export default function RuangDiskusiFeedPage() {
         </Stack>
 
         <Card withBorder padding="lg" radius="md" bg="var(--mantine-color-body)">
-          <Group justify="space-between" align="center" gap="lg" wrap="wrap">
+          <Flex
+            direction={{ base: 'column', sm: 'row' }}
+            align={{ base: 'stretch', sm: 'center' }}
+            justify={{ base: 'flex-start', sm: 'space-between' }}
+            wrap="wrap"
+            gap="lg"
+          >
             <Stack gap={4} maw={480}>
               <Group gap={6}>
                 <Smartphone size={16} />
@@ -171,23 +178,10 @@ export default function RuangDiskusiFeedPage() {
                 SambasKu.
               </Text>
             </Stack>
-            <Anchor
-              href={PLAY_STORE_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              underline="never"
-              aria-label="Dapatkan aplikasi SambasKu di Google Play"
-            >
-              <Image
-                src="/google_play.webp"
-                alt="Dapatkan di Google Play"
-                h={40}
-                w={133}
-                fit="contain"
-                decoding="async"
-              />
-            </Anchor>
-          </Group>
+            <Flex justify="center">
+              <AppDownloadBadges h={40} />
+            </Flex>
+          </Flex>
         </Card>
 
         <Group gap="xs">

@@ -7,6 +7,7 @@ import {
   Card,
   Container,
   Divider,
+  Flex,
   Group,
   Image,
   Paper,
@@ -21,6 +22,7 @@ import { buildHomeJsonLd, buildMetaTags } from '../application/utils/seo';
 import { env } from '../infrastructure/config/env';
 import { SearchBar } from '../presentation/components/word/search-bar';
 import { WordOfTheDaySection } from '../presentation/components/word/word-of-the-day-section';
+import { AppDownloadBadges } from '../presentation/components/layout/app-download-badges';
 import {
   DEFAULT_LOCALE,
   isAppLocale,
@@ -49,8 +51,6 @@ export function loader(_args: Route.LoaderArgs) {
 }
 
 const ALPHABETS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-const PLAY_STORE_URL =
-  'https://play.google.com/store/apps/details?id=com.iamutaki.sambasku';
 const WHATSAPP_GROUP_URL =
   'https://chat.whatsapp.com/Kw64lxFEGXfK5gw6T6GEoN?mode=gi_t';
 
@@ -128,8 +128,14 @@ export default function Home() {
 
           <Card withBorder padding="md" radius="md">
             <Stack gap="md">
-              <Group justify="space-between" align="center" gap="md" wrap="wrap">
-                <Group gap="sm" wrap="nowrap" maw={480} style={{ flex: 1 }}>
+              <Flex
+                direction={{ base: 'column', sm: 'row' }}
+                align={{ base: 'stretch', sm: 'center' }}
+                justify={{ base: 'flex-start', sm: 'space-between' }}
+                wrap="wrap"
+                gap="md"
+              >
+                <Group gap="sm" wrap="nowrap" maw={480}>
                   <PlusCircle size={22} style={{ flexShrink: 0 }} />
                   <Stack gap={2}>
                     <Text size="sm" fw={600}>
@@ -140,21 +146,29 @@ export default function Home() {
                     </Text>
                   </Stack>
                 </Group>
-                <Button
-                  component={Link}
-                  to={lp('/kontribusi', '?from=home_join')}
-                  variant="light"
-                  size="compact-sm"
-                  leftSection={<PlusCircle size={16} />}
-                >
-                  {t('home_ctaButton')}
-                </Button>
-              </Group>
+                <Flex justify="center">
+                  <Button
+                    component={Link}
+                    to={lp('/kontribusi', '?from=home_join')}
+                    variant="light"
+                    size="compact-sm"
+                    leftSection={<PlusCircle size={16} />}
+                  >
+                    {t('home_ctaButton')}
+                  </Button>
+                </Flex>
+              </Flex>
 
               <Divider />
 
-              <Group justify="space-between" align="center" gap="md" wrap="wrap">
-                <Group gap="sm" wrap="nowrap" maw={480} style={{ flex: 1 }}>
+              <Flex
+                direction={{ base: 'column', sm: 'row' }}
+                align={{ base: 'stretch', sm: 'center' }}
+                justify={{ base: 'flex-start', sm: 'space-between' }}
+                wrap="wrap"
+                gap="md"
+              >
+                <Group gap="sm" wrap="nowrap" maw={480}>
                   <Languages size={22} style={{ flexShrink: 0 }} />
                   <Stack gap={2}>
                     <Text size="sm" fw={600}>
@@ -172,23 +186,10 @@ export default function Home() {
                     </Text>
                   </Stack>
                 </Group>
-                <Anchor
-                  href={PLAY_STORE_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  underline="never"
-                  aria-label={t('common_getAppAria')}
-                >
-                  <Image
-                    src="/google_play.webp"
-                    alt={t('common_getOnGooglePlay')}
-                    h={36}
-                    w={120}
-                    fit="contain"
-                    decoding="async"
-                  />
-                </Anchor>
-              </Group>
+                <Flex justify="center">
+                  <AppDownloadBadges h={36} />
+                </Flex>
+              </Flex>
 
               <Divider />
 

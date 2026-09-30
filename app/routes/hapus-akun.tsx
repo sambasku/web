@@ -52,7 +52,7 @@ export default function HapusAkunPage() {
   const canRequest = email.includes('@') && !submitting;
   const canConfirm =
     email.includes('@') &&
-    codeNormalized.length === 8 &&
+    codeNormalized.length === 6 &&
     confirmation === 'HAPUS' &&
     !submitting;
 
@@ -115,7 +115,7 @@ export default function HapusAkunPage() {
             <List.Item>
               Ketik HAPUS. Jika akun memakai email dan kata sandi, isi kata sandi.
             </List.Item>
-            <List.Item>Akun langsung dihapus dan kamu keluar dari aplikasi.</List.Item>
+            <List.Item>Akun langsung dihapus dan Anda keluar dari aplikasi.</List.Item>
           </List>
         </Stack>
 
@@ -124,7 +124,7 @@ export default function HapusAkunPage() {
             Lewat situs ini
           </Title>
           <Text size="sm" lh={1.7}>
-            Masukkan email akun. Kami kirim kode 8 karakter yang berlaku 10 menit.
+            Masukkan email akun. Kami kirim kode 6 karakter (XXX-YYY) yang berlaku 10 menit.
             Tidak ada masa tunggu tambahan: akun terhapus begitu kode dan konfirmasi
             HAPUS diterima.
           </Text>
@@ -132,8 +132,8 @@ export default function HapusAkunPage() {
           {done ? (
             <Card withBorder padding="lg" radius="md">
               <Text size="sm">
-                Akun dan data pribadi berhasil dihapus. Entri kamus yang sudah tayang
-                tetap ada tanpa nama akun.
+                Akun dan data pribadi berhasil dihapus. Entri kamus, komentar, dan
+                kontribusi yang sudah tayang tetap tersimpan, tanpa nama akun.
               </Text>
             </Card>
           ) : (
@@ -161,6 +161,7 @@ export default function HapusAkunPage() {
                         label="Kode dari email"
                         value={code}
                         onChange={(event) => setCode(event.currentTarget.value)}
+                        placeholder="A4K-9M2"
                         disabled={submitting}
                         autoCapitalize="characters"
                       />
@@ -218,11 +219,11 @@ export default function HapusAkunPage() {
             Data yang tetap ada
           </Title>
           <Text size="sm" lh={1.7}>
-            Entri kamus, komentar, dan kontribusi yang sudah dipublikasikan tetap
-            tersimpan karena menjadi bagian kamus bersama. Nama akun pada konten itu
-            diganti menjadi penanda pengguna yang dihapus. Log teknis server untuk
-            keamanan disimpan dalam jangka waktu wajar, tanpa dipakai untuk
-            mengidentifikasi akun yang sudah dihapus.
+            Entri kamus, komentar, dan kontribusi yang sudah tayang tetap tersimpan
+            sebagai bagian kamus di dalam SambasKu. Nama akun pada konten itu diganti
+            menjadi penanda pengguna yang dihapus. Log teknis untuk keamanan disimpan
+            dalam jangka waktu yang wajar, dan tidak dipakai untuk mengidentifikasi
+            akun yang sudah dihapus.
           </Text>
         </Stack>
 
