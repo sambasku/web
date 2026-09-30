@@ -52,7 +52,7 @@ export default function HapusAkunPage() {
   const canRequest = email.includes('@') && !submitting;
   const canConfirm =
     email.includes('@') &&
-    codeNormalized.length === 8 &&
+    codeNormalized.length === 6 &&
     confirmation === 'HAPUS' &&
     !submitting;
 
@@ -124,7 +124,7 @@ export default function HapusAkunPage() {
             Lewat situs ini
           </Title>
           <Text size="sm" lh={1.7}>
-            Masukkan email akun. Kami kirim kode 8 karakter yang berlaku 10 menit.
+            Masukkan email akun. Kami kirim kode 6 karakter (XXX-YYY) yang berlaku 10 menit.
             Tidak ada masa tunggu tambahan: akun terhapus begitu kode dan konfirmasi
             HAPUS diterima.
           </Text>
@@ -161,6 +161,7 @@ export default function HapusAkunPage() {
                         label="Kode dari email"
                         value={code}
                         onChange={(event) => setCode(event.currentTarget.value)}
+                        placeholder="A4K-9M2"
                         disabled={submitting}
                         autoCapitalize="characters"
                       />
