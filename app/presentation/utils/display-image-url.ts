@@ -11,6 +11,8 @@
  *    wsrv.nl untuk resize. Ini membuat CSP `img-src` tetap sempit - host baru
  *    tidak perlu ditambahkan ke allowlist, dan CSP tidak perlu dilonggarkan
  *    menjadi `img-src https:` (pentest BH-02).
+ *    Pengecualian: Unsplash wajib di-hotlink (API Guidelines), jadi URL asli
+ *    + param resize imgix; host-nya ada di CSP `img-src`.
  * 3. Host lain yang https tetap dikembalikan apa adanya; kalau hostnya di luar
  *    CSP, browser akan memblokir gambarnya (fail-closed), bukan memuatnya.
  *
@@ -38,30 +40,18 @@ const PROXIED_HOST_SUFFIXES: readonly string[] = [
   'i.vimeocdn.com',
 ];
 
+/** Host Unsplash: hotlink langsung (tidak lewat wsrv.nl), ada di CSP img-src. */
+const UNSPLASH_HOSTS: ReadonlySet<string> = new Set([
+  'images.unsplash.com',
+  'plus.unsplash.com',
+]);
+
 /** Cocokkan host terhadap daftar suffix dengan batas label ('.', bukan substring). */
 export function isProxiedImageHost(hostname: string): boolean {
   const host = hostname.toLowerCase();
   return PROXIED_HOST_SUFFIXES.some(
     (suffix) => host === suffix || host.endsWith(`.${suffix}`),
   );
-}
-
-/**
- * True bila URL gambar layak ditampilkan: https dan host-nya ada di allowlist
- * yang diproksi. Dipakai juga untuk memvalidasi payload kontribusi sebelum
- * dikirim ke API (pentest BH-03) - bukan sebagai pengganti validasi server.
- */
-export function isAllowedDisplayImageUrl(
-  url: string | null | undefined,
-): boolean {
-  if (!url) return false;
-  let u: URL;
-  try {
-    u = new URL(url);
-  } catch {
-    return false;
-  }
-  return u.protocol === 'https:' && isProxiedImageHost(u.hostname);
 }
 
 /**
@@ -83,6 +73,13 @@ export function displayImageUrl(
     return undefined;
   }
   if (u.protocol !== 'https:') return undefined;
+  if (UNSPLASH_HOSTS.has(u.hostname.toLowerCase())) {
+    if (opts.width) u.searchParams.set('w', String(opts.width));
+    if (opts.height) u.searchParams.set('h', String(opts.height));
+    u.searchParams.set('fit', 'crop');
+    u.searchParams.set('fm', 'webp');
+    return u.toString();
+  }
   if (!isProxiedImageHost(u.hostname)) return url;
 
   const params = new URLSearchParams();

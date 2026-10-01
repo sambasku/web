@@ -61,10 +61,11 @@ export function buildCsp({
     "font-src 'self' data:",
     // Allowlist host gambar aktual (pentest W-09): jsDelivr = media repo
     // GitHub, wsrv.nl = proxy resize, ik.imagekit.io = kontribusi user.
-    // Foto stock Media Explorer (flickr/pixabay/openverse) juga lewat wsrv.nl,
+    // Foto stock di gambar kata (flickr/pixabay/openverse) juga lewat wsrv.nl,
     // jadi CSP ini TIDAK perlu host baru - dan tidak perlu dilonggarkan
-    // (pentest BH-02). GA4 kadang memakai pixel collect di img-src.
-    "img-src 'self' data: blob: https://ik.imagekit.io https://cdn.jsdelivr.net https://wsrv.nl https://*.google-analytics.com https://*.googletagmanager.com",
+    // (pentest BH-02). Pengecualian: Unsplash wajib hotlink (API Guidelines).
+    // GA4 kadang memakai pixel collect di img-src.
+    "img-src 'self' data: blob: https://ik.imagekit.io https://cdn.jsdelivr.net https://wsrv.nl https://images.unsplash.com https://plus.unsplash.com https://*.google-analytics.com https://*.googletagmanager.com",
     "media-src 'self' blob: https://cdn.jsdelivr.net",
     `connect-src 'self' ${apiConnectOrigins.join(' ')} https://cloudflareinsights.com https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com`,
     "frame-ancestors 'none'",

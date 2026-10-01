@@ -48,11 +48,6 @@ import {
 } from '../domain/usage-labels';
 import { UsageLabelChips } from '../presentation/components/word/usage-label-chips';
 import {
-  ContributionImagesField,
-  type ContributionImageSlot,
-} from '../presentation/components/media-explorer/contribution-images-field';
-import { isAllowedDisplayImageUrl } from '../presentation/utils/display-image-url';
-import {
   AnalyticsEvents,
   trackEvent,
 } from '@/infrastructure/analytics/analytics';
@@ -531,7 +526,6 @@ export default function KontribusiPage() {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [images, setImages] = useState<ContributionImageSlot[]>([]);
   const [duplicateModal, setDuplicateModal] = useState<{
     wordId: string;
     meaningId: string;
@@ -610,20 +604,6 @@ export default function KontribusiPage() {
         return;
       }
     }
-    // Guard terakhir sebelum POST. `ContributionImagesField` sudah menolak
-    // URL di luar allowlist saat dipilih, tapi state React bukan batas
-    // keamanan - payload ini bisa diubah dari devtools. Tolak apa pun yang
-    // tidak lolos, lalu beri tahu kontributor daripada diam-diam
-    // kehilangan fotonya.
-    const safeImages = images.filter((img) =>
-      isAllowedDisplayImageUrl(img.url),
-    );
-    if (safeImages.length !== images.length) {
-      setError(
-        'Sebagian foto ditolak karena berasal dari sumber di luar daftar foto stock yang diizinkan. Hapus foto tersebut lalu kirim ulang.',
-      );
-      return;
-    }
     setSubmitting(true);
     trackEvent(AnalyticsEvents.contributeSubmit, { guest: true });
     try {
@@ -686,17 +666,6 @@ export default function KontribusiPage() {
           usage_labels: usageLabels,
           meanings,
           ...(name ? { contributor_name: name } : {}),
-          ...(safeImages.length > 0
-            ? {
-                images: safeImages.map((img) => ({
-                  url: img.url,
-                  provider: img.provider,
-                  provider_file_id: img.provider_file_id,
-                  alt_text: img.alt_text.trim() || undefined,
-                  is_primary: img.is_primary,
-                })),
-              }
-            : {}),
         }),
       });
       trackEvent(AnalyticsEvents.contributeSuccess, { guest: true });
@@ -708,7 +677,6 @@ export default function KontribusiPage() {
       setStandardDefinition('');
       setStandardWordClassId(umumWordClassId);
       setMaknaList([{ ...emptyMakna, wordClassId: umumWordClassId }]);
-      setImages([]);
     } catch (err) {
       trackEvent(AnalyticsEvents.contributeFail, {
         guest: true,
@@ -1057,9 +1025,6 @@ export default function KontribusiPage() {
                   </Text>
                 )}
               </Stack>
-
-              <Divider label="Gambar" labelPosition="center" />
-              <ContributionImagesField images={images} onChange={setImages} />
 
               {advanced && (
                 <>

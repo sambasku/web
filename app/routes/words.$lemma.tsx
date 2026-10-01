@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useLoaderData, useNavigation, Link, useLocation } from 'react-router';
 import {
   Anchor,
@@ -21,7 +21,6 @@ import {
 import {
   ArrowLeft,
   CheckCircle2,
-  Share2,
   BookOpen,
   Layers,
   Sparkles,
@@ -39,7 +38,6 @@ import { UsageLabelsBadges } from '@/presentation/components/word/usage-labels-b
 import { WordImagesGallery } from '@/presentation/components/word/word-images-gallery';
 import '@/presentation/styles/fonts-italic.css';
 import { WordAudioPlayer } from '@/presentation/components/word/pronunciation-player';
-import { WordShareSheet } from '@/presentation/components/share/share-sheet';
 import { formatWordClass } from '@/application/utils/formatters';
 import {
   DEFAULT_LOCALE,
@@ -128,7 +126,6 @@ export default function WordDetailPage() {
   const { word } = useLoaderData<typeof loader>();
   const navigation = useNavigation();
   const location = useLocation();
-  const [shareOpen, setShareOpen] = useState(false);
   const { t } = useTranslation();
   const lp = useLocalePath();
   const locale = useLocale();
@@ -190,13 +187,6 @@ export default function WordDetailPage() {
         />
       )}
 
-      <WordShareSheet
-        opened={shareOpen}
-        onClose={() => setShareOpen(false)}
-        word={word}
-        locale={locale}
-      />
-
       <Stack gap="lg">
         {/* Breadcrumb SSR - selaras BreadcrumbList JSON-LD */}
         <Group gap={6} wrap="wrap">
@@ -217,8 +207,7 @@ export default function WordDetailPage() {
           </Text>
         </Group>
 
-        {/* Navigation & Action Bar */}
-        <Group justify="space-between" gap="md">
+        <Group gap="md">
           <Button
             component={Link}
             to={lp('/words')}
@@ -227,15 +216,6 @@ export default function WordDetailPage() {
             leftSection={<ArrowLeft size={15} />}
           >
             {t('word_backToList')}
-          </Button>
-
-          <Button
-            variant="light"
-            size="compact-sm"
-            onClick={() => setShareOpen(true)}
-            leftSection={<Share2 size={15} />}
-          >
-            {t('word_share')}
           </Button>
         </Group>
 

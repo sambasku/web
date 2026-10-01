@@ -3,6 +3,7 @@ import { Group, Modal, SimpleGrid, Stack, Text, Title } from '@mantine/core';
 import { Image as ImageIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { WordImage } from '@/domain/entities/word.entity';
+import { ImageCredit } from './image-credit';
 import {
   RevealViolenceConfirmFooter,
   WordImageView,
@@ -48,13 +49,15 @@ export function WordImagesGallery({
         </Group>
         <SimpleGrid cols={{ base: 1, xs: 2 }} spacing="sm">
           {images.map((img) => (
-            <WordImageView
-              key={img.id}
-              image={img}
-              revealed={violenceRevealed}
-              onRequestReveal={requestReveal}
-              alt={img.alt_text?.trim() || t('word_imageAlt', { lemma })}
-            />
+            <Stack key={img.id} gap={4}>
+              <WordImageView
+                image={img}
+                revealed={violenceRevealed}
+                onRequestReveal={requestReveal}
+                alt={img.alt_text?.trim() || t('word_imageAlt', { lemma })}
+              />
+              {img.attribution ? <ImageCredit attribution={img.attribution} /> : null}
+            </Stack>
           ))}
         </SimpleGrid>
       </Stack>
