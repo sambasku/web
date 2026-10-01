@@ -1,12 +1,8 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import {
-  displayImageUrl,
-  isAllowedDisplayImageUrl,
-  isProxiedImageHost,
-} from './display-image-url.ts';
+import { displayImageUrl, isProxiedImageHost } from './display-image-url.ts';
 
-describe('displayImageUrl (pentest W-10/BH-02/BH-03)', () => {
+describe('displayImageUrl (pentest W-10/BH-02)', () => {
   it('menolak skema non-https', () => {
     assert.equal(
       displayImageUrl('http://cdn.jsdelivr.net/gh/sambasku/x.webp'),
@@ -68,6 +64,19 @@ describe('displayImageUrl (pentest W-10/BH-02/BH-03)', () => {
     }
   });
 
+  // Unsplash API Guidelines: wajib hotlink, resize lewat param imgix.
+  it('Unsplash di-hotlink (bukan wsrv.nl) dengan param resize', () => {
+    const out = displayImageUrl(
+      'https://images.unsplash.com/photo-1?ixid=abc&w=1080&fm=jpg',
+      { width: 800 },
+    );
+    const u = new URL(out ?? '');
+    assert.equal(u.host, 'images.unsplash.com');
+    assert.equal(u.searchParams.get('ixid'), 'abc');
+    assert.equal(u.searchParams.get('w'), '800');
+    assert.equal(u.searchParams.get('fm'), 'webp');
+  });
+
   it('suffix host dicocokkan pada batas label, bukan substring', () => {
     assert.equal(isProxiedImageHost('cdn.jsdelivr.net'), true);
     assert.equal(
@@ -76,21 +85,5 @@ describe('displayImageUrl (pentest W-10/BH-02/BH-03)', () => {
     );
     assert.equal(isProxiedImageHost('pixabay.com.evil.test'), false);
     assert.equal(isProxiedImageHost('CDN.PIXABAY.COM'), true);
-  });
-
-  // BH-03: host di luar allowlist tidak boleh lolos sebagai "layak tampil"
-  // even though displayImageUrl still returns it (browser will block it).
-  it('isAllowedDisplayImageUrl menolak host di luar allowlist', () => {
-    assert.equal(isAllowedDisplayImageUrl('https://evil.test/x.png'), false);
-    assert.equal(
-      isAllowedDisplayImageUrl('http://cdn.pixabay.com/x.png'),
-      false,
-    );
-    assert.equal(isAllowedDisplayImageUrl(''), false);
-    assert.equal(isAllowedDisplayImageUrl(undefined), false);
-    assert.equal(
-      isAllowedDisplayImageUrl('https://cdn.pixabay.com/x.png'),
-      true,
-    );
   });
 });

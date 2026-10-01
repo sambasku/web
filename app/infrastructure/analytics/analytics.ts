@@ -24,8 +24,6 @@ export const AnalyticsEvents = {
   contributeFail: 'contribute_fail',
   /** Klik CTA "kirim banyak kata" di halaman /kontribusi. */
   contributeMassalCta: 'contribute_massal_cta',
-  shareStart: 'share_start',
-  shareComplete: 'share_complete',
   letterBrowse: 'letter_browse',
   themeChange: 'theme_change',
   localeChange: 'locale_change',

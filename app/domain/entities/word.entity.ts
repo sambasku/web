@@ -84,6 +84,19 @@ export interface WordImage {
   is_primary: boolean;
   content_warnings?: string[];
   is_verified?: boolean;
+  /** Kredit foto stock (Media Explorer mobile); null untuk upload user. */
+  attribution?: WordImageAttribution | null;
+}
+
+export interface WordImageAttribution {
+  name: string;
+  url?: string;
+  license?: string;
+  license_url?: string;
+  /** Sumber asli Openverse, mis. "flickr". */
+  source?: string;
+  /** unsplash | openverse | pixabay | ... */
+  provider: string;
 }
 
 export interface RelatedWord {
