@@ -31,7 +31,7 @@ export function meta({ params }: Route.MetaArgs) {
   return buildMetaTags({
     title: 'Hapus akun SambasKu',
     description:
-      'Cara menghapus akun SambasKu dan data pribadi lewat aplikasi Android atau situs, termasuk data yang dihapus dan yang tetap tersimpan.',
+      'Cara menghapus akun SambasKu dan data pribadimu lewat aplikasi Android atau situs, termasuk data yang dihapus dan yang tetap tersimpan.',
     path: localePath(locale, '/hapus-akun'),
     locale,
   });
@@ -98,9 +98,8 @@ export default function HapusAkunPage() {
             Hapus akun SambasKu
           </Title>
           <Text size="md" lh={1.7}>
-            SambasKu menyediakan cara menghapus akun dan data pribadi yang terikat
-            padanya, baik dari aplikasi Android maupun dari situs ini tanpa harus
-            membuka aplikasi.
+            Kamu bisa menghapus akun dan data pribadimu dari aplikasi Android
+            maupun dari situs ini, tanpa harus membuka aplikasi.
           </Text>
         </Stack>
 
@@ -115,7 +114,7 @@ export default function HapusAkunPage() {
             <List.Item>
               Ketik HAPUS. Jika akun memakai email dan kata sandi, isi kata sandi.
             </List.Item>
-            <List.Item>Akun langsung dihapus dan Anda keluar dari aplikasi.</List.Item>
+            <List.Item>Akun langsung dihapus dan kamu otomatis keluar dari aplikasi.</List.Item>
           </List>
         </Stack>
 
@@ -124,9 +123,9 @@ export default function HapusAkunPage() {
             Lewat situs ini
           </Title>
           <Text size="sm" lh={1.7}>
-            Masukkan email akun. Kami kirim kode 6 karakter (XXX-YYY) yang berlaku 10 menit.
-            Tidak ada masa tunggu tambahan: akun terhapus begitu kode dan konfirmasi
-            HAPUS diterima.
+            Tulis email akunmu. Kami kirim kode 6 karakter (XXX-YYY) yang
+            berlaku 10 menit. Tanpa masa tunggu tambahan: akun terhapus
+            begitu kode dan konfirmasi HAPUS diterima.
           </Text>
 
           {done ? (
@@ -154,8 +153,8 @@ export default function HapusAkunPage() {
                   {codeSent ? (
                     <>
                       <Text size="sm" c="dimmed">
-                        Jika email terdaftar, kode sudah dikirim. Masukkan kode lalu
-                        ketik HAPUS.
+                        Kalau emailnya terdaftar, kode sudah dikirim. Isi kode
+                        lalu ketik HAPUS.
                       </Text>
                       <TextInput
                         label="Kode dari email"

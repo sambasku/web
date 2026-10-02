@@ -66,7 +66,7 @@ export function meta({ params }: Route.MetaArgs) {
   return buildMetaTags({
     title: 'Kontribusi Kata',
     description:
-      'Bantu pelestarian bahasa Sambas: kirim kata, makna, terjemahan, atau contoh baru untuk diverifikasi tim kamus.',
+      'Ikut menjaga bahasa Sambas tetap hidup: kirim kata, makna, terjemahan, atau contoh baru buat tim kamus cek.',
     path: localePath(locale, '/kontribusi'),
     locale,
     // Halaman form = thin content, jangan diperebutkan di search engine.
@@ -600,7 +600,7 @@ export default function KontribusiPage() {
     }
     if (!advanced) {
       if (!standardPadanan.trim()) {
-        setError('Isi terjemahan bahasa Indonesia.');
+        setError('Isi dulu terjemahan bahasa Indonesianya ya.');
         return;
       }
     }
@@ -740,9 +740,9 @@ export default function KontribusiPage() {
       setDuplicateMessage(res.data.message);
     } catch (err) {
       if (err instanceof AppError && err.statusCode === 401) {
-        setError(
-          'Masuk dulu untuk mendukung atau menolak makna yang sudah ada. Gunakan aplikasi SambasKu.',
-        );
+          setError(
+            'Masuk dulu di aplikasi SambasKu untuk mendukung atau menolak makna yang sudah ada.',
+          );
       } else {
         setError(
           err instanceof Error ? err.message : 'Gagal mencatat dukungan.',
@@ -760,8 +760,9 @@ export default function KontribusiPage() {
           Kontribusi Kata
         </Title>
         <Text c="dimmed" ta="center">
-          Dikirim sebagai tamu. Kata belum tayang. Tim akan memeriksanya dulu.
-          Terima kasih menjaga bahasa Sambas tetap hidup.
+          Dikirim sebagai tamu, jadi katanya belum langsung tayang. Tim cek
+          dulu sebelum tampil. Terima kasih sudah menjaga bahasa Sambas
+          tetap hidup.
         </Text>
 
         <Modal
@@ -787,7 +788,7 @@ export default function KontribusiPage() {
                 </Text>
               )}
               <Text size="sm" c="dimmed">
-                Vote memerlukan akun. Tamu: buka aplikasi SambasKu, atau lihat
+                Vote butuh akun. Kamu bisa buka aplikasi SambasKu, atau lihat
                 entri yang sudah ada.
               </Text>
               <Group grow>
@@ -846,12 +847,12 @@ export default function KontribusiPage() {
                   &quot;{success}&quot; dikirim sebagai tamu
                 </Text>
                 <Text size="sm" c="dimmed" lh={1.55}>
-                  Kata belum tayang. Tim akan memeriksanya dulu, lalu
+                  Katanya belum langsung tayang. Tim cek dulu, lalu
                   menampilkannya di{' '}
                   <Anchor component={Link} to={lp('/words')} size="sm">
                     daftar kata
                   </Anchor>
-                  . Kalau kata yang sama sudah ada, makna baru akan digabungkan
+                  . Kalau kata yang sama sudah ada, makna baru digabungkan
                   ke halamannya.
                 </Text>
               </Stack>
@@ -893,7 +894,7 @@ export default function KontribusiPage() {
 
               <TextInput
                 label="Nama (opsional)"
-                placeholder="Nama untuk atribusi"
+                placeholder="Nama buat atribusi"
                 description="Jika kosong, tercatat sebagai Anonim"
                 value={contributorName}
                 onChange={(e) => setContributorName(e.currentTarget.value)}

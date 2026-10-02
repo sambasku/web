@@ -43,7 +43,7 @@ export function meta({ params }: Route.MetaArgs) {
   return buildMetaTags({
     title: 'Ruang Diskusi',
     description:
-      'Baca thread Ruang Diskusi bahasa Sambas yang sudah tayang. Buka atau balas thread lewat aplikasi SambasKu.',
+      'Baca obrolan warga di Ruang Diskusi yang sudah tayang. Buka atau balas thread lewat aplikasi SambasKu.',
     path: localePath(locale, '/ruang-diskusi'),
     locale,
   });
@@ -155,8 +155,8 @@ export default function RuangDiskusiFeedPage() {
             </Title>
           </Group>
           <Text c="dimmed" maw={560}>
-            Feed thread Ruang Diskusi yang sudah ditayangkan. Membaca bebas
-            di web; membuka atau membalas thread hanya lewat aplikasi SambasKu.
+            Obrolan warga yang sudah tayang. Membaca bebas di web; membuka
+            atau membalas thread lewat aplikasi SambasKu.
           </Text>
         </Stack>
 
@@ -174,7 +174,7 @@ export default function RuangDiskusiFeedPage() {
                 <Text fw={600}>Ingin ikut diskusi?</Text>
               </Group>
               <Text size="sm" c="dimmed">
-                Buka thread (teks atau foto) dan balas di aplikasi mobile
+                Buka thread (teks atau foto) lalu balas di aplikasi mobile
                 SambasKu.
               </Text>
             </Stack>
@@ -211,8 +211,8 @@ export default function RuangDiskusiFeedPage() {
               Belum ada yang tayang
             </Badge>
             <Text c="dimmed" ta="center" maw={420}>
-              Belum ada diskusi yang dipublikasikan. Mulai lewat
-              aplikasi SambasKu.
+              Belum ada yang tayang. Mulai lewat aplikasi SambasKu, nanti
+              muncul di sini.
             </Text>
             <Button
               component="a"

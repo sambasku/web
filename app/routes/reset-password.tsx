@@ -93,7 +93,7 @@ export default function ResetPasswordPage() {
       );
       setDone(true);
     } catch (err) {
-      setError(formError(err, 'Gagal mereset password. Coba lagi.'));
+      setError(formError(err, 'Gagal mereset password. Coba lagi ya.'));
     } finally {
       setSubmitting(false);
     }
@@ -108,10 +108,10 @@ export default function ResetPasswordPage() {
           </Title>
           <Text size="sm" c="dimmed">
             {done
-              ? 'Silakan masuk lagi di aplikasi SambasKu dengan password baru.'
+              ? 'Silakan masuk lagi di aplikasi SambasKu dengan password barunya.'
               : token
                 ? 'Tautan cadangan. Buat password baru, sekali pakai.'
-                : 'Masukkan kode 6 karakter 0-9A-Z dari email (berlaku 10 menit), lalu password baru.'}
+                : 'Isi kode 6 karakter 0-9A-Z dari email (berlaku 10 menit), lalu password barunya.'}
           </Text>
         </Stack>
 

@@ -44,7 +44,8 @@ export function meta({ data, params }: Route.MetaArgs) {
   if (!data?.help) {
     return buildMetaTags({
       title: 'Ruang Diskusi Tidak Ditemukan',
-      description: 'Baca thread Ruang Diskusi bahasa Sambas. Buka atau balas lewat aplikasi SambasKu.',
+      description:
+        'Baca obrolan warga di Ruang Diskusi. Buka atau balas lewat aplikasi SambasKu.',
       path: localePath(locale, '/ruang-diskusi'),
     locale,
     });
@@ -52,7 +53,7 @@ export function meta({ data, params }: Route.MetaArgs) {
 
   const excerpt =
     data.help.body?.trim().slice(0, 140) ||
-    'Thread Ruang Diskusi bahasa Sambas.';
+    'Obrolan warga di Ruang Diskusi.';
   const safeImage = data.help.images.find(
     (img) => !hasViolenceWarning(img.content_warnings),
   );
@@ -88,10 +89,10 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 
 function replyBodyLabel(reply: DiscussionReply): string {
   if (reply.status === 'taken_down') {
-    return 'Balasan ini telah diturunkan oleh moderasi.';
+    return 'Balasan ini sudah diturunkan oleh moderasi.';
   }
   if (reply.status === 'deleted_by_author') {
-    return 'Balasan dihapus oleh penulis.';
+    return 'Balasan dihapus penulisnya.';
   }
   return reply.body?.trim() || '';
 }
@@ -241,7 +242,7 @@ export default function RuangDiskusiDetailPage() {
           ) : null}
 
           <Text size="sm" c="dimmed">
-            ↑ {help.upvotes ?? 0} · Saya juga ingin tahu
+            ↑ {help.upvotes ?? 0} · Aku juga ingin tahu
           </Text>
         </Stack>
 
@@ -251,9 +252,9 @@ export default function RuangDiskusiDetailPage() {
           </Title>
 
           {replies.length === 0 ? (
-            <Text size="sm" c="dimmed">
-              Belum ada balasan.
-            </Text>
+          <Text size="sm" c="dimmed">
+            Belum ada balasan. Kamu bisa jadi yang pertama lewat aplikasi.
+          </Text>
           ) : (
             <Stack gap="sm">
               {replies.map((reply) => (
@@ -292,8 +293,8 @@ export default function RuangDiskusiDetailPage() {
                     </Text>
                     {reply.status === 'published' ? (
                       <Text size="xs" c="dimmed">
-                        ↑ {reply.upvotes ?? 0} · ↓ {reply.downvotes ?? 0} · Jawaban
-                        membantu?
+                        ↑ {reply.upvotes ?? 0} · ↓ {reply.downvotes ?? 0} ·
+                        Jawaban ini membantu?
                       </Text>
                     ) : null}
                   </Stack>
@@ -305,10 +306,10 @@ export default function RuangDiskusiDetailPage() {
 
         <Card withBorder padding="lg" radius="md">
           <Stack gap="sm">
-            <Text fw={600}>Balas & vote di aplikasi</Text>
+            <Text fw={600}>Balas &amp; vote di aplikasi</Text>
             <Text size="sm" c="dimmed">
-              Menulis balasan dan memberi vote hanya tersedia di aplikasi
-              SambasKu. Unduh di Google Play untuk ikut membantu.
+              Menulis balasan dan memberi vote cuma bisa di aplikasi SambasKu.
+              Unduh di Google Play biar bisa ikut membantu.
             </Text>
             <Flex
               gap="md"
