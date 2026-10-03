@@ -65,6 +65,7 @@ export default [
     route('api-publik', 'routes/api-publik.tsx'),
     route('privacy-policy', 'routes/privacy-policy.tsx'),
     route('syarat-ketentuan', 'routes/syarat-ketentuan.tsx'),
+    route('kontributor', 'routes/kontributor.tsx'),
     route('hapus-akun', 'routes/hapus-akun.tsx'),
     route('words', 'routes/words.tsx'),
     route('words/:lemma', 'routes/words.$lemma.tsx'),

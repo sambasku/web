@@ -254,6 +254,26 @@ export default function Home() {
         </Stack>
 
         <Stack gap="sm">
+          <Title order={2} size="h5" c="dimmed" tt="uppercase" fw={600}>
+            {t('home_openSourceHeading')}
+          </Title>
+          <Text size="sm" c="dimmed">
+            {t('home_openSourceBody')}
+          </Text>
+          <Anchor
+            href="https://github.com/sambasku"
+            target="_blank"
+            rel="noopener noreferrer"
+            size="sm"
+            fw={500}
+          >
+            {t('home_openSourceLink')}
+          </Anchor>
+        </Stack>
+
+        <Divider my="md" />
+
+        <Stack gap="sm">
           <Title order={2} size="h4" fw={700}>
             {t('home_aboutHeading')}
           </Title>

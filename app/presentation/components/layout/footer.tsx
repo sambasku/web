@@ -16,6 +16,7 @@ export function Footer() {
     { to: lp('/ruang-diskusi'), label: t('nav_ask') },
     { to: lp('/faq'), label: t('nav_faq') },
     { to: lp('/api-publik'), label: t('nav_apiPublik') },
+    { to: lp('/kontributor'), label: t('nav_sponsorTim') },
     { to: lp('/privacy-policy'), label: t('nav_privacy') },
   ] as const;
 
