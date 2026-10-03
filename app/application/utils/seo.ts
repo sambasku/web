@@ -36,6 +36,11 @@ export interface SeoMetaProps {
   type?: 'website' | 'article';
   locale?: AppLocale | string;
   /**
+   * Meta keywords - sinyal kecil (Google mengabaikan sejak 2009, Bing masih
+   * membaca). Gratis untuk query exact-match; kosong = tag tidak dipancarkan.
+   */
+  keywords?: string;
+  /**
    * Halaman hasil pencarian/thin-content: noindex di SEMUA environment
    * (panduan search engine untuk search results page).
    */
@@ -100,6 +105,7 @@ export function buildMetaTags({
   imageHeight,
   type = 'website',
   locale: localeInput,
+  keywords,
   noindexAlways = false,
 }: SeoMetaProps) {
   const locale = resolveLocale(localeInput);
@@ -126,6 +132,7 @@ export function buildMetaTags({
   return [
     { title: fullTitle },
     { name: 'description', content: description },
+    ...(keywords ? [{ name: 'keywords', content: keywords }] : []),
     ...(noindex
       ? [{ name: 'robots', content: 'noindex, nofollow' }]
       : [
@@ -263,6 +270,37 @@ export function buildFaqJsonLd(localeInput?: string) {
         text: item.answer,
       },
     })),
+  };
+}
+
+/**
+ * FAQPage khusus Ruang Diskusi - menangkap query intent
+ * "tanya terjemahan X bahasa sambas" / "cara bilang X bahasa Sambas"
+ * dan mengarahkannya ke halaman Ruang Diskusi.
+ */
+export function buildDiscussionFaqJsonLd(localeInput?: string) {
+  const locale = resolveLocale(localeInput);
+  const t = getFixedT(locale);
+  const discussUrl = `${env.appUrl}${localePath(locale, '/ruang-diskusi')}`;
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    '@id': `${discussUrl}#faq`,
+    url: discussUrl,
+    inLanguage: locale,
+    mainEntity: [
+      {
+        '@type': 'Question',
+        name: t('diskusi_faqQ1'),
+        acceptedAnswer: { '@type': 'Answer', text: t('diskusi_faqA1') },
+      },
+      {
+        '@type': 'Question',
+        name: t('diskusi_faqQ2'),
+        acceptedAnswer: { '@type': 'Answer', text: t('diskusi_faqA2') },
+      },
+    ],
   };
 }
 
