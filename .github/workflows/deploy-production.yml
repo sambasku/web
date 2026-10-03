@@ -86,7 +86,7 @@ jobs:
       # --name sambasku-web-prod: Worker produksi terpisah dari staging
       # (sambasku-web-staging) maupun default (sambasku-web).
       - name: Deploy ke Cloudflare Workers
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
