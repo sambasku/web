@@ -20,6 +20,7 @@ export const API_PUBLIK_ATTRIBUTION =
 
 export const API_PUBLIK_TOC: Array<{ id: string; label: string }> = [
   { id: 'konvensi', label: 'Konvensi' },
+  { id: 'playground', label: 'Playground' },
   { id: 'search', label: 'Cari kata' },
   { id: 'lemma', label: 'Detail by lemma' },
   { id: 'list', label: 'Daftar A-Z' },
@@ -232,3 +233,38 @@ export const API_PUBLIK_SECONDARY: ApiPublikEndpoint[] = [
 
 export const API_PUBLIK_OUT_OF_SCOPE =
   'Endpoint lain (kata hari ini, feed terbaru, admin) tidak dibahas di halaman ini. Fokus halaman: baca kamus untuk aplikasi, agen, dan peneliti. Dump korpus terverifikasi untuk agen: https://sambasku.com/llms-full.txt';
+
+/** Path param selalu segmen ":nama" di path endpoint. */
+export function splitApiPublikParams(endpoint: ApiPublikEndpoint) {
+  const pathParamNames = (endpoint.path.match(/:([a-z_]+)/g) ?? []).map(
+    (s) => s.slice(1),
+  );
+  const queryParamNames = (endpoint.params ?? [])
+    .map((p) => p.name)
+    .filter((n) => !pathParamNames.includes(n));
+  return { pathParamNames, queryParamNames };
+}
+
+/** Bangun URL request final dari endpoint + isi params. Murni, gampang dites. */
+export function buildApiPublikRequestUrl(
+  endpoint: ApiPublikEndpoint,
+  paramValues: Record<string, string>,
+): { url: string } | { error: string } {
+  const { pathParamNames, queryParamNames } =
+    splitApiPublikParams(endpoint);
+  let path = endpoint.path;
+  for (const name of pathParamNames) {
+    const value = (paramValues[name] ?? '').trim();
+    if (!value) {
+      return { error: `Parameter path :${name} masih kosong.` };
+    }
+    path = path.replace(`:${name}`, encodeURIComponent(value));
+  }
+  const qs = new URLSearchParams();
+  for (const name of queryParamNames) {
+    const value = (paramValues[name] ?? '').trim();
+    if (value) qs.set(name, value);
+  }
+  const query = qs.toString();
+  return { url: `${API_PUBLIK_BASE}${path}${query ? `?${query}` : ''}` };
+}
