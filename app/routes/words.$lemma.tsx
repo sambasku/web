@@ -369,6 +369,27 @@ export default function WordDetailPage() {
           </Stack>
         </Stack>
 
+        {/* CTA internal link ke Ruang Diskusi — tangkap intent "tanya terjemahan"
+            yang tidak terjawab definisi (SEO + konversi diskusi). */}
+        <Paper withBorder radius="md" p="md">
+          <Stack gap={4}>
+            <Text size="sm" fw={600}>
+              {t('word_askDiscussionCtaTitle')}
+            </Text>
+            <Text size="sm" c="dimmed">
+              {t('word_askDiscussionCtaBody', { lemma: word.lemma })}
+            </Text>
+            <Anchor
+              component={Link}
+              to={lp('/ruang-diskusi')}
+              size="sm"
+              fw={600}
+            >
+              {t('word_askDiscussionCtaButton')} →
+            </Anchor>
+          </Stack>
+        </Paper>
+
         {/* Related Words: Synonyms, Antonyms, Related */}
         {word.related_words.length > 0 && (
           <Stack gap="sm">
