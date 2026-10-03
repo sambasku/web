@@ -1,10 +1,11 @@
 import { buildUrlsetXml, type SitemapItem } from '../application/utils/sitemap';
+import { listPlaces } from '../application/use-cases/place.use-case';
 import { listWordsAtoZ } from '../application/use-cases/word.use-case';
 import { env } from '../infrastructure/config/env';
 
 /**
  * Satu urlset di /sitemap.xml: rute statis, halaman huruf yang punya
- * lemma terverifikasi, dan lemma terverifikasi saja.
+ * lemma terverifikasi, lemma terverifikasi saja, dan tempat wisata.
  *
  * Anggaran subrequest Worker (paket gratis 50 per request). 40 halaman
  * menyisakan ruang di bawah batas itu. Kalau masih ada halaman berikutnya
@@ -31,7 +32,9 @@ export async function loader() {
   }
 
   const words: { lemma: string; lastmod?: string }[] = [];
+  let placeSlugs: string[];
   try {
+    placeSlugs = (await listPlaces()).map((p) => p.slug);
     let cursor: string | undefined;
     for (let page = 0; page < MAX_PAGES; page++) {
       const res = await listWordsAtoZ({
@@ -53,7 +56,7 @@ export async function loader() {
       cursor = next;
     }
   } catch (err) {
-    console.error('[sitemap] gagal mengambil daftar kata', err);
+    console.error('[sitemap] gagal mengambil daftar kata/tempat', err);
     return new Response('Service Unavailable', {
       status: 503,
       headers: { 'Cache-Control': 'no-store', 'Retry-After': '600' },
@@ -77,6 +80,15 @@ export async function loader() {
           bare: `/huruf/${letter}`,
           priority: '0.6',
           changefreq: 'weekly',
+        }) satisfies SitemapItem,
+    ),
+    { bare: '/wisata', priority: '0.8', changefreq: 'weekly' },
+    ...placeSlugs.map(
+      (slug) =>
+        ({
+          bare: `/wisata/${encodeURIComponent(slug)}`,
+          priority: '0.7',
+          changefreq: 'monthly',
         }) satisfies SitemapItem,
     ),
     { bare: '/ruang-diskusi', priority: '0.7', changefreq: 'daily' },
