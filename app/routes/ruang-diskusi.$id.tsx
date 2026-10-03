@@ -26,6 +26,7 @@ import { useLocalePath } from '@/application/i18n/use-locale';
 
 import { formatDateId } from '@/application/utils/formatters';
 import { displayImageUrl } from '@/presentation/utils/display-image-url';
+import { safeExternalUrl } from '@/presentation/utils/safe-external-url';
 import { AppDownloadBadges } from '@/presentation/components/layout/app-download-badges';
 import type { DiscussionReply } from '@/domain/entities/discussion.entity';
 import { useTranslation } from 'react-i18next';
@@ -116,6 +117,9 @@ export default function RuangDiskusiDetailPage() {
   const replies = sortReplies(help.replies);
   const author =
     help.display_name?.trim() || help.username || 'Pengguna';
+  // HR-01: link_url input bebas pembuat diskusi - hanya https yang boleh
+  // jadi anchor; skema lain tampil sebagai teks polos.
+  const linkUrl = safeExternalUrl(help.link_url?.trim());
 
   useEffect(() => {
     trackEvent(AnalyticsEvents.discussionView, {
@@ -170,15 +174,19 @@ export default function RuangDiskusiDetailPage() {
             </Text>
           ) : null}
 
-          {help.link_url?.trim() ? (
+          {linkUrl ? (
             <Anchor
-              href={help.link_url.trim()}
+              href={linkUrl}
               target="_blank"
               rel="noopener noreferrer"
               size="sm"
             >
-              {help.link_url.trim()}
+              {linkUrl}
             </Anchor>
+          ) : help.link_url?.trim() ? (
+            <Text size="sm" style={{ wordBreak: 'break-all' }}>
+              {help.link_url.trim()}
+            </Text>
           ) : null}
 
           {help.images.length > 0 ? (

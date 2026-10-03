@@ -1,6 +1,7 @@
 import { Anchor, Text } from '@mantine/core';
 import { ExternalLink } from 'lucide-react';
 import type { WordImageAttribution } from '@/domain/entities/word.entity';
+import { safeExternalUrl } from '@/presentation/utils/safe-external-url';
 
 const UTM = 'utm_source=sambasku&utm_medium=referral';
 
@@ -24,9 +25,12 @@ const linkIcon = (
 );
 
 function ExtLink({ href, children }: { href?: string; children: string }) {
-  if (!href) return <>{children}</>;
+  // HR-01: href dari API pihak ketiga (Openverse) - hanya https yang boleh
+  // jadi anchor; selain itu label tetap tampil sebagai teks polos.
+  const safe = safeExternalUrl(href);
+  if (!safe) return <>{children}</>;
   return (
-    <Anchor href={href} target="_blank" rel="noopener noreferrer" inherit>
+    <Anchor href={safe} target="_blank" rel="noopener noreferrer" inherit>
       {children}
       {linkIcon}
     </Anchor>
