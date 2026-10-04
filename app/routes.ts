@@ -47,6 +47,8 @@ export default [
   route('words', 'routes/legacy-redirect.tsx', { id: 'legacy-words' }),
   route('words/:lemma', 'routes/legacy-redirect.tsx', { id: 'legacy-words-lemma' }),
   route('users/:username', 'routes/legacy-redirect.tsx', { id: 'legacy-users' }),
+  route('wisata', 'routes/legacy-redirect.tsx', { id: 'legacy-wisata-list' }),
+  route('wisata/:slug', 'routes/legacy-redirect.tsx', { id: 'legacy-wisata' }),
 
   route(':locale', 'routes/locale-layout.tsx', [
     index('routes/home.tsx'),

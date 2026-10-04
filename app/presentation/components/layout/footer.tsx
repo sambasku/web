@@ -15,6 +15,7 @@ export function Footer() {
     { to: lp('/wisata'), label: t('nav_wisata') },
     { to: lp('/kuliner'), label: t('nav_kuliner') },
     { to: lp('/kontribusi'), label: t('nav_contribute') },
+    { to: lp('/wisata'), label: t('nav_places') },
     { to: lp('/ruang-diskusi'), label: t('nav_ask') },
     { to: lp('/faq'), label: t('nav_faq') },
     { to: lp('/api-publik'), label: t('nav_apiPublik') },
