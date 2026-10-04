@@ -12,6 +12,8 @@ export function Footer() {
 
   const links = [
     { to: lp('/words'), label: t('nav_words') },
+    { to: lp('/wisata'), label: t('nav_wisata') },
+    { to: lp('/kuliner'), label: t('nav_kuliner') },
     { to: lp('/kontribusi'), label: t('nav_contribute') },
     { to: lp('/ruang-diskusi'), label: t('nav_ask') },
     { to: lp('/faq'), label: t('nav_faq') },
@@ -77,6 +79,17 @@ export function Footer() {
       <Stack gap={4} align="center">
         <Text size="xs" c="dimmed" ta="center">
           {t('common_copyright', { year: currentYear })}
+          {' · '}
+          <Anchor
+            href="https://creativecommons.org/licenses/by-sa/4.0/deed.id"
+            target="_blank"
+            rel="noopener noreferrer license"
+            size="xs"
+            c="dimmed"
+            aria-label={t('common_licenseAria')}
+          >
+            {t('common_license')}
+          </Anchor>
           {' · '}
           <Anchor component={Link} to={lp('/hapus-akun')} size="xs" c="dimmed">
             {t('common_deleteAccount')}

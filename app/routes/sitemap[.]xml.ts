@@ -1,5 +1,7 @@
 import { buildUrlsetXml, type SitemapItem } from '../application/utils/sitemap';
 import { listWordsAtoZ } from '../application/use-cases/word.use-case';
+import { fetchCuisines } from '../domain/cuisines';
+import { fetchPlaces } from '../domain/places';
 import { env } from '../infrastructure/config/env';
 
 /**
@@ -68,9 +70,35 @@ export async function loader() {
     ),
   ].sort();
 
+  // Kuliner: CDN gagal = lewati detail, jangan 503-kan seluruh sitemap.
+  const [cuisines, places] = await Promise.all([fetchCuisines(), fetchPlaces()]);
+  const kulinerSlugs = cuisines?.map((c) => c.slug) ?? [];
+  const wisataSlugs =
+    places
+      ?.filter((p) => p.category === 'wisata')
+      .map((p) => p.slug) ?? [];
+
   const items: SitemapItem[] = [
     { bare: '/', priority: '1.0', changefreq: 'daily' },
     { bare: '/words', priority: '0.9', changefreq: 'daily' },
+    { bare: '/wisata', priority: '0.8', changefreq: 'weekly' },
+    ...wisataSlugs.map(
+      (slug) =>
+        ({
+          bare: `/wisata/${encodeURIComponent(slug)}`,
+          priority: '0.7',
+          changefreq: 'monthly',
+        }) satisfies SitemapItem,
+    ),
+    { bare: '/kuliner', priority: '0.8', changefreq: 'weekly' },
+    ...kulinerSlugs.map(
+      (slug) =>
+        ({
+          bare: `/kuliner/${encodeURIComponent(slug)}`,
+          priority: '0.7',
+          changefreq: 'monthly',
+        }) satisfies SitemapItem,
+    ),
     ...letters.map(
       (letter) =>
         ({

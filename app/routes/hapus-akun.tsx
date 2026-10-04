@@ -132,7 +132,8 @@ export default function HapusAkunPage() {
             <Card withBorder padding="lg" radius="md">
               <Text size="sm">
                 Akun dan data pribadi berhasil dihapus. Entri kamus, komentar, dan
-                kontribusi yang sudah tayang tetap tersimpan, tanpa nama akun.
+                kontribusi teks yang sudah tayang tetap tersimpan tanpa nama akun.
+                Rekaman suara milikmu ikut dihapus.
               </Text>
             </Card>
           ) : (
@@ -210,6 +211,7 @@ export default function HapusAkunPage() {
             <List.Item>Sesi masuk, token notifikasi, bookmark, dan notifikasi dalam aplikasi.</List.Item>
             <List.Item>Tautan masuk dengan Google atau Facebook.</List.Item>
             <List.Item>Data pribadi pada pengajuan verifikator dan laporan bug.</List.Item>
+            <List.Item>Rekaman suara pelafalan yang kamu unggah, karena suara adalah data pribadi.</List.Item>
           </List>
         </Stack>
 
@@ -218,11 +220,12 @@ export default function HapusAkunPage() {
             Data yang tetap ada
           </Title>
           <Text size="sm" lh={1.7}>
-            Entri kamus, komentar, dan kontribusi yang sudah tayang tetap tersimpan
-            sebagai bagian kamus di dalam SambasKu. Nama akun pada konten itu diganti
-            menjadi penanda pengguna yang dihapus. Log teknis untuk keamanan disimpan
-            dalam jangka waktu yang wajar, dan tidak dipakai untuk mengidentifikasi
-            akun yang sudah dihapus.
+            Entri kamus, komentar, dan kontribusi teks yang sudah tayang tetap
+            tersimpan sebagai bagian kamus di dalam SambasKu. Nama akun pada
+            konten itu diganti menjadi penanda pengguna yang dihapus. Rekaman
+            suara ikut dihapus karena suara adalah data pribadi. Log teknis
+            untuk keamanan disimpan paling lama 1 tahun, dan tidak dipakai
+            untuk mengidentifikasi akun yang sudah dihapus.
           </Text>
         </Stack>
 

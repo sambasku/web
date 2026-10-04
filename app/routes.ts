@@ -69,6 +69,10 @@ export default [
     route('words', 'routes/words.tsx'),
     route('words/:lemma', 'routes/words.$lemma.tsx'),
     route('huruf/:letter', 'routes/huruf.$letter.tsx'),
+    route('kuliner', 'routes/kuliner.tsx'),
+    route('kuliner/:slug', 'routes/kuliner.$slug.tsx'),
+    route('wisata', 'routes/wisata.tsx'),
+    route('wisata/:slug', 'routes/wisata.$slug.tsx'),
     route('users/:username', 'routes/users.$username.tsx'),
   ]),
 ] satisfies RouteConfig;
