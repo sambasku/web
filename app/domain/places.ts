@@ -191,3 +191,11 @@ export const placeTypeLabels: Record<PlaceType, string> = {
   pantai: 'Pantai',
   belanja: 'Belanja',
 };
+
+/** Label kategori untuk chip UI: kuliner tetap Kuliner, wisata ikut type. */
+export const placeLabel = (p: Place): string =>
+  p.category === 'kuliner'
+    ? 'Kuliner'
+    : p.type !== null
+      ? (placeTypeLabels[p.type] ?? 'Wisata')
+      : 'Wisata';

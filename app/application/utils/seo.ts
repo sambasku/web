@@ -1,4 +1,4 @@
-import type { Place } from '@/application/use-cases/place.use-case';
+import type { Place } from '@/domain/places';
 import type { WordDetail, WordSummary } from '@/domain/entities/word.entity';
 import { pickSafePrimaryImageUrl } from '@/domain/image-content-warnings';
 import { env } from '@/infrastructure/config/env';

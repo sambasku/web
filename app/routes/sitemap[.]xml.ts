@@ -1,10 +1,8 @@
 import { buildUrlsetXml, type SitemapItem } from '../application/utils/sitemap';
-import { listPlaces } from '../application/use-cases/place.use-case';
 import { listWordsAtoZ } from '../application/use-cases/word.use-case';
 import { fetchCuisines } from '../domain/cuisines';
 import { fetchPlaces } from '../domain/places';
 import { env } from '../infrastructure/config/env';
-
 /**
  * Satu urlset di /sitemap.xml: rute statis, halaman huruf yang punya
  * lemma terverifikasi, lemma terverifikasi saja, dan tempat wisata.
@@ -36,7 +34,7 @@ export async function loader() {
   const words: { lemma: string; lastmod?: string }[] = [];
   let placeSlugs: string[];
   try {
-    placeSlugs = (await listPlaces()).map((p) => p.slug);
+    placeSlugs = (await fetchPlaces())?.map((p) => p.slug) ?? [];
     let cursor: string | undefined;
     for (let page = 0; page < MAX_PAGES; page++) {
       const res = await listWordsAtoZ({

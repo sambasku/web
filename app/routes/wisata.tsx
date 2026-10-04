@@ -23,12 +23,12 @@ import {
 } from '@/application/i18n/locales';
 import { useLocalePath } from '@/application/i18n/use-locale';
 import {
-  PLACE_TYPE_LABELS,
-  listPlaces,
+  fetchPlaces as listPlaces,
   placeCover,
   placeLabel,
+  placeTypeLabels as PLACE_TYPE_LABELS,
   type Place,
-} from '@/application/use-cases/place.use-case';
+} from '@/domain/places';
 import { env } from '@/infrastructure/config/env';
 import { AppDownloadBadges } from '@/presentation/components/layout/app-download-badges';
 import { displayImageUrl } from '@/presentation/utils/display-image-url';
@@ -70,7 +70,9 @@ export function meta({ data, params }: Route.MetaArgs) {
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
-  return { places: await listPlaces(request.signal) };
+  const places = await listPlaces(request.signal);
+  if (!places) throw new Response('Gagal memuat data wisata', { status: 503 });
+  return { places };
 }
 
 function PlaceRow({ place }: { place: Place }) {
