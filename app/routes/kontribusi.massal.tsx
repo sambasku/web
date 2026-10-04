@@ -89,7 +89,7 @@ export default function KontribusiMassalPage() {
       .filter((row) => row.sambas.length > 0 || row.indonesia.length > 0);
 
     if (filled.length === 0) {
-      setError('Isi minimal satu baris (Sambas + Indonesia).');
+      setError('Isi dulu minimal satu baris (Sambas + Indonesia) ya.');
       return;
     }
 
@@ -183,7 +183,8 @@ export default function KontribusiMassalPage() {
           <Title order={1}>Kontribusi Massal</Title>
           <Text c="dimmed" mt="xs">
             Isi banyak pasangan kata Sambas dan padanan Indonesia sekaligus.
-            Langsung tayang; tim bisa menarik seluruh batch bila perlu.
+            Langsung tayang; kalau ada masalah, tim bisa menarik seluruh
+            batchnya.
           </Text>
         </div>
 
@@ -203,14 +204,14 @@ export default function KontribusiMassalPage() {
           <form onSubmit={onSubmit}>
             <Stack gap="md">
               <Alert color="blue" variant="light" title="Langsung tayang">
-                Berbeda dari form tunggal, batch ini langsung masuk kamus.
-                Kosongkan nama jika ingin tercatat sebagai Anonim.
+                Beda dari form tunggal, batch ini langsung masuk kamus.
+                Kosongkan nama kalau mau tercatat sebagai Anonim.
               </Alert>
 
               <TextInput
                 label="Nama (opsional)"
-                placeholder="Nama untuk atribusi"
-                description="Jika kosong, tercatat sebagai Anonim"
+                placeholder="Nama buat atribusi"
+                description="Kalau kosong, tercatat sebagai Anonim"
                 value={contributorName}
                 onChange={(e) => setContributorName(e.currentTarget.value)}
                 maxLength={80}

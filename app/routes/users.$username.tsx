@@ -71,7 +71,7 @@ export default function PublicProfilePage() {
             Profil tidak ditemukan
           </Title>
           <Text c="dimmed">
-            Pengguna @{username} tidak ada atau sudah dihapus.
+            @{username} tidak ada, atau sudah dihapus.
           </Text>
           <Anchor component={Link} to={lp('/')}>
             Kembali ke beranda
@@ -133,11 +133,11 @@ export default function PublicProfilePage() {
 
         <Stack gap="xs">
           <Text size="sm" c="dimmed">
-            Buka profil ini di aplikasi SambasKu untuk fitur lengkap.
+            Buka profil ini di aplikasi SambasKu buat fitur lengkapnya.
           </Text>
           <Anchor href={deepLink}>Buka di aplikasi</Anchor>
           <Text size="xs" c="dimmed">
-            Atau salin tautan: {httpsLink}
+            Atau salin tautannya: {httpsLink}
           </Text>
         </Stack>
 

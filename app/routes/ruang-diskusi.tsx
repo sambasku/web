@@ -7,6 +7,7 @@ import {
   Flex,
   Group,
   Image,
+  Paper,
   SimpleGrid,
   Stack,
   Text,
@@ -15,19 +16,22 @@ import {
 import { Languages, Smartphone } from 'lucide-react';
 import type { Route } from './+types/ruang-diskusi';
 import { listPublishedDiscussions } from '@/application/use-cases/discussion.use-case';
-import { buildMetaTags } from '@/application/utils/seo';
+import { buildMetaTags, buildDiscussionFaqJsonLd } from '@/application/utils/seo';
+import { getFixedT } from '@/application/i18n/i18n-instance';
 import {
   DEFAULT_LOCALE,
   isAppLocale,
   localePath,
   stripLocalePrefix,
 } from '@/application/i18n/locales';
+import { useTranslation } from 'react-i18next';
 import { useLocalePath } from '@/application/i18n/use-locale';
 
 import { formatDateId } from '@/application/utils/formatters';
 import { displayImageUrl } from '@/presentation/utils/display-image-url';
 import { AppDownloadBadges } from '@/presentation/components/layout/app-download-badges';
 import { hasViolenceWarning } from '@/domain/image-content-warnings';
+import { env } from '@/infrastructure/config/env';
 import type { DiscussionPublicItem } from '@/domain/entities/discussion.entity';
 import { useEffect } from 'react';
 import {
@@ -40,13 +44,17 @@ const PLAY_STORE_URL =
 
 export function meta({ params }: Route.MetaArgs) {
   const locale = isAppLocale(params.locale) ? params.locale : DEFAULT_LOCALE;
-  return buildMetaTags({
-    title: 'Ruang Diskusi',
-    description:
-      'Baca thread Ruang Diskusi bahasa Sambas yang sudah tayang. Buka atau balas thread lewat aplikasi SambasKu.',
-    path: localePath(locale, '/ruang-diskusi'),
-    locale,
-  });
+  const t = getFixedT(locale);
+  return [
+    ...buildMetaTags({
+      title: t('seo_diskusiTitle'),
+      description: t('seo_diskusiDescription'),
+      keywords: t('seo_diskusiKeywords'),
+      path: localePath(locale, '/ruang-diskusi'),
+      locale,
+    }),
+    ...(env.isProd ? [{ 'script:ld+json': buildDiscussionFaqJsonLd(locale) }] : []),
+  ];
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
@@ -125,6 +133,7 @@ export default function RuangDiskusiFeedPage() {
   const isLoading =
     navigation.state === 'loading' &&
     stripLocalePrefix(navigation.location.pathname).path === '/ruang-diskusi';
+  const { t } = useTranslation();
 
   useEffect(() => {
     trackEvent(AnalyticsEvents.discussionView, {
@@ -155,10 +164,25 @@ export default function RuangDiskusiFeedPage() {
             </Title>
           </Group>
           <Text c="dimmed" maw={560}>
-            Feed thread Ruang Diskusi yang sudah ditayangkan. Membaca bebas
-            di web; membuka atau membalas thread hanya lewat aplikasi SambasKu.
+            Obrolan warga yang sudah tayang. Membaca bebas di web; membuka
+            atau membalas thread lewat aplikasi SambasKu.
           </Text>
         </Stack>
+
+        {/* Alert banner: di Ruang Diskusi kamu bisa tanya soal bahasa & budaya Sambas */}
+        <Paper withBorder radius="md" p="md" bg="var(--mantine-color-yellow-light)" c="var(--mantine-color-yellow-filled)">
+          <Stack gap={2}>
+            <Group gap="xs">
+              <Languages size={16} />
+              <Text fw={600} size="sm">
+                {t('diskusi_alertTitle')}
+              </Text>
+            </Group>
+            <Text size="sm">
+              {t('diskusi_alertBody')}
+            </Text>
+          </Stack>
+        </Paper>
 
         <Card withBorder padding="lg" radius="md" bg="var(--mantine-color-body)">
           <Flex
@@ -174,7 +198,7 @@ export default function RuangDiskusiFeedPage() {
                 <Text fw={600}>Ingin ikut diskusi?</Text>
               </Group>
               <Text size="sm" c="dimmed">
-                Buka thread (teks atau foto) dan balas di aplikasi mobile
+                Buka thread (teks atau foto) lalu balas di aplikasi mobile
                 SambasKu.
               </Text>
             </Stack>
@@ -211,8 +235,8 @@ export default function RuangDiskusiFeedPage() {
               Belum ada yang tayang
             </Badge>
             <Text c="dimmed" ta="center" maw={420}>
-              Belum ada diskusi yang dipublikasikan. Mulai lewat
-              aplikasi SambasKu.
+              Belum ada yang tayang. Mulai lewat aplikasi SambasKu, nanti
+              muncul di sini.
             </Text>
             <Button
               component="a"

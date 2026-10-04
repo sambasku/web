@@ -1,10 +1,11 @@
 import { buildUrlsetXml, type SitemapItem } from '../application/utils/sitemap';
 import { listWordsAtoZ } from '../application/use-cases/word.use-case';
+import { fetchCuisines } from '../domain/cuisines';
+import { fetchPlaces } from '../domain/places';
 import { env } from '../infrastructure/config/env';
-
 /**
  * Satu urlset di /sitemap.xml: rute statis, halaman huruf yang punya
- * lemma terverifikasi, dan lemma terverifikasi saja.
+ * lemma terverifikasi, lemma terverifikasi saja, dan tempat wisata.
  *
  * Anggaran subrequest Worker (paket gratis 50 per request). 40 halaman
  * menyisakan ruang di bawah batas itu. Kalau masih ada halaman berikutnya
@@ -31,7 +32,9 @@ export async function loader() {
   }
 
   const words: { lemma: string; lastmod?: string }[] = [];
+  let placeSlugs: string[];
   try {
+    placeSlugs = (await fetchPlaces())?.map((p) => p.slug) ?? [];
     let cursor: string | undefined;
     for (let page = 0; page < MAX_PAGES; page++) {
       const res = await listWordsAtoZ({
@@ -53,7 +56,7 @@ export async function loader() {
       cursor = next;
     }
   } catch (err) {
-    console.error('[sitemap] gagal mengambil daftar kata', err);
+    console.error('[sitemap] gagal mengambil daftar kata/tempat', err);
     return new Response('Service Unavailable', {
       status: 503,
       headers: { 'Cache-Control': 'no-store', 'Retry-After': '600' },
@@ -68,15 +71,50 @@ export async function loader() {
     ),
   ].sort();
 
+  // Kuliner: CDN gagal = lewati detail, jangan 503-kan seluruh sitemap.
+  const [cuisines, places] = await Promise.all([fetchCuisines(), fetchPlaces()]);
+  const kulinerSlugs = cuisines?.map((c) => c.slug) ?? [];
+  const wisataSlugs =
+    places
+      ?.filter((p) => p.category === 'wisata')
+      .map((p) => p.slug) ?? [];
+
   const items: SitemapItem[] = [
     { bare: '/', priority: '1.0', changefreq: 'daily' },
     { bare: '/words', priority: '0.9', changefreq: 'daily' },
+    { bare: '/wisata', priority: '0.8', changefreq: 'weekly' },
+    ...wisataSlugs.map(
+      (slug) =>
+        ({
+          bare: `/wisata/${encodeURIComponent(slug)}`,
+          priority: '0.7',
+          changefreq: 'monthly',
+        }) satisfies SitemapItem,
+    ),
+    { bare: '/kuliner', priority: '0.8', changefreq: 'weekly' },
+    ...kulinerSlugs.map(
+      (slug) =>
+        ({
+          bare: `/kuliner/${encodeURIComponent(slug)}`,
+          priority: '0.7',
+          changefreq: 'monthly',
+        }) satisfies SitemapItem,
+    ),
     ...letters.map(
       (letter) =>
         ({
           bare: `/huruf/${letter}`,
           priority: '0.6',
           changefreq: 'weekly',
+        }) satisfies SitemapItem,
+    ),
+    { bare: '/wisata', priority: '0.8', changefreq: 'weekly' },
+    ...placeSlugs.map(
+      (slug) =>
+        ({
+          bare: `/wisata/${encodeURIComponent(slug)}`,
+          priority: '0.7',
+          changefreq: 'monthly',
         }) satisfies SitemapItem,
     ),
     { bare: '/ruang-diskusi', priority: '0.7', changefreq: 'daily' },

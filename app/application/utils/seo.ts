@@ -1,3 +1,4 @@
+import type { Place } from '@/domain/places';
 import type { WordDetail, WordSummary } from '@/domain/entities/word.entity';
 import { pickSafePrimaryImageUrl } from '@/domain/image-content-warnings';
 import { env } from '@/infrastructure/config/env';
@@ -35,6 +36,11 @@ export interface SeoMetaProps {
   imageHeight?: number;
   type?: 'website' | 'article';
   locale?: AppLocale | string;
+  /**
+   * Meta keywords - sinyal kecil (Google mengabaikan sejak 2009, Bing masih
+   * membaca). Gratis untuk query exact-match; kosong = tag tidak dipancarkan.
+   */
+  keywords?: string;
   /**
    * Halaman hasil pencarian/thin-content: noindex di SEMUA environment
    * (panduan search engine untuk search results page).
@@ -100,6 +106,7 @@ export function buildMetaTags({
   imageHeight,
   type = 'website',
   locale: localeInput,
+  keywords,
   noindexAlways = false,
 }: SeoMetaProps) {
   const locale = resolveLocale(localeInput);
@@ -126,6 +133,7 @@ export function buildMetaTags({
   return [
     { title: fullTitle },
     { name: 'description', content: description },
+    ...(keywords ? [{ name: 'keywords', content: keywords }] : []),
     ...(noindex
       ? [{ name: 'robots', content: 'noindex, nofollow' }]
       : [
@@ -267,6 +275,37 @@ export function buildFaqJsonLd(localeInput?: string) {
 }
 
 /**
+ * FAQPage khusus Ruang Diskusi - menangkap query intent
+ * "tanya terjemahan X bahasa sambas" / "cara bilang X bahasa Sambas"
+ * dan mengarahkannya ke halaman Ruang Diskusi.
+ */
+export function buildDiscussionFaqJsonLd(localeInput?: string) {
+  const locale = resolveLocale(localeInput);
+  const t = getFixedT(locale);
+  const discussUrl = `${env.appUrl}${localePath(locale, '/ruang-diskusi')}`;
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    '@id': `${discussUrl}#faq`,
+    url: discussUrl,
+    inLanguage: locale,
+    mainEntity: [
+      {
+        '@type': 'Question',
+        name: t('diskusi_faqQ1'),
+        acceptedAnswer: { '@type': 'Answer', text: t('diskusi_faqA1') },
+      },
+      {
+        '@type': 'Question',
+        name: t('diskusi_faqQ2'),
+        acceptedAnswer: { '@type': 'Answer', text: t('diskusi_faqA2') },
+      },
+    ],
+  };
+}
+
+/**
  * JSON-LD halaman huruf `/{locale}/huruf/:letter`: CollectionPage (dengan
  * ItemList dari halaman aktif) + BreadcrumbList, sejalan pola buildWordJsonLd.
  */
@@ -394,6 +433,95 @@ export function buildWordJsonLd(word: WordDetail, localeInput?: string) {
   return {
     '@context': 'https://schema.org',
     '@graph': [definedTerm, breadcrumb],
+  };
+}
+
+const SAMBAS_ADDRESS = {
+  '@type': 'PostalAddress',
+  addressLocality: 'Kabupaten Sambas',
+  addressRegion: 'Kalimantan Barat',
+  addressCountry: 'ID',
+};
+
+function placesBreadcrumb(locale: AppLocale, last?: { name: string; url: string }) {
+  const t = getFixedT(locale);
+  const listUrl = `${env.appUrl}${localePath(locale, '/wisata')}`;
+  const crumbs = [
+    { name: t('word_homeCrumb'), item: `${env.appUrl}${localePath(locale, '/')}` },
+    { name: 'Wisata Sambas', item: listUrl },
+    ...(last ? [{ name: last.name, item: last.url }] : []),
+  ];
+  return {
+    '@type': 'BreadcrumbList',
+    '@id': `${last?.url ?? listUrl}#breadcrumb`,
+    itemListElement: crumbs.map((c, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      ...c,
+    })),
+  };
+}
+
+/** JSON-LD daftar `/wisata`: CollectionPage + ItemList tempat. */
+export function buildPlaceListJsonLd(places: Place[], localeInput?: string) {
+  const locale = resolveLocale(localeInput);
+  const listUrl = `${env.appUrl}${localePath(locale, '/wisata')}`;
+  return {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'CollectionPage',
+        '@id': `${listUrl}#collection`,
+        name: 'Wisata Sambas',
+        url: listUrl,
+        inLanguage: locale,
+        isPartOf: { '@id': `${env.appUrl}${localePath(locale, '/')}#website` },
+        mainEntity: {
+          '@type': 'ItemList',
+          itemListElement: places.map((p, i) => ({
+            '@type': 'ListItem',
+            position: i + 1,
+            name: p.name,
+            url: `${env.appUrl}${localePath(locale, `/wisata/${encodeURIComponent(p.slug)}`)}`,
+          })),
+        },
+      },
+      placesBreadcrumb(locale),
+    ],
+  };
+}
+
+/** JSON-LD detail tempat: TouristAttraction (kuliner: FoodEstablishment). */
+export function buildPlaceJsonLd(
+  place: Place,
+  image: string | undefined,
+  localeInput?: string,
+) {
+  const locale = resolveLocale(localeInput);
+  const url = `${env.appUrl}${localePath(locale, `/wisata/${encodeURIComponent(place.slug)}`)}`;
+  return {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': place.category === 'kuliner' ? 'FoodEstablishment' : 'TouristAttraction',
+        '@id': `${url}#place`,
+        name: place.name,
+        description: place.shortDescription,
+        url,
+        ...(image ? { image } : {}),
+        address: SAMBAS_ADDRESS,
+        geo: {
+          '@type': 'GeoCoordinates',
+          latitude: place.lat,
+          longitude: place.lng,
+        },
+        hasMap: `https://www.google.com/maps/search/?api=1&query=${place.lat},${place.lng}`,
+        // `hours` teks bebas, bukan format schema `Mo-Fr 08:00-17:00`;
+        // dipancarkan malah jadi warning Rich Results.
+        ...(place.contact ? { telephone: place.contact } : {}),
+      },
+      placesBreadcrumb(locale, { name: place.name, url }),
+    ],
   };
 }
 

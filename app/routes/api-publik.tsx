@@ -36,6 +36,7 @@ import {
 import { getFixedT } from '@/application/i18n/i18n-instance';
 import { useLocalePath } from '@/application/i18n/use-locale';
 import { CodeHighlightProvider } from '@/presentation/components/code-highlight-provider';
+import { ApiPlayground } from '@/presentation/components/api-playground';
 import '@/presentation/styles/code-highlight.css';
 
 export function meta({ params }: Route.MetaArgs) {
@@ -253,6 +254,24 @@ export default function ApiPublikPage() {
               withBorder
               copyLabel={copyLabel}
               copiedLabel={copiedLabel}
+            />
+          </Stack>
+
+          <Stack gap="sm" id="playground">
+            <Title order={2} size="h3" fw={700}>
+              {t('apiPublik_playgroundTitle')}
+            </Title>
+            <ApiPlayground
+              labels={{
+                intro: t('apiPublik_playgroundIntro'),
+                endpointLabel: t('apiPublik_endpoint'),
+                run: t('apiPublik_run'),
+                running: t('apiPublik_running'),
+                duration: t('apiPublik_duration'),
+                requestUrl: t('apiPublik_requestUrl'),
+                responsePreview: t('apiPublik_responsePreview'),
+                networkError: t('apiPublik_networkError'),
+              }}
             />
           </Stack>
 
