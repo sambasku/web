@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Link, useLoaderData } from 'react-router';
 import {
   Anchor,
@@ -28,6 +29,7 @@ import {
   type Place,
 } from '@/domain/places';
 import { env } from '@/infrastructure/config/env';
+import { safeExternalUrl } from '@/presentation/utils/safe-external-url';
 import { AppDownloadBadges } from '@/presentation/components/layout/app-download-badges';
 import { displayImageUrl } from '@/presentation/utils/display-image-url';
 
@@ -107,32 +109,51 @@ function CreditLine({
   return (
     <Text size="xs" c="dimmed" lineClamp={1}>
       {label}:{' '}
-      <Anchor
-        href={nameUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        size="xs"
-        fw={600}
-      >
+      {/* HR-01: URL dari JSON CDN pihak ketiga; non-https render teks polos. */}
+      <SafeAnchor href={nameUrl} fw={600}>
         {name}
         {suffix}
-      </Anchor>
+      </SafeAnchor>
       {license ? (
         <>
           {' · '}
-          <Anchor
-            href={licenseUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            size="xs"
-            c="dimmed"
-            underline="always"
-          >
+          <SafeAnchor href={licenseUrl} c="dimmed" underline="always">
             {license}
-          </Anchor>
+          </SafeAnchor>
         </>
       ) : null}
     </Text>
+  );
+}
+
+/** HR-01: href dari JSON CDN; non-https/URL rusak render anak sebagai teks. */
+function SafeAnchor({
+  href,
+  children,
+  fw,
+  c,
+  underline,
+}: {
+  href?: string;
+  children: ReactNode;
+  fw?: number;
+  c?: string;
+  underline?: 'always' | 'never' | 'hover';
+}) {
+  const safe = safeExternalUrl(href);
+  if (!safe) return <>{children}</>;
+  return (
+    <Anchor
+      href={safe}
+      target="_blank"
+      rel="noopener noreferrer"
+      size="xs"
+      fw={fw}
+      c={c}
+      underline={underline}
+    >
+      {children}
+    </Anchor>
   );
 }
 
@@ -202,13 +223,13 @@ export default function PlaceSharePage() {
         </Title>
         <Group gap={6} mt={8}>
           <Badge variant="light" color="gray">
-            {place.category === 'kuliner' ? 'Kuliner' : 'Wisata'}
+            {placeLabel(place)}
           </Badge>
-          {place.category !== 'kuliner' && place.type && PLACE_TYPE_LABELS[place.type] ? (
+          {place.category !== 'kuliner' && place.type && (
             <Badge variant="light" color="gray">
               {PLACE_TYPE_LABELS[place.type]}
             </Badge>
-          ) : null}
+          )}
         </Group>
 
         {info.length > 0 ? (

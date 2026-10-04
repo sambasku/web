@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Link, useLoaderData } from 'react-router';
 import {
   Anchor,
@@ -24,6 +25,7 @@ import {
 import { buildCuisineJsonLd } from '@/application/utils/cuisine-seo';
 import { buildMetaTags } from '@/application/utils/seo';
 import { env } from '@/infrastructure/config/env';
+import { safeExternalUrl } from '@/presentation/utils/safe-external-url';
 import {
   DEFAULT_LOCALE,
   isAppLocale,
@@ -78,6 +80,31 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   return { cuisine };
 }
 
+/** HR-01: href dari JSON CDN; non-https/URL rusak render anak sebagai teks. */
+function SafeExtLink({
+  href,
+  children,
+  rel,
+}: {
+  href?: string;
+  children: ReactNode;
+  rel?: string;
+}) {
+  const safe = safeExternalUrl(href);
+  if (!safe) return <>{children}</>;
+  return (
+    <Anchor
+      href={safe}
+      target="_blank"
+      rel={rel ?? 'noopener noreferrer'}
+      size="xs"
+      c="inherit"
+    >
+      {children}
+    </Anchor>
+  );
+}
+
 export default function KulinerDetailPage() {
   const { cuisine: c } = useLoaderData<typeof loader>();
   const { t } = useTranslation();
@@ -128,33 +155,18 @@ export default function KulinerDetailPage() {
         {cover?.attribution ? (
           <Text size="xs" c="dimmed">
             Foto:{' '}
-            {cover.attribution.url ? (
-              <Anchor
-                href={cover.attribution.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                size="xs"
-              >
-                {cover.attribution.name}
-              </Anchor>
-            ) : (
-              cover.attribution.name
-            )}
+            <SafeExtLink href={cover.attribution.url}>
+              {cover.attribution.name}
+            </SafeExtLink>
             {cover.attribution.license ? (
               <>
                 {' · '}
-                {cover.attribution.license_url ? (
-                  <Anchor
-                    href={cover.attribution.license_url}
-                    target="_blank"
-                    rel="noopener noreferrer license"
-                    size="xs"
-                  >
-                    {cover.attribution.license}
-                  </Anchor>
-                ) : (
-                  cover.attribution.license
-                )}
+                <SafeExtLink
+                  href={cover.attribution.license_url}
+                  rel="noopener noreferrer license"
+                >
+                  {cover.attribution.license}
+                </SafeExtLink>
               </>
             ) : null}
           </Text>
