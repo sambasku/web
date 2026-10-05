@@ -1,6 +1,9 @@
+import { useState } from 'react';
 import { Link, useLoaderData, useNavigation } from 'react-router';
 import {
-  Card,
+  Anchor,
+  Badge,
+  Box,
   Container,
   Group,
   Image,
@@ -8,10 +11,11 @@ import {
   Skeleton,
   Stack,
   Text,
+  TextInput,
   ThemeIcon,
   Title,
 } from '@mantine/core';
-import { UtensilsCrossed, MapPin, AlertCircle } from 'lucide-react';
+import { UtensilsCrossed, AlertCircle, Search } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { Route } from './+types/kuliner';
 import { fetchCuisines, cuisineCover, type Cuisine } from '@/domain/cuisines';
@@ -47,6 +51,8 @@ export function meta({ params, data }: Route.MetaArgs) {
   ];
 }
 
+const THUMB = 88;
+
 /** Tanpa subrequest saat data kosong? Tetap fetch: halaman ini kontennya. */
 export async function loader({ request }: Route.LoaderArgs) {
   const items = await fetchCuisines(request.signal);
@@ -57,9 +63,21 @@ export default function KulinerListPage() {
   const { items } = useLoaderData<typeof loader>();
   const navigation = useNavigation();
   const { t } = useTranslation();
+  const [filter, setFilter] = useState<string>('semua');
+  const [query, setQuery] = useState('');
   const isLoading =
     navigation.state === 'loading' &&
     stripLocalePrefix(navigation.location.pathname).path === '/kuliner';
+
+  // Chip filter unik dari region yang ada di data; kosong = "Semua" saja.
+  const regions = [...new Set(items.map((c) => c.region).filter(Boolean))].sort();
+
+  const q = query.trim().toLowerCase();
+  const shown = items.filter(
+    (c) =>
+      (filter === 'semua' || c.region === filter) &&
+      (!q || c.name.toLowerCase().includes(q)),
+  );
 
   return (
     <Container size="md" py="xl">
@@ -78,15 +96,45 @@ export default function KulinerListPage() {
           </Text>
         </Stack>
 
+        <TextInput
+          placeholder={t('kuliner_searchPlaceholder')}
+          aria-label={t('kuliner_searchPlaceholder')}
+          leftSection={<Search size={16} />}
+          value={query}
+          onChange={(e) => setQuery(e.currentTarget.value)}
+        />
+
+        {regions.length > 0 ? (
+          <Group gap={6} wrap="nowrap" pb={4} style={{ overflowX: 'auto', scrollbarWidth: 'none' }}>
+            {['semua', ...regions].map((r) => (
+              <Badge
+                key={r}
+                component="button"
+                type="button"
+                size="lg"
+                tt="none"
+                fw={500}
+                variant={filter === r ? 'filled' : 'light'}
+                color={filter === r ? 'teal' : 'gray'}
+                aria-pressed={filter === r}
+                onClick={() => setFilter(r)}
+                style={{ cursor: 'pointer', flexShrink: 0, border: 0 }}
+              >
+                {r === 'semua' ? t('kuliner_filterAll') : r}
+              </Badge>
+            ))}
+          </Group>
+        ) : null}
+
         {isLoading ? (
           <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
             {Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} height={220} radius="md" />
+              <Skeleton key={i} height={THUMB + 24} radius="md" />
             ))}
           </SimpleGrid>
-        ) : items.length > 0 ? (
+        ) : shown.length > 0 ? (
           <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
-            {items.map((c) => (
+            {shown.map((c) => (
               <CuisineCard key={c.id} c={c} />
             ))}
           </SimpleGrid>
@@ -96,10 +144,10 @@ export default function KulinerListPage() {
               <AlertCircle size={24} />
             </ThemeIcon>
             <Title order={4} ta="center">
-              {t('kuliner_emptyTitle')}
+              {items.length === 0 ? t('kuliner_emptyTitle') : t('kuliner_noMatchTitle')}
             </Title>
             <Text size="sm" c="dimmed" ta="center">
-              {t('kuliner_emptyBody')}
+              {items.length === 0 ? t('kuliner_emptyBody') : t('kuliner_noMatchBody')}
             </Text>
           </Stack>
         )}
@@ -111,37 +159,41 @@ export default function KulinerListPage() {
 function CuisineCard({ c }: { c: Cuisine }) {
   const lp = useLocalePath();
   const cover = cuisineCover(c);
-  const thumb = cover ? displayImageUrl(cover.url, { width: 640, height: 360 }) : undefined;
+  const thumb = cover ? displayImageUrl(cover.url, { width: 240 }) : undefined;
   return (
-    <Card
+    <Anchor
       component={Link}
       to={lp(`/kuliner/${encodeURIComponent(c.slug)}`)}
-      withBorder
-      padding="md"
-      radius="md"
-      shadow="none"
+      underline="never"
+      c="inherit"
+      py={12}
+      style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}
     >
-      <Card.Section component="div">
-        {thumb ? (
-          <Image src={thumb} alt={c.name} h={180} fit="cover" />
-        ) : (
-          <Stack align="center" justify="center" h="180px" bg="var(--mantine-color-gray-0)">
-            <UtensilsCrossed size={40} stroke="1.4" style={{ opacity: 0.4 }} />
-          </Stack>
-        )}
-      </Card.Section>
-      <Stack gap={6} pt="md">
-        <Text size="lg" fw={700} lh={1.3}>
+      {thumb ? (
+        <Image
+          src={thumb}
+          alt={c.name}
+          w={THUMB}
+          h={THUMB}
+          radius={12}
+          fit="cover"
+          loading="lazy"
+          style={{ flexShrink: 0 }}
+        />
+      ) : (
+        <Box w={THUMB} h={THUMB} bg="gray.2" style={{ borderRadius: 12, flexShrink: 0 }} />
+      )}
+      <Stack gap={2} style={{ minWidth: 0 }}>
+        <Text component="h2" fz={{ base: 15, sm: 17 }} fw={600} lh={1.3} m={0}>
           {c.name}
         </Text>
-        <Group gap={6} c="dimmed">
-          <MapPin size={13} aria-hidden />
-          <Text size="xs">{c.region}</Text>
-        </Group>
-        <Text size="sm" c="dimmed" lineClamp={3}>
+        <Text fz={{ base: 12, sm: 14 }} c="dimmed" fw={500}>
+          {c.region}
+        </Text>
+        <Text fz={{ base: 12, sm: 14 }} c="dimmed" lineClamp={1}>
           {c.description}
         </Text>
       </Stack>
-    </Card>
+    </Anchor>
   );
 }

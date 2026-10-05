@@ -63,7 +63,7 @@ export function buildCuisineListJsonLd(
     '@id': `${listUrl}#breadcrumb`,
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: t('word_homeCrumb'), item: homeUrl },
-      { '@type': 'ListItem', position: 2, name: t('seo_kulinerTitle'), item: listUrl },
+      { '@type': 'ListItem', position: 2, name: t('kuliner_heading'), item: listUrl },
     ],
   };
 
@@ -114,7 +114,7 @@ export function buildCuisineJsonLd(c: Cuisine, localeInput?: string) {
     '@id': `${url}#breadcrumb`,
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: t('word_homeCrumb'), item: homeUrl },
-      { '@type': 'ListItem', position: 2, name: t('seo_kulinerTitle'), item: listUrl },
+      { '@type': 'ListItem', position: 2, name: t('kuliner_heading'), item: listUrl },
       { '@type': 'ListItem', position: 3, name: c.name, item: url },
     ],
   };

@@ -1,13 +1,13 @@
-import { Fragment, useState } from 'react';
+import { useState } from 'react';
 import { Link, useLoaderData } from 'react-router';
 import {
   Anchor,
   Badge,
   Box,
-  Divider,
+  Container,
   Group,
   Image,
-  Paper,
+  SimpleGrid,
   Stack,
   Text,
   TextInput,
@@ -30,17 +30,15 @@ import {
   type Place,
 } from '@/domain/places';
 import { env } from '@/infrastructure/config/env';
-import { AppDownloadBadges } from '@/presentation/components/layout/app-download-badges';
 import { displayImageUrl } from '@/presentation/utils/display-image-url';
 
 /**
- * Daftar wisata & kuliner Sambas. Layout meniru list Place di mobile (satu
- * kolom selebar HP): search, chip filter satu baris, row card + divider.
+ * Daftar wisata & kuliner Sambas: search, chip filter, row card.
+ * Responsif: Container md di desktop, tetap satu kolom di HP.
  * Semua row ikut SSR supaya crawler dapat link ke setiap `/wisata/:slug`;
  * filter cuma menyaring di klien.
  */
 
-const COLUMN_WIDTH = 480;
 const THUMB = 88;
 
 const FILTERS = ['semua', 'alam', 'budaya', 'pantai', 'sejarah', 'belanja', 'kuliner'] as const;
@@ -102,13 +100,13 @@ function PlaceRow({ place }: { place: Place }) {
         <Box w={THUMB} h={THUMB} bg="gray.2" style={{ borderRadius: 12, flexShrink: 0 }} />
       )}
       <Stack gap={2} style={{ minWidth: 0 }}>
-        <Text component="h2" size="sm" fw={600} lh={1.3} m={0}>
+        <Text component="h2" fz={{ base: 15, sm: 17 }} fw={600} lh={1.3} m={0}>
           {place.name}
         </Text>
-        <Text size="xs" c="teal" fw={500}>
+        <Text fz={{ base: 12, sm: 14 }} c="teal" fw={500}>
           {placeLabel(place)}
         </Text>
-        <Text size="xs" c="dimmed" lineClamp={1}>
+        <Text fz={{ base: 12, sm: 14 }} c="dimmed" lineClamp={1}>
           {place.shortDescription}
         </Text>
       </Stack>
@@ -127,8 +125,8 @@ export default function PlaceListPage() {
   );
 
   return (
-    <Box maw={COLUMN_WIDTH} mx="auto" px="md" pt="md" pb={32}>
-      <Title order={1} fw={800} fz={22} lh={1.25}>
+    <Container size="md" px="md" pt="md" pb={32}>
+      <Title order={1} fw={800} fz={{ base: 22, sm: 28 }} lh={1.25}>
         Wisata Sambas
       </Title>
       <Text size="sm" c="dimmed" mt={4}>
@@ -177,24 +175,12 @@ export default function PlaceListPage() {
             : 'Tidak ada tempat yang cocok. Coba kata lain atau ganti filter.'}
         </Text>
       ) : (
-        <Box mt={4}>
-          {shown.map((p, i) => (
-            <Fragment key={p.id}>
-              {i > 0 ? <Divider /> : null}
-              <PlaceRow place={p} />
-            </Fragment>
+        <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md" mt={4}>
+          {shown.map((p) => (
+            <PlaceRow key={p.id} place={p} />
           ))}
-        </Box>
+        </SimpleGrid>
       )}
-
-      <Paper withBorder radius="md" p="md" mt={24}>
-        <Stack gap="sm">
-          <Text size="sm" fw={600}>
-            Jelajahi dengan peta di aplikasi SambasKu
-          </Text>
-          <AppDownloadBadges />
-        </Stack>
-      </Paper>
-    </Box>
+    </Container>
   );
 }

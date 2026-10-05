@@ -11,11 +11,9 @@ export function Footer() {
   const lp = useLocalePath();
 
   const links = [
+    { to: lp('/eksplorasi'), label: t('explore_heading') },
     { to: lp('/words'), label: t('nav_words') },
-    { to: lp('/wisata'), label: t('nav_wisata') },
-    { to: lp('/kuliner'), label: t('nav_kuliner') },
     { to: lp('/kontribusi'), label: t('nav_contribute') },
-    { to: lp('/wisata'), label: t('nav_places') },
     { to: lp('/ruang-diskusi'), label: t('nav_ask') },
     { to: lp('/faq'), label: t('nav_faq') },
     { to: lp('/api-publik'), label: t('nav_apiPublik') },
@@ -63,6 +61,19 @@ export function Footer() {
             <Group gap={4} wrap="nowrap">
               <ExternalLink size={13} aria-hidden />
               {t('nav_github')}
+            </Group>
+          </Anchor>
+          <Anchor
+            href="https://github.com/sambasku#sejarah"
+            target="_blank"
+            rel="noopener noreferrer"
+            size="xs"
+            c="dimmed"
+            py={4}
+          >
+            <Group gap={4} wrap="nowrap">
+              <ExternalLink size={13} aria-hidden />
+              {t('nav_history')}
             </Group>
           </Anchor>
           {/* Feed publik tanpa prefix locale (data kamus identik antar locale). */}
