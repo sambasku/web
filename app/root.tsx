@@ -13,6 +13,7 @@ import {
   Button,
   ColorSchemeScript,
   Group,
+  Image,
   MantineProvider,
   Stack,
   Text,
@@ -20,9 +21,10 @@ import {
   Title,
   createTheme,
   mantineHtmlProps,
+  useComputedColorScheme,
 } from '@mantine/core';
 import { Home, AlertCircle, RefreshCw } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useSyncExternalStore } from 'react';
 import type { Route } from './+types/root';
 import {
   DEFAULT_LOCALE,
@@ -125,10 +127,19 @@ export default function App() {
   );
 }
 
+function subscribeNoop() {
+  return () => {};
+}
+
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   const params = useParams();
   const locale = isAppLocale(params.locale) ? params.locale : DEFAULT_LOCALE;
   const t = getFixedT(locale);
+  // Tema mengikuti skema terkomputasi Mantine; GIF dipilih setelah mount
+  // supaya markup SSR dan hidrasi pertama identik (pola theme-toggle.tsx).
+  const computedScheme = useComputedColorScheme('light');
+  const mounted = useSyncExternalStore(subscribeNoop, () => true, () => false);
+  const isDark = mounted && computedScheme === 'dark';
 
   let message = t('errors_generic');
   let details = t('errors_genericDetail');
@@ -165,9 +176,18 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
       py={80}
       ta="center"
     >
-      <ThemeIcon size={56} variant="light" color="red" radius="xl">
-        <AlertCircle size={28} />
-      </ThemeIcon>
+      {is404 ? (
+        <Image
+          src={isDark ? '/404_warning_black.gif' : '/404_warning_white.gif'}
+          alt=""
+          w={240}
+          fit="contain"
+        />
+      ) : (
+        <ThemeIcon size={56} variant="light" color="red" radius="xl">
+          <AlertCircle size={28} />
+        </ThemeIcon>
+      )}
       <Title order={2} size="h2">
         {message}
       </Title>

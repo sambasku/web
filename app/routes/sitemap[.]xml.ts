@@ -81,6 +81,7 @@ export async function loader() {
 
   const items: SitemapItem[] = [
     { bare: '/', priority: '1.0', changefreq: 'daily' },
+    { bare: '/eksplorasi', priority: '0.8', changefreq: 'weekly' },
     { bare: '/words', priority: '0.9', changefreq: 'daily' },
     { bare: '/wisata', priority: '0.8', changefreq: 'weekly' },
     ...wisataSlugs.map(

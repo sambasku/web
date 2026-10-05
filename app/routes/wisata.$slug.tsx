@@ -5,14 +5,16 @@ import {
   Badge,
   Box,
   Button,
+  Container,
   Group,
   Image,
   Paper,
+  SimpleGrid,
   Stack,
   Text,
   Title,
 } from '@mantine/core';
-import { Clock, MapPin, Phone, Smartphone } from 'lucide-react';
+import { Clock, MapPin, Phone } from 'lucide-react';
 import type { Route } from './+types/wisata.$slug';
 import { buildMetaTags, buildPlaceJsonLd } from '@/application/utils/seo';
 import {
@@ -30,17 +32,14 @@ import {
 } from '@/domain/places';
 import { env } from '@/infrastructure/config/env';
 import { safeExternalUrl } from '@/presentation/utils/safe-external-url';
-import { AppDownloadBadges } from '@/presentation/components/layout/app-download-badges';
 import { displayImageUrl } from '@/presentation/utils/display-image-url';
 
 /**
  * Fallback web untuk link share tempat (`/wisata/:slug`) bila aplikasi belum
- * terpasang. Layout sengaja meniru detail Place di mobile (satu kolom selebar
- * HP): hero, kredit foto, judul, badge, info, deskripsi, peta, dekat sini,
- * sumber, lalu ajakan buka aplikasi.
+ * terpasang: hero, kredit foto, judul, badge, info, deskripsi, peta, dekat
+ * sini, sumber, lalu ajakan buka aplikasi. Responsif: Container md di desktop,
+ * tetap satu kolom di HP.
  */
-
-const COLUMN_WIDTH = 480;
 
 const capitalize = (s: string) => (s ? `${s[0].toUpperCase()}${s.slice(1)}` : s);
 
@@ -163,7 +162,7 @@ export default function PlaceSharePage() {
 
   if (!place) {
     return (
-      <Box maw={COLUMN_WIDTH} mx="auto" px="md" py={44}>
+      <Container size="md" px="md" py={44}>
         <Stack gap="md">
           <Title order={1} fw={800} size="h3">
             Tempat tidak ditemukan
@@ -175,13 +174,12 @@ export default function PlaceSharePage() {
             Lihat semua wisata Sambas
           </Anchor>
         </Stack>
-      </Box>
+      </Container>
     );
   }
 
   const cover = placeCover(place);
   const credit = cover?.attribution;
-  const deepLink = `sambasku://app/wisata/${encodeURIComponent(slug)}`;
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${place.lat},${place.lng}`;
   const info = [
     place.hours ? { icon: Clock, value: place.hours, caption: 'Jam buka' } : null,
@@ -189,7 +187,7 @@ export default function PlaceSharePage() {
   ].filter((i) => i !== null);
 
   return (
-    <Box maw={COLUMN_WIDTH} mx="auto" pb={32}>
+    <Container size="md" px={0} pb={32}>
       {cover ? (
         <Image
           src={displayImageUrl(cover.url, { width: 960 })}
@@ -218,7 +216,7 @@ export default function PlaceSharePage() {
         <Anchor component={Link} to={lp('/wisata')} size="xs" fw={600} mt={14} style={{ alignSelf: 'flex-start' }}>
           Wisata Sambas
         </Anchor>
-        <Title order={1} fw={800} fz={22} lh={1.25} mt={2}>
+        <Title order={1} fw={800} fz={{ base: 22, sm: 30 }} lh={1.25} mt={2}>
           {place.name}
         </Title>
         <Group gap={6} mt={8}>
@@ -284,7 +282,7 @@ export default function PlaceSharePage() {
             <Text fw={700} mt={20}>
               Dekat sini
             </Text>
-            <Group gap={12} wrap="nowrap" mt={8} style={{ overflowX: 'auto' }}>
+            <SimpleGrid cols={{ base: 2, xs: 3, sm: 4 }} spacing="md" mt={8}>
               {related.map((r) => {
                 const rc = placeCover(r);
                 return (
@@ -294,7 +292,6 @@ export default function PlaceSharePage() {
                     to={lp(`/wisata/${encodeURIComponent(r.slug)}`)}
                     underline="never"
                     c="inherit"
-                    style={{ width: 136, flexShrink: 0 }}
                   >
                     {rc ? (
                       <Image
@@ -316,7 +313,7 @@ export default function PlaceSharePage() {
                   </Anchor>
                 );
               })}
-            </Group>
+            </SimpleGrid>
           </>
         ) : null}
 
@@ -334,28 +331,7 @@ export default function PlaceSharePage() {
             ))}
           </Stack>
         ) : null}
-
-        <Paper withBorder radius="md" p="md" mt={24}>
-          <Stack gap="sm">
-            <Text size="sm" fw={600}>
-              Lebih lengkap di aplikasi SambasKu
-            </Text>
-            <Button
-              component="a"
-              href={deepLink}
-              variant="light"
-              color="teal"
-              leftSection={<Smartphone size={18} />}
-            >
-              Buka di aplikasi
-            </Button>
-            <Text size="xs" c="dimmed">
-              Belum punya? Unduh gratis, lalu buka tautan ini lagi.
-            </Text>
-            <AppDownloadBadges />
-          </Stack>
-        </Paper>
       </Stack>
-    </Box>
+    </Container>
   );
 }

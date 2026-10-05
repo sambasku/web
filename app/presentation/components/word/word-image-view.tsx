@@ -1,15 +1,16 @@
 import {
   Box,
   Button,
-  Center,
   Group,
   Image,
   Stack,
   Text,
   UnstyledButton,
+  useComputedColorScheme,
 } from '@mantine/core';
-import { Clock, EyeOff } from 'lucide-react';
+import { EyeOff } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useSyncExternalStore } from 'react';
 import { hasViolenceWarning } from '@/domain/image-content-warnings';
 import type { WordImage } from '@/domain/entities/word.entity';
 import { displayImageUrl } from '@/presentation/utils/display-image-url';
@@ -28,6 +29,10 @@ function isPendingImage(image: WordImage): boolean {
   return image.is_verified === false || isKnownPendingPlaceholderUrl(image.url);
 }
 
+function subscribeNoop() {
+  return () => {};
+}
+
 /**
  * Thumbnail foto kata: pending → placeholder; kekerasan belum reveal → blur + CTA.
  * State reveal dikelola parent (satu unlock untuk semua foto di halaman).
@@ -44,25 +49,32 @@ export function WordImageView({
   alt: string;
 }) {
   const { t } = useTranslation();
+  // GIF pending mengikuti tema; dipilih setelah mount agar SSR dan hidrasi
+  // pertama konsisten (pola theme-toggle.tsx).
+  const computedScheme = useComputedColorScheme('light');
+  const mounted = useSyncExternalStore(subscribeNoop, () => true, () => false);
+  const isDark = mounted && computedScheme === 'dark';
   // Tanpa fallback ke URL mentah: displayImageUrl menolak skema non-https
   // (pentest W-10) dan fallback akan membatalkan validasi itu.
   const src = displayImageUrl(image.url, { width: 800 });
 
   if (isPendingImage(image)) {
     return (
-      <Center
-        h={200}
-        bg="var(--mantine-color-gray-1)"
-        style={{ borderRadius: 'var(--mantine-radius-md)' }}
+      <Stack
+        gap={6}
+        align="center"
         aria-label={t('word_imagePendingAria')}
       >
-        <Stack gap={6} align="center">
-          <Clock size={20} opacity={0.55} />
-          <Text size="xs" c="dimmed" ta="center">
-            {t('word_imagePending')}
-          </Text>
-        </Stack>
-      </Center>
+        <Image
+          src={isDark ? '/pending_review_dark.gif' : '/pending_review_light.gif'}
+          alt=""
+          h={160}
+          fit="contain"
+        />
+        <Text size="xs" c="dimmed" ta="center">
+          {t('word_imagePending')}
+        </Text>
+      </Stack>
     );
   }
 

@@ -49,6 +49,7 @@ export default [
   route('users/:username', 'routes/legacy-redirect.tsx', { id: 'legacy-users' }),
   route('wisata', 'routes/legacy-redirect.tsx', { id: 'legacy-wisata-list' }),
   route('wisata/:slug', 'routes/legacy-redirect.tsx', { id: 'legacy-wisata' }),
+  route('eksplorasi', 'routes/legacy-redirect.tsx', { id: 'legacy-eksplorasi' }),
 
   route(':locale', 'routes/locale-layout.tsx', [
     index('routes/home.tsx'),
@@ -75,6 +76,7 @@ export default [
     route('kuliner/:slug', 'routes/kuliner.$slug.tsx'),
     route('wisata', 'routes/wisata.tsx'),
     route('wisata/:slug', 'routes/wisata.$slug.tsx'),
+    route('eksplorasi', 'routes/eksplorasi.tsx'),
     route('users/:username', 'routes/users.$username.tsx'),
   ]),
 ] satisfies RouteConfig;

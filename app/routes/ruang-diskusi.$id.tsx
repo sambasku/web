@@ -5,7 +5,6 @@ import {
   Button,
   Card,
   Container,
-  Flex,
   Group,
   Image,
   SimpleGrid,
@@ -13,7 +12,13 @@ import {
   Text,
   Title,
 } from '@mantine/core';
-import { ArrowLeft, Languages, Pin, Smartphone } from 'lucide-react';
+import {
+  ArrowBigDown,
+  ArrowBigUp,
+  ArrowLeft,
+  Languages,
+  Pin,
+} from 'lucide-react';
 import type { Route } from './+types/ruang-diskusi.$id';
 import { getDiscussionDetail } from '@/application/use-cases/discussion.use-case';
 import { buildMetaTags } from '@/application/utils/seo';
@@ -27,7 +32,6 @@ import { useLocalePath } from '@/application/i18n/use-locale';
 import { formatDateId } from '@/application/utils/formatters';
 import { displayImageUrl } from '@/presentation/utils/display-image-url';
 import { safeExternalUrl } from '@/presentation/utils/safe-external-url';
-import { AppDownloadBadges } from '@/presentation/components/layout/app-download-badges';
 import type { DiscussionReply } from '@/domain/entities/discussion.entity';
 import { useTranslation } from 'react-i18next';
 import { useEffect, useState } from 'react';
@@ -36,9 +40,6 @@ import {
   trackEvent,
 } from '@/infrastructure/analytics/analytics';
 import { hasViolenceWarning } from '@/domain/image-content-warnings';
-
-const PLAY_STORE_URL =
-  'https://play.google.com/store/apps/details?id=com.iamutaki.sambasku';
 
 export function meta({ data, params }: Route.MetaArgs) {
   const locale = isAppLocale(params.locale) ? params.locale : DEFAULT_LOCALE;
@@ -250,7 +251,7 @@ export default function RuangDiskusiDetailPage() {
           ) : null}
 
           <Text size="sm" c="dimmed">
-            ↑ {help.upvotes ?? 0} · Aku juga ingin tahu
+            ↑ {help.upvotes ?? 0}
           </Text>
         </Stack>
 
@@ -301,8 +302,8 @@ export default function RuangDiskusiDetailPage() {
                     </Text>
                     {reply.status === 'published' ? (
                       <Text size="xs" c="dimmed">
-                        ↑ {reply.upvotes ?? 0} · ↓ {reply.downvotes ?? 0} ·
-                        Jawaban ini membantu?
+                        <ArrowBigDown size={12} /> {reply.downvotes ?? 0} ·{' '}
+                        <ArrowBigUp size={12} /> {reply.upvotes ?? 0}
                       </Text>
                     ) : null}
                   </Stack>
@@ -311,35 +312,6 @@ export default function RuangDiskusiDetailPage() {
             </Stack>
           )}
         </Stack>
-
-        <Card withBorder padding="lg" radius="md">
-          <Stack gap="sm">
-            <Text fw={600}>Balas &amp; vote di aplikasi</Text>
-            <Text size="sm" c="dimmed">
-              Menulis balasan dan memberi vote cuma bisa di aplikasi SambasKu.
-              Unduh di Google Play biar bisa ikut membantu.
-            </Text>
-            <Flex
-              gap="md"
-              wrap="wrap"
-              direction={{ base: 'column', sm: 'row' }}
-              align="center"
-              justify={{ base: 'center', sm: 'flex-start' }}
-            >
-              <Button
-                component="a"
-                href={PLAY_STORE_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                variant="light"
-                leftSection={<Smartphone size={16} />}
-              >
-                Balas di aplikasi
-              </Button>
-              <AppDownloadBadges h={36} />
-            </Flex>
-          </Stack>
-        </Card>
       </Stack>
     </Container>
   );

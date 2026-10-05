@@ -113,14 +113,14 @@ export default function KulinerDetailPage() {
   const heroUrl = cover ? displayImageUrl(cover.url, { width: 1200 }) : undefined;
 
   return (
-    <Container size="md" py="xl">
+    <Container size="lg" py="xl">
       <Stack gap="lg">
-        <Breadcrumbs separator="→">
+        <Breadcrumbs separator="/">
           <Anchor component={Link} to={lp('/')} size="xs" c="dimmed">
             {t('word_homeCrumb')}
           </Anchor>
           <Anchor component={Link} to={lp('/kuliner')} size="xs" c="dimmed">
-            {t('seo_kulinerTitle')}
+            {t('kuliner_heading')}
           </Anchor>
           <Text size="xs" fw={500} lineClamp={1}>
             {c.name}
@@ -141,13 +141,15 @@ export default function KulinerDetailPage() {
             <Text size="xs">{c.region}</Text>
           </Group>
         </Stack>
+      </Stack>
 
+      <Stack gap="lg">
         {heroUrl ? (
           <Image
             src={heroUrl}
             alt={cover?.attribution ? `${c.name} - foto oleh ${cover.attribution.name}` : c.name}
             radius="md"
-            mah={420}
+            mah={480}
             fit="cover"
           />
         ) : null}
@@ -172,7 +174,7 @@ export default function KulinerDetailPage() {
           </Text>
         ) : null}
 
-        <Text size="md" lh={1.7}>
+        <Text size="md" lh={1.7} maw={760}>
           {c.description}
         </Text>
 
@@ -195,7 +197,7 @@ export default function KulinerDetailPage() {
         ) : null}
 
         {c.servingSuggestion ? (
-          <Stack gap="xs">
+          <Stack gap="xs" maw={760}>
             <Text size="sm" fw={700}>
               {t('kuliner_servingHeading')}
             </Text>
@@ -218,7 +220,7 @@ export default function KulinerDetailPage() {
         {c.sources.length > 0 ? (
           <>
             <Divider />
-            <Stack gap={4}>
+            <Stack gap={4} maw={760}>
               <Text size="xs" c="dimmed" fw={600} tt="uppercase">
                 {t('kuliner_sourcesHeading')}
               </Text>

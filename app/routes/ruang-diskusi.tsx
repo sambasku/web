@@ -1,10 +1,10 @@
 import { Link, useLoaderData, useNavigation, useSearchParams } from 'react-router';
 import {
+  Alert,
   Badge,
   Button,
   Card,
   Container,
-  Flex,
   Group,
   Image,
   Paper,
@@ -13,7 +13,7 @@ import {
   Text,
   Title,
 } from '@mantine/core';
-import { Languages, Smartphone } from 'lucide-react';
+import { Languages } from 'lucide-react';
 import type { Route } from './+types/ruang-diskusi';
 import { listPublishedDiscussions } from '@/application/use-cases/discussion.use-case';
 import { buildMetaTags, buildDiscussionFaqJsonLd } from '@/application/utils/seo';
@@ -29,7 +29,6 @@ import { useLocalePath } from '@/application/i18n/use-locale';
 
 import { formatDateId } from '@/application/utils/formatters';
 import { displayImageUrl } from '@/presentation/utils/display-image-url';
-import { AppDownloadBadges } from '@/presentation/components/layout/app-download-badges';
 import { hasViolenceWarning } from '@/domain/image-content-warnings';
 import { env } from '@/infrastructure/config/env';
 import type { DiscussionPublicItem } from '@/domain/entities/discussion.entity';
@@ -114,7 +113,7 @@ function HelpCard({ item }: { item: DiscussionPublicItem }) {
         </Text>
         <Group gap="xs" wrap="nowrap" justify="space-between">
           <Text size="xs" c="dimmed">
-            ↑ {item.upvotes ?? 0} · Saya juga ingin tahu
+            ↑ {item.upvotes ?? 0}
           </Text>
           <Text size="xs" c="dimmed" lineClamp={1}>
             {item.display_name?.trim() || item.username || 'Pengguna'} ·{' '}
@@ -170,43 +169,14 @@ export default function RuangDiskusiFeedPage() {
         </Stack>
 
         {/* Alert banner: di Ruang Diskusi kamu bisa tanya soal bahasa & budaya Sambas */}
-        <Paper withBorder radius="md" p="md" bg="var(--mantine-color-yellow-light)" c="var(--mantine-color-yellow-filled)">
-          <Stack gap={2}>
-            <Group gap="xs">
-              <Languages size={16} />
-              <Text fw={600} size="sm">
-                {t('diskusi_alertTitle')}
-              </Text>
-            </Group>
-            <Text size="sm">
-              {t('diskusi_alertBody')}
-            </Text>
-          </Stack>
-        </Paper>
-
-        <Card withBorder padding="lg" radius="md" bg="var(--mantine-color-body)">
-          <Flex
-            direction={{ base: 'column', sm: 'row' }}
-            align={{ base: 'stretch', sm: 'center' }}
-            justify={{ base: 'flex-start', sm: 'space-between' }}
-            wrap="wrap"
-            gap="lg"
-          >
-            <Stack gap={4} maw={480}>
-              <Group gap={6}>
-                <Smartphone size={16} />
-                <Text fw={600}>Ingin ikut diskusi?</Text>
-              </Group>
-              <Text size="sm" c="dimmed">
-                Buka thread (teks atau foto) lalu balas di aplikasi mobile
-                SambasKu.
-              </Text>
-            </Stack>
-            <Flex justify="center">
-              <AppDownloadBadges h={40} />
-            </Flex>
-          </Flex>
-        </Card>
+        <Alert
+          variant="light"
+          color="teal"
+          title={t('diskusi_alertTitle')}
+          icon={<Languages size={16} />}
+        >
+          {t('diskusi_alertBody')}
+        </Alert>
 
         <Group gap="xs">
           <Button
