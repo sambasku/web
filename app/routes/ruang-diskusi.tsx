@@ -13,7 +13,7 @@ import {
   Text,
   Title,
 } from '@mantine/core';
-import { Languages } from 'lucide-react';
+import { Languages, Smartphone } from 'lucide-react';
 import type { Route } from './+types/ruang-diskusi';
 import { listPublishedDiscussions } from '@/application/use-cases/discussion.use-case';
 import { buildMetaTags, buildDiscussionFaqJsonLd } from '@/application/utils/seo';
