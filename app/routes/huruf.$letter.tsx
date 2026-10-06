@@ -81,7 +81,6 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   try {
     const res = await listWordsAtoZ({
       letter,
-      isVerified: true,
       cursor,
       limit: 50,
       signal: request.signal,
