@@ -40,8 +40,9 @@ export interface Place {
   name: string;
   category: PlaceCategory;
   type: PlaceType | null;
-  lat: number;
-  lng: number;
+  /** null = entri sumber tanpa koordinat (Open Data Sambas) - peta/maps disembunyikan. */
+  lat: number | null;
+  lng: number | null;
   shortDescription: string;
   images: PlaceImage[];
   hours?: string;
@@ -97,10 +98,11 @@ function parsePlace(raw: unknown): Place | null {
   const name = str(r.name);
   const category = str(r.category);
   const shortDescription = str(r.shortDescription);
-  const lat = typeof r.lat === 'number' ? r.lat : NaN;
-  const lng = typeof r.lng === 'number' ? r.lng : NaN;
+  // Koordinat opsional: null = tanpa koordinat, bukan alasan membuang entri.
+  const lat = typeof r.lat === 'number' && Number.isFinite(r.lat) ? r.lat : null;
+  const lng = typeof r.lng === 'number' && Number.isFinite(r.lng) ? r.lng : null;
   if (!id || !slug || !name || !shortDescription) return null;
-  if (Number.isNaN(lat) || Number.isNaN(lng)) return null;
+  if ((lat === null) !== (lng === null)) return null; // setengah-pasang = tidak valid
   if (category !== 'wisata' && category !== 'kuliner') return null;
 
   const images: PlaceImage[] = [];
