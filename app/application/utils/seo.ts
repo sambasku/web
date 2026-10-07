@@ -510,12 +510,17 @@ export function buildPlaceJsonLd(
         url,
         ...(image ? { image } : {}),
         address: SAMBAS_ADDRESS,
-        geo: {
-          '@type': 'GeoCoordinates',
-          latitude: place.lat,
-          longitude: place.lng,
-        },
-        hasMap: `https://www.google.com/maps/search/?api=1&query=${place.lat},${place.lng}`,
+        // geo/hasMap hanya saat koordinat ada - null/null jangan dipancarkan.
+        ...(place.lat !== null && place.lng !== null
+          ? {
+              geo: {
+                '@type': 'GeoCoordinates',
+                latitude: place.lat,
+                longitude: place.lng,
+              },
+              hasMap: `https://www.google.com/maps/search/?api=1&query=${place.lat},${place.lng}`,
+            }
+          : {}),
         // `hours` teks bebas, bukan format schema `Mo-Fr 08:00-17:00`;
         // dipancarkan malah jadi warning Rich Results.
         ...(place.contact ? { telephone: place.contact } : {}),

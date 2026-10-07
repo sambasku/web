@@ -180,7 +180,10 @@ export default function PlaceSharePage() {
 
   const cover = placeCover(place);
   const credit = cover?.attribution;
-  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${place.lat},${place.lng}`;
+  const mapsUrl =
+    place.lat !== null && place.lng !== null
+      ? `https://www.google.com/maps/search/?api=1&query=${place.lat},${place.lng}`
+      : null;
   const info = [
     place.hours ? { icon: Clock, value: place.hours, caption: 'Jam buka' } : null,
     place.contact ? { icon: Phone, value: place.contact, caption: 'Kontak' } : null,
@@ -265,17 +268,19 @@ export default function PlaceSharePage() {
           {place.shortDescription}
         </Text>
 
-        <Button
-          component="a"
-          href={mapsUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          color="teal"
-          leftSection={<MapPin size={18} />}
-          mt={16}
-        >
-          Lihat di peta
-        </Button>
+        {mapsUrl ? (
+          <Button
+            component="a"
+            href={mapsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            color="teal"
+            leftSection={<MapPin size={18} />}
+            mt={16}
+          >
+            Lihat di peta
+          </Button>
+        ) : null}
 
         {related.length > 0 ? (
           <>
