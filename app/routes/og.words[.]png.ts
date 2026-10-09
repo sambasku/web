@@ -75,8 +75,17 @@ export async function loader({ params }: Route.LoaderArgs) {
     throw new Response('Not Found', { status: 404 });
   }
 
-  const definition =
-    word.meanings[0]?.definition?.trim() || FALLBACK_DEFINITION;
+  const firstMeaning = word.meanings[0];
+  const rawDefinition = firstMeaning?.definition?.trim() ?? '';
+  // API memakai placeholder "-" untuk definisi yang belum diisi (lihat
+  // is_have_definition); jangan pernah tampilkan strip itu di kartu OG.
+  const hasDefinition =
+    firstMeaning?.is_have_definition === true ||
+    (rawDefinition !== '' && rawDefinition !== '-');
+  const translation = firstMeaning?.translations?.[0]?.translation_text?.trim();
+  const definition = hasDefinition
+    ? rawDefinition
+    : translation || FALLBACK_DEFINITION;
 
   // Buffer ke Uint8Array, jangan kembalikan stream-nya: pipeline worker
   // (clone + re-wrap body) memutus stream lazy buatan ImageResponse
