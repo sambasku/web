@@ -3,7 +3,6 @@ import { ImageResponse } from 'workers-og';
 import { getWordByLemma } from '../application/use-cases/word.use-case';
 import { env } from '../infrastructure/config/env';
 import { LOGO_DATA_URL } from '../application/utils/og-card-logo';
-import { MASCOT_DATA_URL, MASCOT_WIDTH, MASCOT_HEIGHT } from '../application/utils/og-card-mascot';
 import { clampLemma, clampText, isValidLemma } from '../application/utils/og-card-text';
 
 /**
@@ -38,11 +37,8 @@ export function buildCardHtml(
   // Footer jadi sibling content-area (bukan margin negatif) - satori/yoga
   // tidak menghitung negative margin seperti browser, kartu pertama
   // ter-render dengan celah putih 44px di bawah footer.
-  // Maskot watermark: background-image di content-area (satu-satunya cara
-  // yang pasti di belakang teks di satori; absolute img akan digambar di
-  // atas konten sesuai urutan DOM).
   return `<div style="display:flex;flex-direction:column;width:1200px;height:630px;background:#ffffff;font-family:sans-serif;box-sizing:border-box;">
-  <div style="display:flex;flex-direction:column;flex-grow:1;padding:56px 72px 32px 72px;box-sizing:border-box;background-image:url('${MASCOT_DATA_URL}');background-repeat:no-repeat;background-position:right bottom;background-size:${MASCOT_WIDTH}px ${MASCOT_HEIGHT}px;">
+  <div style="display:flex;flex-direction:column;flex-grow:1;padding:56px 72px 32px 72px;box-sizing:border-box;">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;width:100%;">
       <div style="display:flex;flex-direction:column;gap:20px;max-width:890px;overflow:hidden;">
         <div style="display:flex;color:#101826;font-size:120px;font-weight:800;line-height:1;letter-spacing:-2px;overflow:hidden;">${escapeHtml(clampLemma(lemma))}</div>
