@@ -43,15 +43,20 @@ export function buildCardHtml(
   logoUrl = LOGO_DATA_URL,
 ): string {
   // Catatan satori: setiap node ber-anak WAJIB display:flex eksplisit.
-  return `<div style="display:flex;flex-direction:column;justify-content:space-between;width:1200px;height:630px;background:#ffffff;padding:56px 72px 0 72px;font-family:sans-serif;box-sizing:border-box;">
-  <div style="display:flex;justify-content:space-between;align-items:flex-start;width:100%;">
-    <div style="display:flex;flex-direction:column;gap:20px;max-width:920px;">
-      <div style="display:flex;color:#101826;font-size:120px;font-weight:800;line-height:1;letter-spacing:-2px;">${escapeHtml(lemma)}</div>
-      <div style="display:flex;color:#4b5563;font-size:40px;line-height:1.4;">${escapeHtml(clampText(definition))}</div>
+  // Footer jadi sibling content-area (bukan margin negatif) - satori/yoga
+  // tidak menghitung negative margin seperti browser, kartu pertama
+  // ter-render dengan celah putih 44px di bawah footer.
+  return `<div style="display:flex;flex-direction:column;width:1200px;height:630px;background:#ffffff;font-family:sans-serif;box-sizing:border-box;">
+  <div style="display:flex;flex-direction:column;flex-grow:1;padding:56px 72px 32px 72px;box-sizing:border-box;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;width:100%;">
+      <div style="display:flex;flex-direction:column;gap:20px;max-width:920px;">
+        <div style="display:flex;color:#101826;font-size:120px;font-weight:800;line-height:1;letter-spacing:-2px;">${escapeHtml(lemma)}</div>
+        <div style="display:flex;color:#4b5563;font-size:40px;line-height:1.4;">${escapeHtml(clampText(definition))}</div>
+      </div>
+      <img src="${logoUrl}" style="width:80px;height:80px;border-radius:16px;border:1px solid #e5e7eb;" />
     </div>
-    <img src="${logoUrl}" style="width:80px;height:80px;border-radius:16px;border:1px solid #e5e7eb;" />
   </div>
-  <div style="display:flex;align-items:center;justify-content:space-between;width:1200px;height:88px;margin-left:-72px;margin-right:-72px;background:#101826;padding:0 72px;box-sizing:border-box;">
+  <div style="display:flex;align-items:center;justify-content:space-between;width:1200px;height:88px;background:#101826;padding:0 72px;box-sizing:border-box;">
     <div style="display:flex;color:#ffffff;font-size:26px;font-weight:600;">Kamus Sambas</div>
     <div style="display:flex;color:#a5b4cf;font-size:24px;">sambasku.com</div>
   </div>
