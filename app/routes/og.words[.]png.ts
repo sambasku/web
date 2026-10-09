@@ -58,7 +58,7 @@ export function buildCardHtml(
   </div>
   <div style="display:flex;align-items:center;justify-content:space-between;width:1200px;height:88px;background:#101826;padding:0 72px;box-sizing:border-box;">
     <div style="display:flex;color:#ffffff;font-size:26px;font-weight:600;">Kamus Sambas</div>
-    <div style="display:flex;color:#a5b4cf;font-size:24px;">sambasku.com</div>
+    <div style="display:flex;color:#a5b4cf;font-size:24px;">sambasku</div>
   </div>
 </div>`;
 }
