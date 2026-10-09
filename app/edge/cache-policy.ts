@@ -109,7 +109,14 @@ const LLMS_FULL_FRESH_S = 86400;
 
 /// Kartu OG per kata: mahal dirender (resvg) dan isinya stabil per deploy,
 /// jadi jendela segar sehari penuh. Karakter segmen sama dengan guard route.
-const OG_WORDS_RE = /^\/og\/words\/[A-Za-z0-9%._~-]{1,100}$/;
+/** Regex cache-policy untuk route OG kata.
+ * Charset sama dengan isValidLemma + '%' untuk bentuk ter-encode
+ * (canonicalCachePath sengaja tidak mem-decode: %2F dalam segmen
+ * adalah data, bukan separator). '/' TIDAK termasuk: di pathname itu
+ * separator segmen — slash dalam lemma selalu tampil sebagai %2F.
+ * Lemma nyata: spasi, apostrof lurus/curly, hyphen, titik.
+ */
+const OG_WORDS_RE = /^\/og\/words\/[\p{L}\p{N}% '’\-.]{1,100}$/u;
 const OG_FRESH_S = 86400;
 
 export function isOgImagePath(pathname: string): boolean {
