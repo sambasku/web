@@ -59,3 +59,18 @@ describe('isValidLemma', () => {
     assert.ok(!isValidLemma('a\nb'));
   });
 });
+
+describe('isValidLemma / decode', () => {
+  it('menerima lemma %20 ter-encode', () => {
+    assert.ok(isValidLemma(decodeURIComponent('Agek%20buat%20ape')));
+  });
+  it('tolak %2e%2e traversal ter-encode', () => {
+    assert.ok(!isValidLemma(decodeURIComponent('%2e%2e/passwd')));
+  });
+  it('tolak double-encode', () => {
+    assert.ok(!isValidLemma(decodeURIComponent('Agek%2520buat%2520ape')));
+  });
+  it('tolak percent-overflow (invalid seq) -> decodeURI throw', () => {
+    assert.throws(() => decodeURIComponent("a%"));
+  });
+});

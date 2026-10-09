@@ -61,7 +61,15 @@ export async function loader({ params }: Route.LoaderArgs) {
   if (env.mode !== 'production' && env.mode !== 'staging') {
     throw new Response('Not Found', { status: 404 });
   }
-  const lemma = params.lemma ?? '';
+  const lemmaRaw = params.lemma ?? '';
+  // Decode percent-encoded (router tidak mem-decode param). Bisa throw
+  // URIError bila sequence rusak ('a%') → tangkap sebagai 404, bukan 500.
+  let lemma: string;
+  try {
+    lemma = decodeURIComponent(lemmaRaw);
+  } catch {
+    throw new Response('Not Found', { status: 404 });
+  }
   if (!isValidLemma(lemma)) {
     throw new Response('Not Found', { status: 404 });
   }
