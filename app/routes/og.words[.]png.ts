@@ -3,7 +3,7 @@ import { ImageResponse } from 'workers-og';
 import { getWordByLemma } from '../application/use-cases/word.use-case';
 import { env } from '../infrastructure/config/env';
 import { LOGO_DATA_URL } from '../application/utils/og-card-logo';
-import { clampLemma, clampText } from '../application/utils/og-card-text';
+import { clampLemma, clampText, isValidLemma } from '../application/utils/og-card-text';
 
 /**
  * Kartu OG dinamis per kata: /og/words/{lemma} (Content-Type image/png).
@@ -17,9 +17,7 @@ import { clampLemma, clampText } from '../application/utils/og-card-text';
  * Edge cache menutup biaya render setelah hit pertama per deploy.
  */
 
-/** Batas aman segmen lemma di URL (guard murah sebelum subrequest API). */
-const LEMMA_PATH_RE = /^[A-Za-z0-9%._~-]{1,100}$/;
-
+/** Fallback definisi bila makna belum ada terjemahan apa pun. */
 const FALLBACK_DEFINITION = 'Makna dan penggunaan dalam bahasa Melayu Sambas.';
 
 function escapeHtml(value: string): string {
@@ -64,7 +62,7 @@ export async function loader({ params }: Route.LoaderArgs) {
     throw new Response('Not Found', { status: 404 });
   }
   const lemma = params.lemma ?? '';
-  if (!LEMMA_PATH_RE.test(lemma)) {
+  if (!isValidLemma(lemma)) {
     throw new Response('Not Found', { status: 404 });
   }
 

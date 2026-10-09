@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { clampLemma, clampText } from './og-card-text.ts';
+import { clampLemma, clampText, isValidLemma } from './og-card-text.ts';
 
 describe('clampLemma', () => {
   it('pass-through pendek', () => {
@@ -35,5 +35,27 @@ describe('clampText', () => {
     const result = clampText('a'.repeat(130));
     assert.ok(result.endsWith('…'));
     assert.strictEqual(result.length, 120);
+  });
+});
+describe('isValidLemma', () => {
+  it('menerima lemma berspasi (router sudah decode %20)', () => {
+    assert.ok(isValidLemma('Agek buat ape'));
+  });
+  it('menerima apostrof lurus dan curl', () => {
+    assert.ok(isValidLemma("Ae'k maddas"));
+    assert.ok(isValidLemma('Ade’ / de’'));
+  });
+  it('menerima unicode + hyphen + titik', () => {
+    assert.ok(isValidLemma('Ba-baki'));
+    assert.ok(isValidLemma('Ngéran'));
+  });
+  it('menolak kosong dan >100 char', () => {
+    assert.ok(!isValidLemma(''));
+    assert.ok(!isValidLemma('a'.repeat(101)));
+  });
+  it('menolak injeksi markup/skema', () => {
+    assert.ok(!isValidLemma('<script>'));
+    assert.ok(!isValidLemma('../etc/passwd'));
+    assert.ok(!isValidLemma('a\nb'));
   });
 });
