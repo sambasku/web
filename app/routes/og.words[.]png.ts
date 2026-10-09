@@ -3,6 +3,7 @@ import { ImageResponse } from 'workers-og';
 import { getWordByLemma } from '../application/use-cases/word.use-case';
 import { env } from '../infrastructure/config/env';
 import { LOGO_DATA_URL } from '../application/utils/og-card-logo';
+import { clampLemma, clampText } from '../application/utils/og-card-text';
 
 /**
  * Kartu OG dinamis per kata: /og/words/{lemma} (Content-Type image/png).
@@ -29,14 +30,6 @@ function escapeHtml(value: string): string {
     .replace(/"/g, '&quot;');
 }
 
-/** Potong deskripsi agar muat dua baris kartu (satori tak punya line-clamp). */
-export function clampText(text: string, max = 140): string {
-  if (text.length <= max) return text;
-  const cut = text.slice(0, max - 1);
-  const lastSpace = cut.lastIndexOf(' ');
-  return `${(lastSpace > 60 ? cut.slice(0, lastSpace) : cut).trimEnd()}…`;
-}
-
 export function buildCardHtml(
   lemma: string,
   definition: string,
@@ -49,11 +42,11 @@ export function buildCardHtml(
   return `<div style="display:flex;flex-direction:column;width:1200px;height:630px;background:#ffffff;font-family:sans-serif;box-sizing:border-box;">
   <div style="display:flex;flex-direction:column;flex-grow:1;padding:56px 72px 32px 72px;box-sizing:border-box;">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;width:100%;">
-      <div style="display:flex;flex-direction:column;gap:20px;max-width:920px;">
-        <div style="display:flex;color:#101826;font-size:120px;font-weight:800;line-height:1;letter-spacing:-2px;">${escapeHtml(lemma)}</div>
-        <div style="display:flex;color:#4b5563;font-size:40px;line-height:1.4;">${escapeHtml(clampText(definition))}</div>
+      <div style="display:flex;flex-direction:column;gap:20px;max-width:890px;overflow:hidden;">
+        <div style="display:flex;color:#101826;font-size:120px;font-weight:800;line-height:1;letter-spacing:-2px;overflow:hidden;">${escapeHtml(clampLemma(lemma))}</div>
+        <div style="display:flex;color:#4b5563;font-size:40px;line-height:1.4;overflow:hidden;">${escapeHtml(clampText(definition))}</div>
       </div>
-      <img src="${logoUrl}" style="width:80px;height:80px;border-radius:16px;border:1px solid #e5e7eb;" />
+      <img src="${logoUrl}" style="width:96px;height:96px;border-radius:16px;border:1px solid #e5e7eb;flex-shrink:0;" />
     </div>
   </div>
   <div style="display:flex;align-items:center;justify-content:space-between;width:1200px;height:88px;background:#101826;padding:0 72px;box-sizing:border-box;">
