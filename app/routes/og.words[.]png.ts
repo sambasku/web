@@ -59,7 +59,10 @@ export function buildCardHtml(
 }
 
 export async function loader({ params }: Route.LoaderArgs) {
-  if (!env.isProd) {
+  // Prod + staging boleh; dev lokal tetap 404 (API prod tak boleh
+  // dihajar oleh server dev interaktif). Staging perlu hidup supaya
+  // kartu OG bisa dipreview di sambasku-web-staging sebelum produksi.
+  if (env.mode !== 'production' && env.mode !== 'staging') {
     throw new Response('Not Found', { status: 404 });
   }
   const lemma = params.lemma ?? '';
