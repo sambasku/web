@@ -292,5 +292,6 @@
   "word_createdBy": "Dibuek oleh {{username}}",
   "word_verifiedBy": "Diverifikasi oleh {{username}}",
   "word_createdVerifiedBy": "Dibuek dan diverifikasi oleh {{username}}",
-  "search_suggestAria": "Saran pancarek'an"
+  "search_suggestAria": "Saran pancarek'an",
+  "word_listCategoryFilterPlaceholder": "Kategori"
 }

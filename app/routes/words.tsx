@@ -7,6 +7,7 @@ import {
   Container,
   Divider,
   Group,
+  Select,
   Stack,
   Text,
   TextInput,
@@ -17,6 +18,7 @@ import { List, Search, ArrowRight, X, AlertCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { Route } from './+types/words';
 import { listWordsAtoZ } from '../application/use-cases/word.use-case';
+import { listCategories } from '../application/use-cases/category.use-case';
 import { buildMetaTags } from '../application/utils/seo';
 import { WordCard } from '../presentation/components/word/word-card';
 import { WordListSkeleton } from '../presentation/components/word/word-card-skeleton';
@@ -58,40 +60,50 @@ export async function loader({ request }: Route.LoaderArgs) {
   const rawLetter = url.searchParams.get('letter')?.trim() ?? '';
   const letter = /^[A-Za-z]$/.test(rawLetter) ? rawLetter.toUpperCase() : '';
   const wordType = url.searchParams.get('word_type') || undefined;
+  const category = url.searchParams.get('category') || undefined;
   const cursor = url.searchParams.get('cursor') || undefined;
 
   try {
-    const res = await listWordsAtoZ({
-      q: letter ? undefined : q || undefined,
-      letter: letter || undefined,
-      wordType,
-      // Browse A-Z (termasuk ?letter=): hanya terverifikasi (selaras copy + sitemap).
-      // Pencarian `q`: semua yang tayang supaya lemma draf masih ketemu.
-      isVerified: q ? undefined : true,
-      cursor,
-      limit: 25,
-      signal: request.signal,
-    });
+    const [wordsRes, categoriesRes] = await Promise.all([
+      listWordsAtoZ({
+        q: letter ? undefined : q || undefined,
+        letter: letter || undefined,
+        wordType,
+        category,
+        // Browse A-Z (termasuk ?letter=): hanya terverifikasi (selaras copy + sitemap).
+        // Pencarian `q`: semua yang tayang supaya lemma draf masih ketemu.
+        isVerified: q ? undefined : true,
+        cursor,
+        limit: 25,
+        signal: request.signal,
+      }),
+      listCategories(request.signal),
+    ]);
     return {
       q: letter ? '' : q,
       letter,
       wordType,
-      items: res.data,
-      meta: res.meta ?? { limit: 25, next_cursor: null, has_more: false },
+      category,
+      items: wordsRes.data,
+      categories: categoriesRes.data ?? [],
+      meta: wordsRes.meta ?? { limit: 25, next_cursor: null, has_more: false },
     };
   } catch {
     return {
       q: letter ? '' : q,
       letter,
       wordType,
+      category,
       items: [],
+      categories: [],
       meta: { limit: 25, next_cursor: null, has_more: false },
     };
   }
 }
 
 export default function WordsPage() {
-  const { q, letter, wordType, items, meta } = useLoaderData<typeof loader>();
+  const { q, letter, wordType, category, items, categories, meta } =
+    useLoaderData<typeof loader>();
   const [, setSearchParams] = useSearchParams();
   const navigation = useNavigation();
   const { t } = useTranslation();
@@ -104,19 +116,22 @@ export default function WordsPage() {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const filterQuery = (formData.get('filter_q') as string)?.trim() ?? '';
+    const categoryValue = (formData.get('filter_category') as string)?.trim() ?? '';
     const next = new URLSearchParams();
     if (filterQuery) next.set('q', filterQuery);
     if (wordType) next.set('word_type', wordType);
+    if (categoryValue) next.set('category', categoryValue);
     setSearchParams(next);
   };
 
   const clearFilter = () => {
     const next = new URLSearchParams();
     if (wordType) next.set('word_type', wordType);
+    if (category) next.set('category', category);
     setSearchParams(next);
   };
 
-  const activeFilter = q || letter;
+  const activeFilter = q || letter || category;
 
   // Group items by their first character
   const groupedItems = items.reduce<Record<string, WordSummary[]>>((acc, word) => {
@@ -167,6 +182,21 @@ export default function WordsPage() {
             {/* Quick Filter Form */}
             <form onSubmit={handleFilterSubmit}>
               <Group gap="xs" wrap="nowrap">
+                <Select
+                  name="filter_category"
+                  data={categories.map((c) => ({
+                    value: c.name,
+                    label: `${c.name} (${c.word_count})`,
+                  }))}
+                  defaultValue={category}
+                  key={category ?? 'all'}
+                  placeholder={t('word_listCategoryFilterPlaceholder')}
+                  size="xs"
+                  w={200}
+                  clearable
+                  searchable
+                  leftSection={<List size={13} />}
+                />
                 <TextInput
                   name="filter_q"
                   defaultValue={q}
@@ -242,6 +272,7 @@ export default function WordsPage() {
                       ...(q ? { q } : {}),
                       ...(letter ? { letter } : {}),
                       ...(wordType ? { word_type: wordType } : {}),
+                      ...(category ? { category } : {}),
                       cursor: meta.next_cursor,
                     }).toString()}`,
                   )}
