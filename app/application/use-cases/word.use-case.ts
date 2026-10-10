@@ -19,6 +19,8 @@ export interface ListWordsParams {
   wordType?: string;
   /** true = hanya lemma terverifikasi (sitemap). Omit = semua yang tayang. */
   isVerified?: boolean;
+  /** Filter kategori (api#50): id ULID atau nama case-insensitive. */
+  category?: string;
   signal?: AbortSignal;
 }
 
@@ -49,6 +51,7 @@ export async function listWordsAtoZ(
   if (params.isVerified !== undefined) {
     query.set('is_verified', params.isVerified ? 'true' : 'false');
   }
+  if (params.category) query.set('category', params.category);
 
   return apiClient<WordSummary[]>(`/words?${query.toString()}`, {
     signal: params.signal,

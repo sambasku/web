@@ -292,5 +292,6 @@
   "word_createdBy": "Dibuat oleh {{username}}",
   "word_verifiedBy": "Diverifikasi oleh {{username}}",
   "word_createdVerifiedBy": "Dibuat dan diverifikasi oleh {{username}}",
-  "search_suggestAria": "Saran pencarian"
+  "search_suggestAria": "Saran pencarian",
+  "word_listCategoryFilterPlaceholder": "Kategori"
 }
