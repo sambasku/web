@@ -519,6 +519,7 @@ export default function KontribusiPage() {
   const [standardWordClassId, setStandardWordClassId] =
     useState(umumWordClassId);
   const [standardKbbiOpen, setStandardKbbiOpen] = useState(false);
+  const [wordType, setWordType] = useState('word'); // Tambah state wordType
   const [usageLabels, setUsageLabels] = useState<UsageLabel[]>([]);
   const [maknaList, setMaknaList] = useState<MaknaForm[]>([
     { ...emptyMakna, wordClassId: umumWordClassId },
@@ -662,7 +663,7 @@ export default function KontribusiPage() {
           lemma: word,
           language_id: sambas?.id,
           ...(defaultDialectId ? { dialect_id: defaultDialectId } : {}),
-          word_type: 'word',
+          word_type: wordType,
           usage_labels: usageLabels,
           meanings,
           ...(name ? { contributor_name: name } : {}),
@@ -672,6 +673,7 @@ export default function KontribusiPage() {
       setSuccess(word);
       setLemma('');
       setContributorName('');
+      setWordType('word');
       setUsageLabels([]);
       setStandardPadanan('');
       setStandardDefinition('');
@@ -890,6 +892,18 @@ export default function KontribusiPage() {
                 required
                 value={lemma}
                 onChange={(e) => setLemma(e.currentTarget.value)}
+              />
+              <Select
+                label="Jenis entri"
+                description="Pilih Idiom/Peribahasa/Ungkapan bila usulan berupa frasa; kata tunggal tidak perlu dipilih."
+                value={wordType}
+                onChange={(v) => setWordType(v ?? 'word')}
+                data={[
+                  { label: 'Kata', value: 'word' },
+                  { label: 'Idiom', value: 'idiom' },
+                  { label: 'Peribahasa', value: 'peribahasa' },
+                  { label: 'Ungkapan', value: 'ungkapan' },
+                ]}
               />
 
               <TextInput
