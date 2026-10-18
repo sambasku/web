@@ -23,7 +23,8 @@
       "namespace": "android_app",
       "package_name": "com.iamutaki.sambasku.staging",
       "sha256_cert_fingerprints": [
-        "89:1B:F4:61:03:08:0D:51:F4:93:C2:A2:2E:8E:75:9F:E4:3E:40:D6:B8:8B:8F:9C:53:91:FC:65:C3:75:7B:6B"
+        "89:1B:F4:61:03:08:0D:51:F4:93:C2:A2:2E:8E:75:9F:E4:3E:40:D6:B8:8B:8F:9C:53:91:FC:65:C3:75:7B:6B",
+        "25:1B:14:20:20:E7:29:38:DF:64:7F:22:A3:73:B9:3D:92:40:BA:3C:BC:D2:32:F8:67:72:AD:90:07:56:4A:44"
       ]
     }
   }
