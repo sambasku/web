@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Button, Container, Stack, Text, Title } from '@mantine/core';
 import { buildMetaTags } from '../application/utils/seo';
 
@@ -25,17 +25,14 @@ function androidIntentUrl(packageName: string): string {
   );
 }
 
-export default function OauthGithubCallbackPage() {
-  const [stagingHref, setStagingHref] = useState('#');
-  const [prodHref, setProdHref] = useState('#');
+function openApp(packageName: string) {
+  window.location.href = androidIntentUrl(packageName);
+}
 
+export default function OauthGithubCallbackPage() {
   useEffect(() => {
-    const staging = androidIntentUrl('com.iamutaki.sambasku.staging');
-    const prod = androidIntentUrl('com.iamutaki.sambasku');
-    setStagingHref(staging);
-    setProdHref(prod);
     // Coba buka app staging (dev) otomatis.
-    window.location.href = staging;
+    openApp('com.iamutaki.sambasku.staging');
   }, []);
 
   return (
@@ -46,10 +43,13 @@ export default function OauthGithubCallbackPage() {
           Menyelesaikan masuk GitHub. Kalau app tidak terbuka, ketuk tombol di
           bawah.
         </Text>
-        <Button component="a" href={stagingHref}>
+        <Button onClick={() => openApp('com.iamutaki.sambasku.staging')}>
           Buka SambasKu Staging
         </Button>
-        <Button variant="light" component="a" href={prodHref}>
+        <Button
+          variant="light"
+          onClick={() => openApp('com.iamutaki.sambasku')}
+        >
           Buka SambasKu
         </Button>
       </Stack>
