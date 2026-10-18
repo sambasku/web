@@ -1,12 +1,16 @@
-import { useEffect } from 'react';
 import { Button, Container, Stack, Text, Title } from '@mantine/core';
 import { buildMetaTags } from '../application/utils/seo';
 
 /**
  * Callback OAuth GitHub (mobile AppAuth).
  * Path tanpa locale - harus cocok Authorization callback URL di GitHub OAuth App.
- * Idealnya App Link / Universal Link langsung ke RedirectUriReceiverActivity;
- * halaman ini fallback jika dibuka di browser (App Link belum verified).
+ *
+ * Ideal: App Link verified → Chrome menyerahkan URL ke
+ * RedirectUriReceiverActivity (halaman ini tidak terlihat).
+ *
+ * JANGAN auto-redirect ke app di sini: membuka app dari Custom Tab
+ * men-dismiss browser → AppAuth menganggap user batal ("Masuk dibatalkan").
+ * Tombol manual mengarah ke RedirectUriReceiverActivity (bukan MainActivity).
  */
 export function meta() {
   return buildMetaTags({
@@ -17,40 +21,38 @@ export function meta() {
   });
 }
 
-function androidIntentUrl(packageName: string): string {
+function androidAppAuthIntent(packageName: string): string {
   const { host, pathname, search } = window.location;
+  const component =
+    `${packageName}/net.openid.appauth.RedirectUriReceiverActivity`;
   return (
     `intent://${host}${pathname}${search}` +
-    `#Intent;scheme=https;package=${packageName};end`
+    `#Intent;scheme=https;package=${packageName};` +
+    `component=${component};end`
   );
 }
 
-function openApp(packageName: string) {
-  window.location.href = androidIntentUrl(packageName);
+function openAppAuth(packageName: string) {
+  window.location.href = androidAppAuthIntent(packageName);
 }
 
 export default function OauthGithubCallbackPage() {
-  useEffect(() => {
-    // Coba buka app staging (dev) otomatis.
-    openApp('com.iamutaki.sambasku.staging');
-  }, []);
-
   return (
     <Container size="sm" py="xl">
       <Stack gap="sm">
-        <Title order={2}>Kembali ke aplikasi</Title>
+        <Title order={2}>Lanjutkan di aplikasi</Title>
         <Text c="dimmed">
-          Menyelesaikan masuk GitHub. Kalau app tidak terbuka, ketuk tombol di
-          bawah.
+          Ketuk tombol di bawah untuk menyelesaikan masuk GitHub. Jangan tutup
+          tab ini sebelum app terbuka.
         </Text>
-        <Button onClick={() => openApp('com.iamutaki.sambasku.staging')}>
-          Buka SambasKu Staging
+        <Button onClick={() => openAppAuth('com.iamutaki.sambasku.staging')}>
+          Lanjutkan di SambasKu Staging
         </Button>
         <Button
           variant="light"
-          onClick={() => openApp('com.iamutaki.sambasku')}
+          onClick={() => openAppAuth('com.iamutaki.sambasku')}
         >
-          Buka SambasKu
+          Lanjutkan di SambasKu
         </Button>
       </Stack>
     </Container>
