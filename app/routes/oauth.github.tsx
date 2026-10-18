@@ -1,60 +1,45 @@
-import { Button, Container, Stack, Text, Title } from '@mantine/core';
-import { buildMetaTags } from '../application/utils/seo';
-
 /**
- * Callback OAuth GitHub (mobile AppAuth).
- * Path tanpa locale - harus cocok Authorization callback URL di GitHub OAuth App.
+ * Callback OAuth GitHub (mobile).
  *
- * Ideal: App Link verified → Chrome menyerahkan URL ke
- * RedirectUriReceiverActivity (halaman ini tidak terlihat).
+ * GitHub hanya menerima redirect HTTPS. App menangkap code lewat custom
+ * scheme per env:
+ *   staging    sambasku-staging://app/oauth/github?...
+ *   production sambasku://app/oauth/github?...
  *
- * JANGAN auto-redirect ke app di sini: membuka app dari Custom Tab
- * men-dismiss browser → AppAuth menganggap user batal ("Masuk dibatalkan").
- * Tombol manual mengarah ke RedirectUriReceiverActivity (bukan MainActivity).
+ * Resource route: HTML minimal langsung, tanpa React hydrate.
  */
-export function meta() {
-  return buildMetaTags({
-    title: 'Masuk dengan GitHub',
-    description: 'Menyelesaikan masuk SambasKu dengan GitHub.',
-    path: '/oauth/github',
-    noindexAlways: true,
+export async function loader({ request }: { request: Request }) {
+  const url = new URL(request.url);
+  const q = url.search; // ?code=...&state=...
+  const host = url.hostname.toLowerCase();
+  const isStaging =
+    host.includes('staging') || host.endsWith('.workers.dev');
+  const scheme = isStaging ? 'sambasku-staging' : 'sambasku';
+  const deepLink = `${scheme}://app/oauth/github${q}`;
+
+  const html = `<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="robots" content="noindex"/>
+<title>Kembali ke SambasKu</title>
+<script>
+(function () {
+  location.replace(${JSON.stringify(deepLink)});
+})();
+</script>
+</head>
+<body>
+<p>Mengembalikan ke SambasKu…</p>
+<p><a href="${deepLink}">Buka SambasKu</a></p>
+</body>
+</html>`;
+
+  return new Response(html, {
+    headers: {
+      'Content-Type': 'text/html; charset=utf-8',
+      'Cache-Control': 'no-store',
+    },
   });
-}
-
-function androidAppAuthIntent(packageName: string): string {
-  const { host, pathname, search } = window.location;
-  const component =
-    `${packageName}/net.openid.appauth.RedirectUriReceiverActivity`;
-  return (
-    `intent://${host}${pathname}${search}` +
-    `#Intent;scheme=https;package=${packageName};` +
-    `component=${component};end`
-  );
-}
-
-function openAppAuth(packageName: string) {
-  window.location.href = androidAppAuthIntent(packageName);
-}
-
-export default function OauthGithubCallbackPage() {
-  return (
-    <Container size="sm" py="xl">
-      <Stack gap="sm">
-        <Title order={2}>Lanjutkan di aplikasi</Title>
-        <Text c="dimmed">
-          Ketuk tombol di bawah untuk menyelesaikan masuk GitHub. Jangan tutup
-          tab ini sebelum app terbuka.
-        </Text>
-        <Button onClick={() => openAppAuth('com.iamutaki.sambasku.staging')}>
-          Lanjutkan di SambasKu Staging
-        </Button>
-        <Button
-          variant="light"
-          onClick={() => openAppAuth('com.iamutaki.sambasku')}
-        >
-          Lanjutkan di SambasKu
-        </Button>
-      </Stack>
-    </Container>
-  );
 }
