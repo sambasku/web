@@ -16,7 +16,6 @@ import {
  */
 const PROD_TIER = [
   'https://api.sambasku.com/api/v1',
-  'https://deno.sambasku.com/api/v1',
   'https://render.sambasku.com/api/v1',
 ];
 
@@ -31,9 +30,9 @@ describe('apiConnectOriginsFrom', () => {
       apiConnectOriginsFrom([
         'https://api.sambasku.com/api/v1',
         'https://api.sambasku.com/api/v1',
-        'https://deno.sambasku.com/api/v1',
+        'https://render.sambasku.com/api/v1',
       ]),
-      ['https://api.sambasku.com', 'https://deno.sambasku.com'],
+      ['https://api.sambasku.com', 'https://render.sambasku.com'],
     );
   });
 
@@ -72,11 +71,7 @@ describe('buildCsp', () => {
       apiConnectOrigins: apiConnectOriginsFrom(PROD_TIER),
       isProd: true,
     });
-    for (const origin of [
-      'https://api.sambasku.com',
-      'https://deno.sambasku.com',
-      'https://render.sambasku.com',
-    ]) {
+    for (const origin of ['https://api.sambasku.com', 'https://render.sambasku.com']) {
       assert.ok(csp.includes(origin), `connect-src tidak memuat ${origin}`);
     }
   });
@@ -141,7 +136,6 @@ describe('public/_headers (BH-06)', () => {
     if (name.toLowerCase() === 'content-security-policy') {
       return (
         trimCsp(onFile) === trimCsp(PROD_HEADERS[name]) &&
-        onFile.includes('https://deno.sambasku.com') &&
         onFile.includes('https://render.sambasku.com')
       );
     }
