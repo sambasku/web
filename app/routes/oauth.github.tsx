@@ -1,29 +1,21 @@
 /**
- * Callback OAuth GitHub (mobile AppAuth).
+ * Callback OAuth GitHub (mobile).
  *
- * Ideal: App Link verified → Chrome Custom Tabs menyerahkan URL langsung ke
- * RedirectUriReceiverActivity (halaman ini tidak kebuka).
+ * GitHub hanya menerima redirect HTTPS. App menangkap code lewat custom
+ * scheme per env:
+ *   staging    sambasku-staging://app/oauth/github?...
+ *   production sambasku://app/oauth/github?...
  *
- * Fallback: HTML minimal + intent:// ke activity AppAuth (bukan MainActivity).
- * Resource route - respons HTML langsung, tanpa React hydrate (hindari race
- * yang membuat AppAuth menganggap user batal).
+ * Resource route: HTML minimal langsung, tanpa React hydrate.
  */
 export async function loader({ request }: { request: Request }) {
   const url = new URL(request.url);
-  const pathAndQuery = `${url.pathname}${url.search}`;
-  const host = url.host;
-
-  // Tanpa package: Android pilih via App Links (staging = workers.dev).
-  const intentGeneric =
-    `intent://${host}${pathAndQuery}` + `#Intent;scheme=https;end`;
-
-  const intentFor = (pkg: string) =>
-    `intent://${host}${pathAndQuery}` +
-    `#Intent;scheme=https;package=${pkg};` +
-    `component=${pkg}/net.openid.appauth.RedirectUriReceiverActivity;end`;
-
-  const staging = intentFor('com.iamutaki.sambasku.staging');
-  const prod = intentFor('com.iamutaki.sambasku');
+  const q = url.search; // ?code=...&state=...
+  const host = url.hostname.toLowerCase();
+  const isStaging =
+    host.includes('staging') || host.endsWith('.workers.dev');
+  const scheme = isStaging ? 'sambasku-staging' : 'sambasku';
+  const deepLink = `${scheme}://app/oauth/github${q}`;
 
   const html = `<!DOCTYPE html>
 <html lang="id">
@@ -34,21 +26,13 @@ export async function loader({ request }: { request: Request }) {
 <title>Kembali ke SambasKu</title>
 <script>
 (function () {
-  // Langsung ke AppAuth receiver - jangan buka MainActivity.
-  location.replace(${JSON.stringify(intentGeneric)});
-  setTimeout(function () {
-    if (!document.hidden) location.href = ${JSON.stringify(staging)};
-  }, 400);
+  location.replace(${JSON.stringify(deepLink)});
 })();
 </script>
 </head>
 <body>
 <p>Mengembalikan ke SambasKu…</p>
-<p>
-  <a href="${staging}">Buka Staging</a>
-  ·
-  <a href="${prod}">Buka Produksi</a>
-</p>
+<p><a href="${deepLink}">Buka SambasKu</a></p>
 </body>
 </html>`;
 
