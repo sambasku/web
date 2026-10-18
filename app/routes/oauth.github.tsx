@@ -1,60 +1,61 @@
-import { Button, Container, Stack, Text, Title } from '@mantine/core';
-import { buildMetaTags } from '../application/utils/seo';
-
 /**
  * Callback OAuth GitHub (mobile AppAuth).
- * Path tanpa locale - harus cocok Authorization callback URL di GitHub OAuth App.
  *
- * Ideal: App Link verified → Chrome menyerahkan URL ke
- * RedirectUriReceiverActivity (halaman ini tidak terlihat).
+ * Ideal: App Link verified → Chrome Custom Tabs menyerahkan URL langsung ke
+ * RedirectUriReceiverActivity (halaman ini tidak kebuka).
  *
- * JANGAN auto-redirect ke app di sini: membuka app dari Custom Tab
- * men-dismiss browser → AppAuth menganggap user batal ("Masuk dibatalkan").
- * Tombol manual mengarah ke RedirectUriReceiverActivity (bukan MainActivity).
+ * Fallback: HTML minimal + intent:// ke activity AppAuth (bukan MainActivity).
+ * Resource route - respons HTML langsung, tanpa React hydrate (hindari race
+ * yang membuat AppAuth menganggap user batal).
  */
-export function meta() {
-  return buildMetaTags({
-    title: 'Masuk dengan GitHub',
-    description: 'Menyelesaikan masuk SambasKu dengan GitHub.',
-    path: '/oauth/github',
-    noindexAlways: true,
+export async function loader({ request }: { request: Request }) {
+  const url = new URL(request.url);
+  const pathAndQuery = `${url.pathname}${url.search}`;
+  const host = url.host;
+
+  // Tanpa package: Android pilih via App Links (staging = workers.dev).
+  const intentGeneric =
+    `intent://${host}${pathAndQuery}` + `#Intent;scheme=https;end`;
+
+  const intentFor = (pkg: string) =>
+    `intent://${host}${pathAndQuery}` +
+    `#Intent;scheme=https;package=${pkg};` +
+    `component=${pkg}/net.openid.appauth.RedirectUriReceiverActivity;end`;
+
+  const staging = intentFor('com.iamutaki.sambasku.staging');
+  const prod = intentFor('com.iamutaki.sambasku');
+
+  const html = `<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="robots" content="noindex"/>
+<title>Kembali ke SambasKu</title>
+<script>
+(function () {
+  // Langsung ke AppAuth receiver - jangan buka MainActivity.
+  location.replace(${JSON.stringify(intentGeneric)});
+  setTimeout(function () {
+    if (!document.hidden) location.href = ${JSON.stringify(staging)};
+  }, 400);
+})();
+</script>
+</head>
+<body>
+<p>Mengembalikan ke SambasKu…</p>
+<p>
+  <a href="${staging}">Buka Staging</a>
+  ·
+  <a href="${prod}">Buka Produksi</a>
+</p>
+</body>
+</html>`;
+
+  return new Response(html, {
+    headers: {
+      'Content-Type': 'text/html; charset=utf-8',
+      'Cache-Control': 'no-store',
+    },
   });
-}
-
-function androidAppAuthIntent(packageName: string): string {
-  const { host, pathname, search } = window.location;
-  const component =
-    `${packageName}/net.openid.appauth.RedirectUriReceiverActivity`;
-  return (
-    `intent://${host}${pathname}${search}` +
-    `#Intent;scheme=https;package=${packageName};` +
-    `component=${component};end`
-  );
-}
-
-function openAppAuth(packageName: string) {
-  window.location.href = androidAppAuthIntent(packageName);
-}
-
-export default function OauthGithubCallbackPage() {
-  return (
-    <Container size="sm" py="xl">
-      <Stack gap="sm">
-        <Title order={2}>Lanjutkan di aplikasi</Title>
-        <Text c="dimmed">
-          Ketuk tombol di bawah untuk menyelesaikan masuk GitHub. Jangan tutup
-          tab ini sebelum app terbuka.
-        </Text>
-        <Button onClick={() => openAppAuth('com.iamutaki.sambasku.staging')}>
-          Lanjutkan di SambasKu Staging
-        </Button>
-        <Button
-          variant="light"
-          onClick={() => openAppAuth('com.iamutaki.sambasku')}
-        >
-          Lanjutkan di SambasKu
-        </Button>
-      </Stack>
-    </Container>
-  );
 }
