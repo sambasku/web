@@ -168,12 +168,15 @@ jobs:
       - name: Bangun sitemap.xml
         run: node --experimental-strip-types scripts/generate-sitemap.ts build/sitemap.xml
 
+      # Lockfile repo adalah pnpm, tetapi job ini tidak memasang pnpm.
+      # Tanpa ini wrangler-action mencari binary pnpm dan gagal.
       - name: Buat bucket bila belum ada
         continue-on-error: true
         uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          packageManager: npm
           command: r2 bucket create sambasku-web-sitemap
 
       - name: Unggah sitemap.xml ke R2
@@ -181,6 +184,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          packageManager: npm
           command: r2 object put sambasku-web-sitemap/sitemap.xml --file=build/sitemap.xml
 
   notify:
