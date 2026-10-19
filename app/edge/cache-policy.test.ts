@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
   SITEMAP_PATH,
+  SITEMAP_STALE_RETRY_S,
   cacheKeyUrl,
   cacheTtlSeconds,
   canonicalCachePath,
@@ -9,6 +10,7 @@ import {
   isCacheableRequest,
   isOgImagePath,
   isSitemapPath,
+  serveExpiredSitemap,
   withCanonicalPath,
 } from './cache-policy.ts';
 
@@ -90,6 +92,17 @@ describe('cacheKeyUrl', () => {
     assert.equal(
       cacheKeyUrl('https://sambasku.com', '/id/words/x', 'abc123'),
       'https://sambasku.com/id/words/x?__build=abc123',
+    );
+  });
+
+  it('sitemap tidak ikut id deploy', () => {
+    assert.equal(
+      cacheKeyUrl('https://sambasku.com', '/sitemap.xml', 'v1'),
+      'https://sambasku.com/sitemap.xml',
+    );
+    assert.equal(
+      cacheKeyUrl('https://sambasku.com', '/sitemap.xml/', 'v1'),
+      cacheKeyUrl('https://sambasku.com', '/sitemap.xml', 'v2'),
     );
   });
 
@@ -196,6 +209,14 @@ describe('isSitemapPath', () => {
     assert.equal(isSitemapPath('/sitemap-words/a'), false);
     assert.equal(isSitemapPath('/sitemap-words/z'), false);
     assert.equal(isSitemapPath('/sitemap-words/aa'), false);
+  });
+
+  it('salinan 200 tetap disajikan setelah TTL habis', () => {
+    assert.equal(serveExpiredSitemap('/sitemap.xml', 200), true);
+    assert.equal(serveExpiredSitemap('/sitemap.xml/', 200), true);
+    assert.equal(serveExpiredSitemap('/sitemap.xml', 503), false);
+    assert.equal(serveExpiredSitemap('/id/words/capal', 200), false);
+    assert.equal(SITEMAP_STALE_RETRY_S, 600);
   });
 
   it('lokasi lama sitemap tidak cacheable (redirect 301 → bypass)', () => {
