@@ -117,6 +117,16 @@ export function isSitemapPath(pathname: string): boolean {
 export const RSS_PATH = '/rss.xml';
 const RSS_FRESH_S = 3600;
 
+/**
+ * Sitemap dan RSS menolak menerbitkan isi kosong (503). Kalau salinan 200
+ * masih ada, sajikan itu. Rebuild berjalan di belakang.
+ */
+export function serveLastGood(pathname: string, cachedStatus: number): boolean {
+  if (cachedStatus !== 200) return false;
+  const path = canonicalCachePath(pathname);
+  return path === SITEMAP_PATH || path === RSS_PATH;
+}
+
 export const LLMS_FULL_PATH = '/llms-full.txt';
 const LLMS_FULL_FRESH_S = 86400;
 

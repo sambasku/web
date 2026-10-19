@@ -10,6 +10,25 @@ import {
 } from '@/application/i18n/locales';
 import { getFixedT } from '@/application/i18n/i18n-instance';
 
+const LATEST_ATTEMPTS = 3;
+
+/** Satu kegagalan API tidak langsung 503. Jeda pendek, lalu coba lagi. */
+async function loadLatestWords(): Promise<LatestWord[]> {
+  let lastErr: unknown;
+  for (let attempt = 0; attempt < LATEST_ATTEMPTS; attempt++) {
+    try {
+      const res = await listLatestWords({ limit: 20 });
+      return res.data;
+    } catch (err) {
+      lastErr = err;
+      if (attempt < LATEST_ATTEMPTS - 1) {
+        await new Promise((resolve) => setTimeout(resolve, 200 * (attempt + 1)));
+      }
+    }
+  }
+  throw lastErr;
+}
+
 /**
  * RSS kata terbaru (/rss.xml). Satu feed (locale default): isi feed adalah
  * data kamus yang identik antar locale UI, jadi feed per-locale hanya
@@ -28,8 +47,7 @@ export async function loader() {
 
   let latest: LatestWord[] = [];
   try {
-    const res = await listLatestWords({ limit: 20 });
-    latest = res.data;
+    latest = await loadLatestWords();
   } catch (err) {
     console.error('[rss] gagal mengambil kata terbaru', err);
     return new Response('Service Unavailable', {
