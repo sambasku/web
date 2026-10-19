@@ -11,6 +11,7 @@ import {
   isOgImagePath,
   isSitemapPath,
   serveExpiredSitemap,
+  serveLastGood,
   withCanonicalPath,
 } from './cache-policy.ts';
 
@@ -234,6 +235,8 @@ describe('rss', () => {
     assert.ok(freshSeconds('/rss.xml') < freshSeconds(SITEMAP_PATH));
     // Varian dengan query atau trailing slash ekstra tidak lewat.
     assert.equal(isCacheableRequest('GET', '/rss.xml', '?x=1'), false);
+    assert.equal(serveLastGood('/rss.xml', 200), true);
+    assert.equal(serveLastGood('/rss.xml', 503), false);
   });
 });
 

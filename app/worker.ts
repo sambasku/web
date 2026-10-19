@@ -11,7 +11,7 @@ import {
   isCacheableRequest,
   isOgImagePath,
   isSitemapPath,
-  serveExpiredSitemap,
+  serveLastGood,
   withCanonicalPath,
 } from './edge/cache-policy';
 import {
@@ -258,7 +258,7 @@ export default {
       const ageS =
         (Date.now() - Number(cached.headers.get('x-cached-at') ?? 0)) / 1000;
       if (ageS >= ttlS) {
-        if (serveExpiredSitemap(pathname, cached.status)) {
+        if (serveLastGood(pathname, cached.status)) {
           const forClient = cached.clone();
           ctx.waitUntil(
             refreshExpiredSitemap(canonical, ctx, versionId, cached, env.SITEMAP),
