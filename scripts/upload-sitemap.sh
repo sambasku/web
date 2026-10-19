@@ -20,5 +20,5 @@ else
   echo "Bucket $BUCKET dibuat"
 fi
 
-wrangler r2 object put "${BUCKET}/sitemap.xml" --file "$FILE"
+wrangler r2 object put "${BUCKET}/sitemap.xml" --file "$FILE" --remote
 echo "sitemap.xml terunggah"
