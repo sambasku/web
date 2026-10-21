@@ -70,12 +70,15 @@ export function PlaceMap({
 }) {
   const box = useRef<HTMLDivElement>(null);
   const onChangeRef = useRef(onChange);
-  onChangeRef.current = onChange;
   const valueRef = useRef(value);
-  valueRef.current = value;
   const flyRef = useRef<(lat: number, lng: number) => void>(() => {});
   const abortRef = useRef<AbortController | null>(null);
   const lastQueryRef = useRef('');
+  // Sync ref di effect, bukan saat render (react-hooks/refs).
+  useEffect(() => {
+    onChangeRef.current = onChange;
+    valueRef.current = value;
+  });
   const [hint, setHint] = useState<string | null>(null);
   const [searching, setSearching] = useState(false);
   const [results, setResults] = useState<NominatimHit[]>([]);

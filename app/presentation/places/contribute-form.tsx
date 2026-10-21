@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type DragEvent } from 'react';
+import { useEffect, useState, type DragEvent } from 'react';
 import {
   Button,
   Container,

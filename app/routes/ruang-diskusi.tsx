@@ -7,7 +7,6 @@ import {
   Container,
   Group,
   Image,
-  Paper,
   SimpleGrid,
   Stack,
   Text,
