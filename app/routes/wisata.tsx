@@ -4,16 +4,18 @@ import {
   Anchor,
   Badge,
   Box,
+  Button,
   Container,
   Group,
   Image,
+  Paper,
   SimpleGrid,
   Stack,
   Text,
   TextInput,
   Title,
 } from '@mantine/core';
-import { Search } from 'lucide-react';
+import { MapPinPlus, Search } from 'lucide-react';
 import type { Route } from './+types/wisata';
 import { buildMetaTags, buildPlaceListJsonLd } from '@/application/utils/seo';
 import {
@@ -116,6 +118,7 @@ function PlaceRow({ place }: { place: Place }) {
 
 export default function PlaceListPage() {
   const { places } = useLoaderData<typeof loader>();
+  const lp = useLocalePath();
   const [filter, setFilter] = useState<Filter>('semua');
   const [query, setQuery] = useState('');
 
@@ -132,6 +135,38 @@ export default function PlaceListPage() {
       <Text size="sm" c="dimmed" mt={4}>
         Tempat wisata dan kuliner di Kabupaten Sambas, Kalimantan Barat.
       </Text>
+
+      <Paper
+        withBorder
+        radius="md"
+        p="md"
+        mt="md"
+        style={{
+          display: 'flex',
+          gap: 12,
+          alignItems: 'center',
+          flexWrap: 'wrap',
+        }}
+      >
+        <MapPinPlus size={22} style={{ flexShrink: 0, color: 'var(--mantine-color-teal-6)' }} />
+        <div style={{ flex: 1, minWidth: 200 }}>
+          <Text size="sm" fw={600}>
+            Ada tempat yang belum terdaftar?
+          </Text>
+          <Text size="xs" c="dimmed" mt={2}>
+            Usulkan tempat baru tanpa perlu masuk. Kami tinjau dulu sebelum tampil.
+          </Text>
+        </div>
+        <Button
+          component={Link}
+          to={lp('/wisata/kontribusi')}
+          size="compact-md"
+          variant="light"
+          color="teal"
+        >
+          Usulkan tempat
+        </Button>
+      </Paper>
 
       <TextInput
         mt="md"

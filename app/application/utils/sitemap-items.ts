@@ -52,7 +52,7 @@ function uniqueSlugs(slugs: readonly string[]): string[] {
 }
 
 /**
- * Satu urlset: rute statis, tiap slug places.json (halaman /wisata/:slug
+ * Satu urlset: rute statis, tiap slug tempat dari API (halaman /wisata/:slug
  * menerima semua kategori), kuliner dari cuisines.json, halaman huruf, lemma.
  * Slug ganda di sumber hanya ditulis sekali.
  */

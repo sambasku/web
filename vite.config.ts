@@ -111,6 +111,7 @@ export default defineConfig({
   // Tanpa ini @mantine/core (ditemukan belakangan) memicu pass kedua dan
   // menghasilkan dua copy React di browser (Invalid hook call).
   optimizeDeps: {
+    exclude: ['maplibre-gl'],
     include: [
       'react',
       'react-dom',
