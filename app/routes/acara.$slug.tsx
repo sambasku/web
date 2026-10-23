@@ -86,13 +86,11 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   const slug = params.slug?.trim();
   if (!slug) throw new Response('Slug tidak valid', { status: 400 });
 
-  let event = null;
   try {
-    event = await fetchEventBySlug(slug, request.signal);
+    return { slug, event: await fetchEventBySlug(slug, request.signal) };
   } catch {
     throw new Response('Gagal memuat data acara', { status: 503 });
   }
-  return { slug, event };
 }
 
 /** HR-01: href eksternal harus https; `safeExternalUrl` juga sisip UTM. */

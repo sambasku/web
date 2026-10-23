@@ -6,6 +6,7 @@
  */
 
 import { apiClient } from '@/infrastructure/api/api-client';
+import { authHeaders } from '@/infrastructure/auth/access-token';
 import type { EventSourceType } from './events-parse';
 
 export type { EventSourceType };
@@ -84,6 +85,7 @@ export async function fetchMyEventContributions(
   signal?: AbortSignal,
 ): Promise<EventContribution[]> {
   const res = await apiClient<{ items: EventContribution[] }>('/event-contributions/mine', {
+    headers: authHeaders(),
     signal,
   });
   return res.data.items ?? [];

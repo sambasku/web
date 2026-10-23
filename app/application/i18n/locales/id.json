@@ -221,7 +221,7 @@
   "apiPublik_duration": "Durasi",
   "apiPublik_requestUrl": "URL request",
   "apiPublik_responsePreview": "Response",
-  "apiPublik_networkError": "Gagal menghubungi API. Cek koneksi internetmu, lalu coba lagi.",
+  "apiPublik_networkError": "Gagal menghubungi server. Coba lagi dalam beberapa saat.",
   "seo_wordsDescription": "Telusuri daftar kata Kamus Sambas dari A sampai Z. Setiap entri memuat makna dan terjemahan Indonesia. Yang belum diverifikasi tetap bisa dibuka.",
   "seo_kulinerTitle": "Kuliner Khas Sambas - Makanan Tradisional Melayu Sambas",
   "seo_kulinerDescription": "Jelajahi kuliner khas Sambas: bubur pedas, terubuk asap, dan makanan tradisional Melayu Sambas lengkap dengan bahan, cara penyajian, dan asal daerahnya.",

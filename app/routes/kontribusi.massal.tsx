@@ -157,7 +157,7 @@ export default function KontribusiMassalPage() {
       setError(
         err instanceof AppError
           ? err.message
-          : 'Gagal mengirim batch. Coba lagi nanti.',
+          : 'Gagal mengirim batch. Coba lagi dalam beberapa saat.',
       );
     } finally {
       setSubmitting(false);

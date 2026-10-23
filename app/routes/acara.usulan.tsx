@@ -11,8 +11,7 @@ import {
 } from '@/application/i18n/locales';
 import { getFixedT } from '@/application/i18n/i18n-instance';
 import { useLocalePath } from '@/application/i18n/use-locale';
-import { apiClient } from '@/infrastructure/api/api-client';
-import { authHeaders, readAccessToken } from '@/infrastructure/auth/access-token';
+import { readAccessToken } from '@/infrastructure/auth/access-token';
 import {
   fetchMyEventContributions,
   type EventContribution,
@@ -56,10 +55,8 @@ export default function EventUsulanPage() {
       setItems([]);
       return;
     }
-    void apiClient<{ items: EventContribution[] }>('/event-contributions/mine', {
-      headers: authHeaders(),
-    })
-      .then((res) => setItems(res.data.items ?? []))
+    void fetchMyEventContributions()
+      .then((rows) => setItems(rows))
       .catch((err: unknown) =>
         setError(err instanceof Error ? err.message : 'Gagal memuat usulan'),
       );
