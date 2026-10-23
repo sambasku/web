@@ -28,6 +28,7 @@ import { useLocalePath } from '@/application/i18n/use-locale';
 
 import { formatDateId } from '@/application/utils/formatters';
 import { displayImageUrl } from '@/presentation/utils/display-image-url';
+import { withSambaskuUtm } from '@/presentation/utils/external-link';
 import { hasViolenceWarning } from '@/domain/image-content-warnings';
 import { env } from '@/infrastructure/config/env';
 import type { DiscussionPublicItem } from '@/domain/entities/discussion.entity';
@@ -37,8 +38,9 @@ import {
   trackEvent,
 } from '@/infrastructure/analytics/analytics';
 
-const PLAY_STORE_URL =
-  'https://play.google.com/store/apps/details?id=com.iamutaki.sambasku';
+const PLAY_STORE_URL = withSambaskuUtm(
+  'https://play.google.com/store/apps/details?id=com.iamutaki.sambasku',
+);
 
 export function meta({ params }: Route.MetaArgs) {
   const locale = isAppLocale(params.locale) ? params.locale : DEFAULT_LOCALE;

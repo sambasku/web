@@ -35,10 +35,10 @@ import { getFixedT } from '@/application/i18n/i18n-instance';
 import { useLocalePath } from '@/application/i18n/use-locale';
 import { displayImageUrl } from '@/presentation/utils/display-image-url';
 
-export function meta({ params, data }: Route.MetaArgs) {
+export function meta({ params, loaderData }: Route.MetaArgs) {
   const locale = isAppLocale(params.locale) ? params.locale : DEFAULT_LOCALE;
   const t = getFixedT(locale);
-  const c = data?.cuisine;
+  const c = loaderData?.cuisine;
   if (!c) {
     return buildMetaTags({
       title: t('kuliner_notFoundTitle'),

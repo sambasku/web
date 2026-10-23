@@ -112,7 +112,7 @@ export function mapPlace(row: ApiPlace): Place {
     lat: row.lat,
     lng: row.lng,
     mapsUrl: row.maps_url ?? null,
-    shortDescription: row.short_description,
+    shortDescription: row.short_description ?? '',
     images,
     imageCount: row.image_count ?? images.length,
     hours: row.hours ?? undefined,

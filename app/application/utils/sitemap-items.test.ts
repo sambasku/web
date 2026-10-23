@@ -45,6 +45,21 @@ describe('buildSitemapItems', () => {
     assert.equal(hits.length, 1);
     assert.equal(hits[0]?.lastmod, '2026-10-05');
   });
+
+  it('acara published masuk sitemap, slug dobel ditulis sekali', () => {
+    const items = buildSitemapItems({
+      words: [],
+      wisataSlugs: [],
+      kulinerSlugs: [],
+      acaraSlugs: ['pawai-blok-keywords', 'pawai-blok-keywords'],
+    });
+    assert.equal(items.filter((item) => item.bare === '/acara').length, 1);
+    const acara = items.filter((item) => item.bare.startsWith('/acara/'));
+    assert.deepEqual(
+      acara.map((item) => item.bare),
+      ['/acara/pawai-blok-keywords'],
+    );
+  });
 });
 
 describe('collectVerifiedWords', () => {

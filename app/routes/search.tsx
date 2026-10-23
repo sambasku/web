@@ -34,14 +34,14 @@ import {
   trackEvent,
 } from '@/infrastructure/analytics/analytics';
 
-export function meta({ data, params }: Route.MetaArgs) {
+export function meta({ loaderData, params }: Route.MetaArgs) {
   const locale = isAppLocale(params.locale) ? params.locale : DEFAULT_LOCALE;
   const t = getFixedT(locale);
-  const query = data?.q ? `"${data.q}"` : t('seo_searchQueryFallback');
+  const query = loaderData?.q ? `"${loaderData.q}"` : t('seo_searchQueryFallback');
   return buildMetaTags({
     title: t('seo_searchTitle', { query }),
     description: t('seo_searchDescription', { query }),
-    path: `${localePath(locale, '/search')}${data?.q ? `?q=${encodeURIComponent(data.q)}` : ''}`,
+    path: `${localePath(locale, '/search')}${loaderData?.q ? `?q=${encodeURIComponent(loaderData.q)}` : ''}`,
     locale,
     noindexAlways: true,
   });

@@ -41,9 +41,9 @@ import {
 } from '@/infrastructure/analytics/analytics';
 import { hasViolenceWarning } from '@/domain/image-content-warnings';
 
-export function meta({ data, params }: Route.MetaArgs) {
+export function meta({ loaderData, params }: Route.MetaArgs) {
   const locale = isAppLocale(params.locale) ? params.locale : DEFAULT_LOCALE;
-  if (!data?.help) {
+  if (!loaderData?.help) {
     return buildMetaTags({
       title: 'Ruang Diskusi Tidak Ditemukan',
       description:
@@ -54,9 +54,9 @@ export function meta({ data, params }: Route.MetaArgs) {
   }
 
   const excerpt =
-    data.help.body?.trim().slice(0, 140) ||
+    loaderData.help.body?.trim().slice(0, 140) ||
     'Obrolan warga di Ruang Diskusi.';
-  const safeImage = data.help.images.find(
+  const safeImage = loaderData.help.images.find(
     (img) => !hasViolenceWarning(img.content_warnings),
   );
   const rawImage = safeImage?.public_url;
@@ -65,7 +65,7 @@ export function meta({ data, params }: Route.MetaArgs) {
   return buildMetaTags({
     title: 'Ruang Diskusi',
     description: excerpt,
-    path: localePath(locale, `/ruang-diskusi/${encodeURIComponent(data.help.id)}`),
+    path: localePath(locale, `/ruang-diskusi/${encodeURIComponent(loaderData.help.id)}`),
     image: ogImage,
     type: 'article',
     locale,

@@ -34,7 +34,7 @@ import { getFixedT } from '@/application/i18n/i18n-instance';
 import { useLocalePath } from '@/application/i18n/use-locale';
 import { displayImageUrl } from '@/presentation/utils/display-image-url';
 
-export function meta({ params, data }: Route.MetaArgs) {
+export function meta({ params, loaderData }: Route.MetaArgs) {
   const locale = isAppLocale(params.locale) ? params.locale : DEFAULT_LOCALE;
   const t = getFixedT(locale);
   return [
@@ -45,8 +45,8 @@ export function meta({ params, data }: Route.MetaArgs) {
       path: localePath(locale, '/kuliner'),
       locale,
     }),
-    ...(env.isProd && data?.items?.length
-      ? [{ 'script:ld+json': buildCuisineListJsonLd(data.items, locale) }]
+    ...(env.isProd && loaderData?.items?.length
+      ? [{ 'script:ld+json': buildCuisineListJsonLd(loaderData.items, locale) }]
       : []),
   ];
 }

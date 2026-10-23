@@ -30,6 +30,7 @@ import {
 } from '@/application/i18n/locales';
 import { getFixedT } from '@/application/i18n/i18n-instance';
 import { useLocalePath } from '@/application/i18n/use-locale';
+import { withSambaskuUtm } from '@/presentation/utils/external-link';
 
 export function meta({ params }: Route.MetaArgs) {
   const locale = isAppLocale(params.locale) ? params.locale : DEFAULT_LOCALE;
@@ -51,8 +52,9 @@ export function loader(_args: Route.LoaderArgs) {
 }
 
 const ALPHABETS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-const WHATSAPP_GROUP_URL =
-  'https://chat.whatsapp.com/Kw64lxFEGXfK5gw6T6GEoN?mode=gi_t';
+const WHATSAPP_GROUP_URL = withSambaskuUtm(
+  'https://chat.whatsapp.com/Kw64lxFEGXfK5gw6T6GEoN?mode=gi_t',
+);
 
 export default function Home() {
   const { t } = useTranslation();

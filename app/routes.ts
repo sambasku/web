@@ -50,6 +50,8 @@ export default [
   route('wisata', 'routes/legacy-redirect.tsx', { id: 'legacy-wisata-list' }),
   route('wisata/:slug', 'routes/legacy-redirect.tsx', { id: 'legacy-wisata' }),
   route('eksplorasi', 'routes/legacy-redirect.tsx', { id: 'legacy-eksplorasi' }),
+  route('acara', 'routes/legacy-redirect.tsx', { id: 'legacy-acara-list' }),
+  route('acara/:slug', 'routes/legacy-redirect.tsx', { id: 'legacy-acara' }),
 
   route(':locale', 'routes/locale-layout.tsx', [
     index('routes/home.tsx'),
@@ -74,6 +76,10 @@ export default [
     route('huruf/:letter', 'routes/huruf.$letter.tsx'),
     route('kuliner', 'routes/kuliner.tsx'),
     route('kuliner/:slug', 'routes/kuliner.$slug.tsx'),
+    route('acara', 'routes/acara.tsx'),
+    route('acara/usulan', 'routes/acara.usulan.tsx'),
+    route('acara/kontribusi', 'routes/acara.kontribusi.tsx'),
+    route('acara/:slug', 'routes/acara.$slug.tsx'),
     route('wisata', 'routes/wisata.tsx'),
     route('wisata/usulan', 'routes/wisata.usulan.tsx'),
     route('wisata/kontribusi', 'routes/wisata.kontribusi.tsx'),

@@ -53,10 +53,10 @@ import {
   trackEvent,
 } from '@/infrastructure/analytics/analytics';
 
-export function meta({ data, params }: Route.MetaArgs) {
+export function meta({ loaderData, params }: Route.MetaArgs) {
   const locale = isAppLocale(params.locale) ? params.locale : DEFAULT_LOCALE;
   const tWord = getFixedT(locale);
-  if (!data?.word) {
+  if (!loaderData?.word) {
     return buildMetaTags({
       title: tWord('word_notFoundTitle'),
       description: tWord('word_notFoundBody'),
@@ -65,7 +65,7 @@ export function meta({ data, params }: Route.MetaArgs) {
     });
   }
 
-  const { word } = data;
+  const { word } = loaderData;
   const { title, description } = buildWordSeoCopy(word, locale);
   const rawImage = pickSafePrimaryImageUrl(word.images);
   // Kartu OG dinamis saat tidak ada gambar kata yang aman (pengganti

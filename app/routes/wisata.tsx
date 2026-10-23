@@ -53,7 +53,7 @@ const matchesFilter = (p: Place, f: Filter) =>
   f === 'semua' ||
   (f === 'kuliner' ? p.category === 'kuliner' : p.category === 'wisata' && p.type === f);
 
-export function meta({ data, params }: Route.MetaArgs) {
+export function meta({ loaderData, params }: Route.MetaArgs) {
   const locale = isAppLocale(params.locale) ? params.locale : DEFAULT_LOCALE;
   return [
     ...buildMetaTags({
@@ -63,8 +63,8 @@ export function meta({ data, params }: Route.MetaArgs) {
       path: localePath(locale, '/wisata'),
       locale,
     }),
-    ...(env.isProd && data
-      ? [{ 'script:ld+json': buildPlaceListJsonLd(data.places, locale) }]
+    ...(env.isProd && loaderData
+      ? [{ 'script:ld+json': buildPlaceListJsonLd(loaderData.places, locale) }]
       : []),
   ];
 }
@@ -109,7 +109,8 @@ function PlaceRow({ place }: { place: Place }) {
           {placeLabel(place)}
         </Text>
         <Text fz={{ base: 12, sm: 14 }} c="dimmed" lineClamp={1}>
-          {place.shortDescription}
+          {place.shortDescription ||
+            `Tempat ${place.category} di Kabupaten Sambas.`}
         </Text>
       </Stack>
     </Anchor>

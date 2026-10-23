@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Link, useLoaderData } from 'react-router';
 import {
   Anchor,
@@ -29,12 +29,16 @@ import {
   placeCover,
   placeLabel,
   placeTypeLabels as PLACE_TYPE_LABELS,
+  sendPlaceView,
   type Place,
   type PlaceImage,
 } from '@/domain/places';
+import { fetchEvents } from '@/domain/events';
+import { recordPlaceViewOnce } from '@/domain/place-view-beacon';
 import { env } from '@/infrastructure/config/env';
 import { safeExternalUrl } from '@/presentation/utils/safe-external-url';
 import { displayImageUrl } from '@/presentation/utils/display-image-url';
+import { EventMiniList } from '@/presentation/events/event-card';
 
 /**
  * Fallback web untuk link share tempat (`/wisata/:slug`) bila aplikasi belum
@@ -45,9 +49,9 @@ import { displayImageUrl } from '@/presentation/utils/display-image-url';
 
 const capitalize = (s: string) => (s ? `${s[0].toUpperCase()}${s.slice(1)}` : s);
 
-export function meta({ data, params }: Route.MetaArgs) {
+export function meta({ loaderData, params }: Route.MetaArgs) {
   const locale = isAppLocale(params.locale) ? params.locale : DEFAULT_LOCALE;
-  const place = data?.place;
+  const place = loaderData?.place;
   const path = localePath(locale, `/wisata/${encodeURIComponent(params.slug)}`);
   if (!place) {
     return buildMetaTags({
@@ -63,7 +67,7 @@ export function meta({ data, params }: Route.MetaArgs) {
   return [
     ...buildMetaTags({
       title: `${place.name} - Wisata Sambas`,
-      description: place.shortDescription,
+      description: place.shortDescription || `Tempat ${place.category} di Kabupaten Sambas.`,
       path,
       locale,
       image,
@@ -85,8 +89,12 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   } catch {
     throw new Response('Gagal memuat data wisata', { status: 503 });
   }
-  if (!place) return { slug, place: null };
-  return { slug, place };
+  if (!place) return { slug, place: null, events: [] };
+
+  // Agenda terkait: acara yang menunjuk tempat ini. Query terpisah dari
+  // detail tempat (bukan N+1 - satu request per relasi).
+  const events = (await fetchEvents({ place_id: place.id }, request.signal)) ?? [];
+  return { slug, place, events };
 }
 
 function CreditLine({
@@ -157,11 +165,17 @@ function SafeAnchor({
 
 export default function PlaceSharePage() {
   const lp = useLocalePath();
-  const { slug, place } = useLoaderData<typeof loader>();
+  const { slug, place, events } = useLoaderData<typeof loader>();
   const [gallery, setGallery] = useState<PlaceImage[]>(place?.images ?? []);
   const [nextOffset, setNextOffset] = useState<number | null>(
     place && place.imageCount > place.images.length ? place.images.length : null,
   );
+  // Metrik popularitas (docs/api/45): beacon sekali per sesi per slug,
+  // best-effort, tidak boleh ganggu render.
+  useEffect(() => {
+    if (!place) return;
+    recordPlaceViewOnce(slug, sendPlaceView);
+  }, [slug, place]);
 
   if (!place) {
     return (
@@ -267,9 +281,11 @@ export default function PlaceSharePage() {
           </Paper>
         ) : null}
 
-        <Text size="sm" lh={1.5} mt={12}>
-          {place.shortDescription}
-        </Text>
+        {place.shortDescription ? (
+          <Text size="sm" lh={1.5} mt={12}>
+            {place.shortDescription}
+          </Text>
+        ) : null}
 
         {mapsUrl ? (
           <Button
@@ -375,6 +391,12 @@ export default function PlaceSharePage() {
                 ))}
             </SimpleGrid>
           </>
+        ) : null}
+
+        {events.length > 0 ? (
+          <Box mt={20}>
+            <EventMiniList events={events} />
+          </Box>
         ) : null}
 
         {(place.sources ?? []).length > 0 ? (

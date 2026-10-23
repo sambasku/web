@@ -77,3 +77,13 @@ export async function fetchPlaceImages(
     return null;
   }
 }
+
+/**
+ * Catat 1 view detail place (metrik popularitas, docs/api/45-api-place-views.md).
+ * Best-effort total - kegagalan jaringan tidak boleh ganggu render halaman.
+ */
+export function sendPlaceView(slug: string): void {
+  void apiClient(`/places/${encodeURIComponent(slug)}/view`, { method: 'POST' }).catch(
+    () => {},
+  );
+}

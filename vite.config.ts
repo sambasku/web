@@ -90,7 +90,7 @@ function generateHeadersFile(): Plugin {
 
       const target = `${root.replace(/\/+$/, '')}/public/_headers`;
       // Tulis hanya kalau berubah, supaya build tidak mengotori working tree.
-      let current: string | null = null;
+      let current: string | null;
       try {
         current = readFileSync(target, 'utf8');
       } catch {
@@ -117,7 +117,6 @@ export default defineConfig({
       'react-dom',
       'react-dom/client',
       'react-router',
-      'react-router-dom',
       '@mantine/core',
       '@mantine/hooks',
       'lucide-react',
