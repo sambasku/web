@@ -36,6 +36,7 @@ import { pickSafePrimaryImageUrl } from '@/domain/image-content-warnings';
 import { WordTypeBadge } from '@/presentation/components/word/word-type-badge';
 import { UsageLabelsBadges } from '@/presentation/components/word/usage-labels-badges';
 import { WordImagesGallery } from '@/presentation/components/word/word-images-gallery';
+import { SearchBar } from '@/presentation/components/word/search-bar';
 import '@/presentation/styles/fonts-italic.css';
 import { WordAudioPlayer } from '@/presentation/components/word/pronunciation-player';
 import { formatWordClass } from '@/application/utils/formatters';
@@ -218,6 +219,9 @@ export default function WordDetailPage() {
             {t('word_backToList')}
           </Button>
         </Group>
+
+        {/* Entry point pencarian: user bisa pindah kata tanpa balik ke home/daftar. */}
+        <SearchBar />
 
         {/* Main Word Header */}
         <Stack gap="sm">

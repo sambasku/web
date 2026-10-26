@@ -130,7 +130,7 @@ export function buildEventJsonLd(
           }
         : {}),
     },
-    ...(event.posterUrl ? { image: event.posterUrl } : {}),
+    ...(event.posterUrls[0] ? { image: event.posterUrls[0] } : {}),
     ...(event.organizer
       ? {
           organizer: {

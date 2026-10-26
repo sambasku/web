@@ -21,7 +21,7 @@ const ROW: ApiEvent = {
   lat: 1.3617,
   lng: 109.313,
   maps_url: null,
-  poster_url: 'https://cdn.example.com/poster.jpg',
+  poster_urls: ['https://cdn.example.com/poster.jpg'],
   organizer: 'Panitia Pawai',
   source_url: 'https://facebook.com/pawai/posts/1',
   source_type: 'facebook',
@@ -65,7 +65,7 @@ describe('mapEvent', () => {
       ...ROW,
       lat: null,
       lng: null,
-      poster_url: null,
+      poster_urls: [],
       organizer: null,
       source_url: null,
       source_type: null,
@@ -75,7 +75,7 @@ describe('mapEvent', () => {
     });
     assert.equal(event.lat, null);
     assert.equal(event.lng, null);
-    assert.equal(event.posterUrl, null);
+    assert.deepEqual(event.posterUrls, []);
     assert.equal(event.organizer, null);
     assert.equal(event.sourceUrl, null);
     assert.equal(event.sourceType, null);

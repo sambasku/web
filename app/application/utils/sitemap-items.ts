@@ -61,6 +61,7 @@ export function buildSitemapItems(input: {
   wisataSlugs: readonly string[];
   kulinerSlugs: readonly string[];
   acaraSlugs?: readonly string[];
+  usahaSlugs?: readonly string[];
 }): SitemapItem[] {
   const words = uniqueWords(input.words);
   const letters = [
@@ -87,14 +88,23 @@ export function buildSitemapItems(input: {
         changefreq: 'monthly',
       }) satisfies SitemapItem,
   );
-  const acara = uniqueSlugs(input.acaraSlugs ?? []).map(
-    (slug) =>
-      ({
-        bare: `/acara/${encodeURIComponent(slug)}`,
-        priority: '0.7',
-        changefreq: 'weekly',
-      }) satisfies SitemapItem,
-  );
+const acara = uniqueSlugs(input.acaraSlugs ?? []).map(
+  (slug) =>
+    ({
+      bare: `/acara/${encodeURIComponent(slug)}`,
+      priority: '0.7',
+      changefreq: 'weekly',
+    }) satisfies SitemapItem,
+);
+
+const usaha = uniqueSlugs(input.usahaSlugs ?? []).map(
+  (slug) =>
+    ({
+      bare: `/usaha/${encodeURIComponent(slug)}`,
+      priority: '0.7',
+      changefreq: 'monthly',
+    }) satisfies SitemapItem,
+);
 
   return [
     { bare: '/', priority: '1.0', changefreq: 'daily' },
@@ -106,6 +116,8 @@ export function buildSitemapItems(input: {
     ...kuliner,
     { bare: '/acara', priority: '0.8', changefreq: 'weekly' },
     ...acara,
+    { bare: '/usaha', priority: '0.8', changefreq: 'weekly' },
+    ...usaha,
     ...letters.map(
       (letter) =>
         ({

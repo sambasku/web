@@ -52,7 +52,8 @@ export interface Event {
   lat: number | null;
   lng: number | null;
   mapsUrl: string | null;
-  posterUrl: string | null;
+  /** Poster acara (bisa banyak). [0] = sampul. */
+  posterUrls: string[];
   /** Penyelenggara opsional - kalau null, UI skip labelnya. */
   organizer: string | null;
   /** Link original konten. Bersih tanpa UTM (helper UTM saat render). */
@@ -84,7 +85,7 @@ export interface ApiEvent {
   lat?: number | null;
   lng?: number | null;
   maps_url?: string | null;
-  poster_url?: string | null;
+  poster_urls?: string[];
   organizer?: string | null;
   source_url?: string | null;
   source_type?: EventSourceType | null;
@@ -115,7 +116,7 @@ export function mapEvent(row: ApiEvent): Event {
     lat: row.lat ?? null,
     lng: row.lng ?? null,
     mapsUrl: row.maps_url ?? null,
-    posterUrl: row.poster_url ?? null,
+    posterUrls: Array.isArray(row.poster_urls) ? row.poster_urls : [],
     organizer: row.organizer ?? null,
     sourceUrl: row.source_url ?? null,
     sourceType: row.source_type ?? null,

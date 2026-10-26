@@ -1,8 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
+  Badge,
   Button,
+  CloseButton,
   Container,
+  FileInput,
   Group,
+  Image,
   Paper,
   Select,
   Stack,
@@ -15,8 +19,10 @@ import { useTranslation } from 'react-i18next';
 import { apiClient, AppError } from '@/infrastructure/api/api-client';
 import { formError } from '@/application/utils/form-error';
 import { fetchEventCategories } from '@/domain/events';
+import { inSambas, PlaceMap } from '@/presentation/places/place-map';
 import {
   submitEventContribution,
+  uploadEventPoster,
   type EventSourceType,
 } from '@/domain/event-contributions';
 
@@ -47,6 +53,13 @@ export function EventContributeForm() {
   const [sourceUrl, setSourceUrl] = useState('');
   const [sourceType, setSourceType] = useState<string | null>(null);
   const [sourceAttribution, setSourceAttribution] = useState('');
+  const [posterFiles, setPosterFiles] = useState<File[]>([]);
+  const [posterUrls, setPosterUrls] = useState<string[]>([]);
+  const [posterUrlDraft, setPosterUrlDraft] = useState('');
+  const posterPreviews = useMemo(
+    () => posterFiles.map((f) => URL.createObjectURL(f)),
+    [posterFiles],
+  );
   const [regionId, setRegionId] = useState<string | null>(null);
   const [villageId, setVillageId] = useState<string | null>(null);
   const [categories, setCategories] = useState<
@@ -54,6 +67,7 @@ export function EventContributeForm() {
   >([]);
   const [regions, setRegions] = useState<Array<{ value: string; label: string }>>([]);
   const [villages, setVillages] = useState<Array<{ value: string; label: string }>>([]);
+  const [point, setPoint] = useState<{ lat: number; lng: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
@@ -93,6 +107,12 @@ export function EventContributeForm() {
     setBusy(true);
     setError(null);
     try {
+      // Poster opsional (bisa banyak): file diunggah saat submit; tanpa file
+      // pakai daftar URL https yang ditempel manual.
+      const uploadedFromFiles = posterFiles.length
+        ? await Promise.all(posterFiles.map((f) => uploadEventPoster(f)))
+        : [];
+      const posters = [...uploadedFromFiles, ...posterUrls.map((u) => u.trim()).filter(Boolean)];
       await submitEventContribution({
         name: name.trim(),
         description: description.trim(),
@@ -100,12 +120,15 @@ export function EventContributeForm() {
         starts_at: new Date(startsAt).toISOString(),
         ends_at: new Date(endsAt).toISOString(),
         location_text: locationText.trim(),
+        lat: point && inSambas(point.lat, point.lng) ? point.lat : null,
+        lng: point && inSambas(point.lat, point.lng) ? point.lng : null,
         organizer: organizer.trim() || null,
         source_url: sourceUrl.trim() || null,
         source_type: (sourceType as EventSourceType | null) ?? null,
         source_attribution: sourceAttribution.trim() || null,
         region_id: regionId,
         village_id: villageId,
+        poster_urls: posters,
       });
       setDone(true);
     } catch (err) {
@@ -223,6 +246,7 @@ export function EventContributeForm() {
                 disabled={!regionId}
               />
             </Group>
+            <PlaceMap value={point} onChange={setPoint} />
             <TextInput
               label={t('event_contributeFieldOrganizer')}
               description={t('event_contributeFieldOrganizerDesc')}
@@ -259,6 +283,63 @@ export function EventContributeForm() {
               value={sourceAttribution}
               onChange={(e) => setSourceAttribution(e.currentTarget.value)}
             />
+            <FileInput
+              label="Poster acara"
+              description="Opsional. Bisa pilih beberapa file - jpg, png, atau webp, dikecilkan otomatis."
+              accept="image/jpeg,image/png,image/webp"
+              multiple
+              clearable
+              value={posterFiles}
+              onChange={setPosterFiles}
+            />
+            <TextInput
+              label="Atau tambah URL poster"
+              description="Tekan Enter untuk menambah. Dipakai bersama file yang diunggah."
+              placeholder="https://"
+              value={posterUrlDraft}
+              onChange={(e) => setPosterUrlDraft(e.currentTarget.value)}
+              onKeyDown={(e) => {
+                if (e.key !== 'Enter') return;
+                e.preventDefault();
+                const url = posterUrlDraft.trim();
+                if (!/^https:\/\//.test(url)) return;
+                setPosterUrls((prev) => [...prev, url]);
+                setPosterUrlDraft('');
+              }}
+            />
+            {posterUrls.length > 0 ? (
+              <Group gap="xs">
+                {posterUrls.map((url) => (
+                  <Badge
+                    key={url}
+                    variant="light"
+                    rightSection={
+                      <CloseButton
+                        size="xs"
+                        onClick={() => setPosterUrls((prev) => prev.filter((u) => u !== url))}
+                      />
+                    }
+                  >
+                    {url.replace(/^https:\/\//, '').slice(0, 40)}
+                  </Badge>
+                ))}
+              </Group>
+            ) : null}
+            {posterPreviews.length > 0 ? (
+              <Group gap="xs">
+                {posterPreviews.map((src, i) => (
+                  <Image
+                    key={src}
+                    src={src}
+                    alt={`Pratinjau poster ${i + 1}`}
+                    w={120}
+                    h={120}
+                    fit="cover"
+                    radius="sm"
+                  />
+                ))}
+              </Group>
+            ) : null}
           </Stack>
         </Paper>
 

@@ -32,7 +32,7 @@ const ROW: ApiEvent = {
   lat: 1.3617,
   lng: 109.313,
   maps_url: null,
-  poster_url: 'https://cdn.example.com/poster.jpg',
+  poster_urls: ['https://cdn.example.com/poster.jpg'],
   organizer: 'Panitia Pawai',
   source_url: 'https://facebook.com/pawai/posts/1',
   source_type: 'facebook',

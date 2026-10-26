@@ -54,8 +54,9 @@ export function meta({ params, loaderData }: Route.MetaArgs) {
     });
   }
   const { title, description } = buildEventSeoCopy(event, eventSeoLabels(locale));
-  const image = event.posterUrl
-    ? displayImageUrl(event.posterUrl, { width: 1200 })
+  const cover = event.posterUrls[0];
+  const image = cover
+    ? displayImageUrl(cover, { width: 1200 })
     : undefined;
   return [
     ...buildMetaTags({
@@ -139,9 +140,9 @@ export default function EventDetailPage() {
     );
   }
 
-  const poster = event.posterUrl
-    ? displayImageUrl(event.posterUrl, { width: 960 })
-    : null;
+  const posters = event.posterUrls
+    .map((url) => displayImageUrl(url, { width: 960 }))
+    .filter((url): url is string => Boolean(url));
   const mapsUrl =
     event.mapsUrl ??
     (event.lat !== null && event.lng !== null
@@ -153,13 +154,20 @@ export default function EventDetailPage() {
 
   return (
     <Container size="md" px={0} pb={32}>
-      {poster ? (
-        <Image
-          src={poster}
-          alt={event.name}
-          style={{ aspectRatio: '16 / 9' }}
-          fit="cover"
-        />
+      {posters.length === 1 ? (
+        <Image src={posters[0]} alt={event.name} style={{ aspectRatio: '16 / 9' }} fit="cover" />
+      ) : posters.length > 1 ? (
+        <SimpleGrid cols={2} spacing={4} p={4}>
+          {posters.map((src, i) => (
+            <Image
+              key={src}
+              src={src}
+              alt={`${event.name} - poster ${i + 1}`}
+              style={{ aspectRatio: i === 0 ? '16 / 9' : '1 / 1', gridColumn: i === 0 ? 'span 2' : undefined }}
+              fit="cover"
+            />
+          ))}
+        </SimpleGrid>
       ) : null}
 
       <Stack gap={0} px="md">

@@ -206,7 +206,7 @@ export function PlaceMap({
         <TextInput
           label="Cari di peta"
           description="Hasil muncul otomatis. Ketuk satu hasil untuk memakai titiknya."
-          placeholder="Nama tempat di Sambas"
+          placeholder="Cari nama tempat"
           leftSection={<Search size={16} strokeWidth={1.8} />}
           rightSection={
             searching ? (

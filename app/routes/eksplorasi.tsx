@@ -1,6 +1,14 @@
 import { Link, useLoaderData } from 'react-router';
 import { Anchor, Card, Container, Group, Image, SimpleGrid, Stack, Text, ThemeIcon, Title } from '@mantine/core';
-import { BookOpen, CalendarPlus, Compass, MapPin, Search, UtensilsCrossed } from 'lucide-react';
+import {
+  BookOpen,
+  CalendarPlus,
+  Compass,
+  MapPin,
+  Search,
+  Store,
+  UtensilsCrossed,
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { Route } from './+types/eksplorasi';
 import { buildMetaTags } from '@/application/utils/seo';
@@ -75,6 +83,14 @@ export default function EksplorasiPage() {
       desc: t('explore_cardEventDesc'),
       image: undefined,
       color: 'grape',
+    },
+    {
+      to: lp('/usaha'),
+      icon: Store,
+      title: t('explore_cardUsaha'),
+      desc: t('explore_cardUsahaDesc'),
+      image: undefined,
+      color: 'teal',
     },
     {
       to: lp('/search'),

@@ -7,6 +7,8 @@
 
 import { apiClient } from '@/infrastructure/api/api-client';
 import { authHeaders } from '@/infrastructure/auth/access-token';
+import { env } from '@/infrastructure/config/env';
+import { compressImageForUpload } from '@/application/utils/compress-image';
 import type { EventSourceType } from './events-parse';
 
 export type { EventSourceType };
@@ -27,7 +29,7 @@ export interface EventContributionPayload {
   lat?: number | null;
   lng?: number | null;
   maps_url?: string | null;
-  poster_url?: string | null;
+  poster_urls?: string[];
   organizer?: string | null;
   source_url?: string | null;
   source_type?: EventSourceType | null;
@@ -65,8 +67,25 @@ export interface SubmitEventContributionInput {
   source_url?: string | null;
   source_type?: EventSourceType | null;
   source_attribution?: string | null;
-  region_id?: string | null;
-  village_id?: string | null;
+ region_id?: string | null;
+ village_id?: string | null;
+  poster_urls?: string[];
+}
+
+/** Unggah poster usulan acara (anonim boleh) ke POST /event-contributions/images?purpose=event. */
+export async function uploadEventPoster(file: File): Promise<string> {
+  const compressed = await compressImageForUpload(file);
+  const maxBytes = 5 * 1024 * 1024;
+  if (compressed.size > maxBytes) {
+    throw new Error('Gambar masih terlalu besar setelah dikompresi (maks 5 MB)');
+  }
+  const base = env.apiBaseUrl.replace(/\/$/, '');
+  const form = new FormData();
+  form.set('file', compressed);
+  const res = await fetch(`${base}/event-contributions/images`, { method: 'POST', body: form });
+  const json = (await res.json()) as { data?: { url?: string }; message?: string };
+  if (!res.ok || !json.data?.url) throw new Error(json.message || 'Unggah poster gagal');
+  return json.data.url;
 }
 
 /** Kirim usulan acara. Tidak butuh login. */

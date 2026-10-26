@@ -37,8 +37,9 @@ export function EventStatusBadge({ status }: { status: EventOccurrenceStatus }) 
 
 export function EventCard({ event }: { event: Event }) {
   const lp = useLocalePath();
-  const poster = event.posterUrl
-    ? displayImageUrl(event.posterUrl, { width: 480, height: 270 })
+  const cover = event.posterUrls[0];
+  const poster = cover
+    ? displayImageUrl(cover, { width: 480, height: 270 })
     : null;
 
   return (

@@ -112,17 +112,20 @@ export function WordOfTheDayCard({ wordOfDay }: { wordOfDay: WordOfTheDay }) {
               )}
             </Group>
 
-            {firstMeaning && (
+            {firstMeaning && firstMeaning.definition?.trim() && firstMeaning.definition.trim() !== '-' && (
               <Text c="dimmed" lineClamp={2} maw={640}>
                 {firstMeaning.definition}
               </Text>
             )}
 
-            {firstMeaning?.translations && firstMeaning.translations.length > 0 && (
+            {firstMeaning?.translations && firstMeaning.translations.length > 0 && firstMeaning.translations.some((tr) => tr.translation_text.trim() && tr.translation_text.trim() !== '-') && (
               <Text size="sm" c="dimmed">
                 Terjemahan:{' '}
                 <Text span fw={500} c="var(--mantine-color-text)">
-                  {firstMeaning.translations.map((tr) => tr.translation_text).join(', ')}
+                  {firstMeaning.translations
+                    .filter((tr) => tr.translation_text.trim() && tr.translation_text.trim() !== '-')
+                    .map((tr) => tr.translation_text)
+                    .join(', ')}
                 </Text>
               </Text>
             )}

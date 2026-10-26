@@ -15,7 +15,7 @@ import {
   ThemeIcon,
   Title,
 } from '@mantine/core';
-import { ArrowLeft, ChefHat, MapPin, UtensilsCrossed } from 'lucide-react';
+import { ArrowLeft, ChefHat, UtensilsCrossed } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { Route } from './+types/kuliner.$slug';
 import {
@@ -135,10 +135,6 @@ export default function KulinerDetailPage() {
             <Title order={1} size="h2">
               {c.name}
             </Title>
-          </Group>
-          <Group gap={6} c="dimmed">
-            <MapPin size={13} aria-hidden />
-            <Text size="xs">{c.region}</Text>
           </Group>
         </Stack>
       </Stack>

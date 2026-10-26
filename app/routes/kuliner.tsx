@@ -1,19 +1,18 @@
 import { useState } from 'react';
 import { Link, useLoaderData, useNavigation } from 'react-router';
 import {
-  Anchor,
-  Badge,
-  Box,
-  Container,
-  Group,
-  Image,
-  SimpleGrid,
-  Skeleton,
-  Stack,
-  Text,
-  TextInput,
-  ThemeIcon,
-  Title,
+Anchor,
+Box,
+Container,
+Group,
+Image,
+SimpleGrid,
+Skeleton,
+Stack,
+Text,
+TextInput,
+ThemeIcon,
+Title,
 } from '@mantine/core';
 import { UtensilsCrossed, AlertCircle, Search } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -63,20 +62,16 @@ export default function KulinerListPage() {
   const { items } = useLoaderData<typeof loader>();
   const navigation = useNavigation();
   const { t } = useTranslation();
-  const [filter, setFilter] = useState<string>('semua');
   const [query, setQuery] = useState('');
   const isLoading =
     navigation.state === 'loading' &&
     stripLocalePrefix(navigation.location.pathname).path === '/kuliner';
 
-  // Chip filter unik dari region yang ada di data; kosong = "Semua" saja.
-  const regions = [...new Set(items.map((c) => c.region).filter(Boolean))].sort();
-
+  // Chip filter region dihapus: kuliner dipromosikan di level kabupaten,
+  // jadi "daerah asal" tidak lagi jadi dimensi jelajah.
   const q = query.trim().toLowerCase();
   const shown = items.filter(
-    (c) =>
-      (filter === 'semua' || c.region === filter) &&
-      (!q || c.name.toLowerCase().includes(q)),
+    (c) => !q || c.name.toLowerCase().includes(q),
   );
 
   return (
@@ -103,28 +98,6 @@ export default function KulinerListPage() {
           value={query}
           onChange={(e) => setQuery(e.currentTarget.value)}
         />
-
-        {regions.length > 0 ? (
-          <Group gap={6} wrap="nowrap" pb={4} style={{ overflowX: 'auto', scrollbarWidth: 'none' }}>
-            {['semua', ...regions].map((r) => (
-              <Badge
-                key={r}
-                component="button"
-                type="button"
-                size="lg"
-                tt="none"
-                fw={500}
-                variant={filter === r ? 'filled' : 'light'}
-                color={filter === r ? 'teal' : 'gray'}
-                aria-pressed={filter === r}
-                onClick={() => setFilter(r)}
-                style={{ cursor: 'pointer', flexShrink: 0, border: 0 }}
-              >
-                {r === 'semua' ? t('kuliner_filterAll') : r}
-              </Badge>
-            ))}
-          </Group>
-        ) : null}
 
         {isLoading ? (
           <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
@@ -186,9 +159,6 @@ function CuisineCard({ c }: { c: Cuisine }) {
       <Stack gap={2} style={{ minWidth: 0 }}>
         <Text component="h2" fz={{ base: 15, sm: 17 }} fw={600} lh={1.3} m={0}>
           {c.name}
-        </Text>
-        <Text fz={{ base: 12, sm: 14 }} c="dimmed" fw={500}>
-          {c.region}
         </Text>
         <Text fz={{ base: 12, sm: 14 }} c="dimmed" lineClamp={1}>
           {c.description}

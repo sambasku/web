@@ -245,7 +245,7 @@ export default function KontribusiMassalPage() {
                       {index + 1}
                     </Text>
                     <TextInput
-                      placeholder="Sambas"
+                      placeholder="Kata bahasa Sambas"
                       aria-label={`Kata Sambas baris ${index + 1}`}
                       value={row.sambas}
                       style={{ flex: 1 }}
