@@ -29,6 +29,7 @@ import {
 import type { Route } from './+types/words.$lemma';
 import { redirect } from 'react-router';
 import { getWordByLemma, getWordDetail } from '@/application/use-cases/word.use-case';
+import { groupRelations } from '@/domain/lemma-relations';
 import { buildMetaTags, buildWordJsonLd, buildWordSeoCopy } from '@/application/utils/seo';
 import { env } from '@/infrastructure/config/env';
 import { displayImageUrl } from '@/presentation/utils/display-image-url';
@@ -390,33 +391,94 @@ export default function WordDetailPage() {
           </Stack>
         </Paper>
 
-        {/* Related Words: Synonyms, Antonyms, Related */}
-        {word.related_words.length > 0 && (
-          <Stack gap="sm">
-            <Divider />
-            <Group gap="xs">
-              <Sparkles size={16} />
-              <Title order={2} size="h5" c="dimmed" tt="uppercase" fw={700}>
-                {t('word_relatedTitle')}
-              </Title>
-            </Group>
-            <Group gap="xs">
-              {word.related_words.map((rel) => (
-                <Badge
-                  key={rel.word_id}
-                  component={Link}
-                  to={lp(`/words/${encodeURIComponent(rel.lemma)}`)}
-                  state={{ analyticsSource: 'related' }}
-                  size="lg"
-                  variant="outline"
-                >
-                  {rel.lemma}{' '}
-                  <Text size="xs" c="dimmed" fs="italic" span>
-                    ({rel.relation_type})
-                  </Text>
-                </Badge>
+        {/* Relasi lemma: bentuk tidak baku, variasi, akar/turunan, sinonim. */}
+        {(() => {
+          const sections = groupRelations(word.related_words);
+          if (sections.length === 0) return null;
+          return (
+            <Stack gap="md">
+              <Divider />
+              {sections.map((section) => (
+                <Stack gap="xs" key={section.type}>
+                  <Group gap="xs">
+                    <Sparkles size={16} />
+                    <Title order={2} size="h5" c="dimmed" tt="uppercase" fw={700}>
+                      {section.label}
+                    </Title>
+                  </Group>
+                  <Group gap="xs">
+                    {section.items.map((rel) => (
+                      <Badge
+                        key={rel.word_id}
+                        component={Link}
+                        to={lp(`/words/${encodeURIComponent(rel.lemma)}`)}
+                        state={{ analyticsSource: 'related' }}
+                        size="lg"
+                        variant="outline"
+                      >
+                        {rel.lemma}
+                      </Badge>
+                    ))}
+                  </Group>
+                </Stack>
               ))}
-            </Group>
+            </Stack>
+          );
+        })()}
+
+        {/* PRD relasi-lemma 8.3: kelompok makna. */}
+        {(word.meaning_groups ?? []).length > 0 && (
+          <Stack gap="md">
+            <Divider />
+            {(word.meaning_groups ?? []).map((group, index) => (
+              <Stack gap="xs" key={group.group_id}>
+                <Group gap="xs">
+                  <BookOpen size={16} />
+                  <Title
+                    order={2}
+                    size="h5"
+                    c="dimmed"
+                    tt="uppercase"
+                    fw={700}
+                  >
+                    {(word.meaning_groups ?? []).length > 1
+                      ? group.name
+                      : t('word_meaningGroupTitle')}
+                  </Title>
+                </Group>
+                {index === 0 && group.description ? (
+                  <Text size="sm" c="dimmed">
+                    {group.description}
+                  </Text>
+                ) : null}
+                <Group gap="xs">
+                  {group.members.map((member) => (
+                    <Badge
+                      key={member.word_id}
+                      component={Link}
+                      to={lp(`/words/${encodeURIComponent(member.lemma)}`)}
+                      state={{ analyticsSource: 'related' }}
+                      size="lg"
+                      variant="light"
+                      title={member.notes ?? undefined}
+                    >
+                      {member.lemma}
+                    </Badge>
+                  ))}
+                </Group>
+                {group.members.some((m) => m.notes) ? (
+                  <Stack gap={2}>
+                    {group.members
+                      .filter((m) => m.notes)
+                      .map((m) => (
+                        <Text key={m.word_id} size="xs" c="dimmed">
+                          {m.lemma}: {m.notes}
+                        </Text>
+                      ))}
+                  </Stack>
+                ) : null}
+              </Stack>
+            ))}
           </Stack>
         )}
 

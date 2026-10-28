@@ -30,6 +30,8 @@ export function WordCard({
   const { t } = useTranslation();
   const lp = useLocalePath();
   const gloss = glossLines(word);
+  // PRD relasi-lemma: hasil perluasan kelompok makna dibedakan dari cocok langsung.
+  const isRelatedGroup = word.match_type === 'related_group';
 
   return (
     <Card
@@ -65,6 +67,11 @@ export function WordCard({
             )}
             <WordTypeBadge type={word.word_type} />
             <UsageLabelsBadges labels={word.usage_labels} size="xs" />
+            {isRelatedGroup ? (
+              <Badge size="sm" variant="outline" color="grape">
+                {t('word_relatedGroupBadge')}
+              </Badge>
+            ) : null}
           </Group>
           {gloss.length > 0 ? (
             <Text size="sm" c="dimmed" component="p" m={0}>
