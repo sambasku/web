@@ -24,10 +24,10 @@ import { useLocalePath } from '@/application/i18n/use-locale';
 import { env } from '@/infrastructure/config/env';
 import { displayImageUrl } from '@/presentation/utils/display-image-url';
 
-export function meta({ data, params }: Route.MetaArgs) {
+export function meta({ loaderData, params }: Route.MetaArgs) {
   const locale = isAppLocale(params.locale) ? params.locale : DEFAULT_LOCALE;
-  const username = data?.profile?.username ?? data?.username ?? 'pengguna';
-  const display = data?.profile?.display_name ?? username;
+  const username = loaderData?.profile?.username ?? loaderData?.username ?? 'pengguna';
+  const display = loaderData?.profile?.display_name ?? username;
   return buildMetaTags({
     title: `${display} di SambasKu`,
     description: `Profil publik ${display} di kamus digital bahasa Sambas.`,

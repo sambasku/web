@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
   SITEMAP_PATH,
+  SITEMAP_STALE_RETRY_S,
   cacheKeyUrl,
   cacheTtlSeconds,
   canonicalCachePath,
@@ -9,6 +10,8 @@ import {
   isCacheableRequest,
   isOgImagePath,
   isSitemapPath,
+  serveExpiredSitemap,
+  serveLastGood,
   withCanonicalPath,
 } from './cache-policy.ts';
 
@@ -90,6 +93,17 @@ describe('cacheKeyUrl', () => {
     assert.equal(
       cacheKeyUrl('https://sambasku.com', '/id/words/x', 'abc123'),
       'https://sambasku.com/id/words/x?__build=abc123',
+    );
+  });
+
+  it('sitemap tidak ikut id deploy', () => {
+    assert.equal(
+      cacheKeyUrl('https://sambasku.com', '/sitemap.xml', 'v1'),
+      'https://sambasku.com/sitemap.xml',
+    );
+    assert.equal(
+      cacheKeyUrl('https://sambasku.com', '/sitemap.xml/', 'v1'),
+      cacheKeyUrl('https://sambasku.com', '/sitemap.xml', 'v2'),
     );
   });
 
@@ -198,6 +212,14 @@ describe('isSitemapPath', () => {
     assert.equal(isSitemapPath('/sitemap-words/aa'), false);
   });
 
+  it('salinan 200 tetap disajikan setelah TTL habis', () => {
+    assert.equal(serveExpiredSitemap('/sitemap.xml', 200), true);
+    assert.equal(serveExpiredSitemap('/sitemap.xml/', 200), true);
+    assert.equal(serveExpiredSitemap('/sitemap.xml', 503), false);
+    assert.equal(serveExpiredSitemap('/id/words/capal', 200), false);
+    assert.equal(SITEMAP_STALE_RETRY_S, 600);
+  });
+
   it('lokasi lama sitemap tidak cacheable (redirect 301 → bypass)', () => {
     assert.equal(isCacheableRequest('GET', '/sitemap.xml'), true);
     assert.equal(isCacheableRequest('GET', '/sitemap-static.xml'), false);
@@ -213,6 +235,8 @@ describe('rss', () => {
     assert.ok(freshSeconds('/rss.xml') < freshSeconds(SITEMAP_PATH));
     // Varian dengan query atau trailing slash ekstra tidak lewat.
     assert.equal(isCacheableRequest('GET', '/rss.xml', '?x=1'), false);
+    assert.equal(serveLastGood('/rss.xml', 200), true);
+    assert.equal(serveLastGood('/rss.xml', 503), false);
   });
 });
 

@@ -201,7 +201,7 @@ export async function apiClient<T>(
   // baseUrl eksplisit = pemanggil memaksa satu host; hormati dan jangan failover.
   const pinnedBase = baseUrl !== undefined;
   const replayable = isReplayableMethod(restOptions.method);
-  let lastFailure: AppError | null = null;
+  let lastFailure: AppError | null;
   let replayed = false;
 
   for (;;) {

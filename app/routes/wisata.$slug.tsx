@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Link, useLoaderData } from 'react-router';
 import {
   Anchor,
@@ -24,15 +24,21 @@ import {
 } from '@/application/i18n/locales';
 import { useLocalePath } from '@/application/i18n/use-locale';
 import {
-  fetchPlaces as listPlaces,
+  fetchPlaceBySlug,
+  fetchPlaceImages,
   placeCover,
   placeLabel,
   placeTypeLabels as PLACE_TYPE_LABELS,
+  sendPlaceView,
   type Place,
+  type PlaceImage,
 } from '@/domain/places';
+import { fetchEvents } from '@/domain/events';
+import { recordPlaceViewOnce } from '@/domain/place-view-beacon';
 import { env } from '@/infrastructure/config/env';
 import { safeExternalUrl } from '@/presentation/utils/safe-external-url';
 import { displayImageUrl } from '@/presentation/utils/display-image-url';
+import { EventMiniList } from '@/presentation/events/event-card';
 
 /**
  * Fallback web untuk link share tempat (`/wisata/:slug`) bila aplikasi belum
@@ -43,9 +49,9 @@ import { displayImageUrl } from '@/presentation/utils/display-image-url';
 
 const capitalize = (s: string) => (s ? `${s[0].toUpperCase()}${s.slice(1)}` : s);
 
-export function meta({ data, params }: Route.MetaArgs) {
+export function meta({ loaderData, params }: Route.MetaArgs) {
   const locale = isAppLocale(params.locale) ? params.locale : DEFAULT_LOCALE;
-  const place = data?.place;
+  const place = loaderData?.place;
   const path = localePath(locale, `/wisata/${encodeURIComponent(params.slug)}`);
   if (!place) {
     return buildMetaTags({
@@ -61,7 +67,7 @@ export function meta({ data, params }: Route.MetaArgs) {
   return [
     ...buildMetaTags({
       title: `${place.name} - Wisata Sambas`,
-      description: place.shortDescription,
+      description: place.shortDescription || `Tempat ${place.category} di Kabupaten Sambas.`,
       path,
       locale,
       image,
@@ -77,17 +83,18 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   const slug = params.slug?.trim();
   if (!slug) throw new Response('Slug tidak valid', { status: 400 });
 
-  const places = await listPlaces(request.signal);
-  if (!places) throw new Response('Gagal memuat data wisata', { status: 503 });
-  const place = places.find((p) => p.slug === slug) ?? null;
-  if (!place) return { slug, place: null, related: [] };
+  let place: Place | null;
+  try {
+    place = await fetchPlaceBySlug(slug, request.signal);
+  } catch {
+    throw new Response('Gagal memuat data wisata', { status: 503 });
+  }
+  if (!place) return { slug, place: null, events: [] };
 
-  const byId = new Map(places.map((p) => [p.id, p]));
-  const related = (place.related ?? [])
-    .filter((r) => r.kind === 'place')
-    .map((r) => byId.get(r.id))
-    .filter((p): p is Place => !!p && p.slug !== slug);
-  return { slug, place, related };
+  // Agenda terkait: acara yang menunjuk tempat ini. Query terpisah dari
+  // detail tempat (bukan N+1 - satu request per relasi).
+  const events = (await fetchEvents({ place_id: place.id }, request.signal)) ?? [];
+  return { slug, place, events };
 }
 
 function CreditLine({
@@ -158,7 +165,17 @@ function SafeAnchor({
 
 export default function PlaceSharePage() {
   const lp = useLocalePath();
-  const { slug, place, related } = useLoaderData<typeof loader>();
+  const { slug, place, events } = useLoaderData<typeof loader>();
+  const [gallery, setGallery] = useState<PlaceImage[]>(place?.images ?? []);
+  const [nextOffset, setNextOffset] = useState<number | null>(
+    place && place.imageCount > place.images.length ? place.images.length : null,
+  );
+  // Metrik popularitas (docs/api/45): beacon sekali per sesi per slug,
+  // best-effort, tidak boleh ganggu render.
+  useEffect(() => {
+    if (!place) return;
+    recordPlaceViewOnce(slug, sendPlaceView);
+  }, [slug, place]);
 
   if (!place) {
     return (
@@ -264,9 +281,11 @@ export default function PlaceSharePage() {
           </Paper>
         ) : null}
 
-        <Text size="sm" lh={1.5} mt={12}>
-          {place.shortDescription}
-        </Text>
+        {place.shortDescription ? (
+          <Text size="sm" lh={1.5} mt={12}>
+            {place.shortDescription}
+          </Text>
+        ) : null}
 
         {mapsUrl ? (
           <Button
@@ -282,26 +301,76 @@ export default function PlaceSharePage() {
           </Button>
         ) : null}
 
-        {related.length > 0 ? (
+        {gallery.length > 1 ? (
           <>
             <Text fw={700} mt={20}>
-              Dekat sini
+              Foto
+            </Text>
+            <SimpleGrid cols={{ base: 2, sm: 3 }} spacing="sm" mt={8}>
+              {gallery.map((img) => (
+                <Stack key={img.url} gap={4}>
+                  <Image
+                    src={displayImageUrl(img.url, { width: 400 })}
+                    alt={place.name}
+                    radius="md"
+                    style={{ aspectRatio: '16 / 10' }}
+                    fit="cover"
+                  />
+                  {img.attribution?.name ? (
+                    <Text size="xs" c="dimmed" lineClamp={1}>
+                      {img.attribution.name}
+                    </Text>
+                  ) : null}
+                </Stack>
+              ))}
+            </SimpleGrid>
+            {nextOffset != null ? (
+              <Button
+                variant="default"
+                mt={8}
+                onClick={() => {
+                  void fetchPlaceImages(slug, nextOffset).then((page) => {
+                    if (!page) return;
+                    setGallery((cur) => [...cur, ...page.items]);
+                    setNextOffset(page.nextOffset);
+                  });
+                }}
+              >
+                Foto berikutnya
+              </Button>
+            ) : null}
+          </>
+        ) : null}
+
+        <Group mt={16}>
+          <Button component={Link} to={lp(`/wisata/${encodeURIComponent(slug)}/foto`)} variant="light">
+            Tambah foto
+          </Button>
+          <Button component={Link} to={lp(`/wisata/${encodeURIComponent(slug)}/sunting`)} variant="default">
+            Usulkan suntingan
+          </Button>
+        </Group>
+
+        {place.related.some((r) => r.kind === 'place' && r.name) ? (
+          <>
+            <Text fw={700} mt={20}>
+              Didekat sini
             </Text>
             <SimpleGrid cols={{ base: 2, xs: 3, sm: 4 }} spacing="md" mt={8}>
-              {related.map((r) => {
-                const rc = placeCover(r);
-                return (
+              {place.related
+                .filter((r) => r.kind === 'place' && r.name)
+                .map((r) => (
                   <Anchor
-                    key={r.id}
+                    key={r.slug}
                     component={Link}
                     to={lp(`/wisata/${encodeURIComponent(r.slug)}`)}
                     underline="never"
                     c="inherit"
                   >
-                    {rc ? (
+                    {r.coverUrl ? (
                       <Image
-                        src={displayImageUrl(rc.url, { width: 400 })}
-                        alt={r.name}
+                        src={displayImageUrl(r.coverUrl, { width: 400 })}
+                        alt={r.name ?? ''}
                         radius="md"
                         style={{ aspectRatio: '16 / 10' }}
                         fit="cover"
@@ -313,13 +382,21 @@ export default function PlaceSharePage() {
                       {r.name}
                     </Text>
                     <Text size="xs" c="dimmed">
-                      {placeLabel(r)}
+                      {placeLabel({
+                        category: r.category ?? 'wisata',
+                        type: (r.type as Place['type']) ?? null,
+                      })}
                     </Text>
                   </Anchor>
-                );
-              })}
+                ))}
             </SimpleGrid>
           </>
+        ) : null}
+
+        {events.length > 0 ? (
+          <Box mt={20}>
+            <EventMiniList events={events} />
+          </Box>
         ) : null}
 
         {(place.sources ?? []).length > 0 ? (

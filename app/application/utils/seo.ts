@@ -166,7 +166,6 @@ export function buildMetaTags({
 const PLAY_STORE_URL =
   'https://play.google.com/store/apps/details?id=com.iamutaki.sambasku';
 const GITHUB_URL = 'https://github.com/sambasku';
-
 export function buildHomeJsonLd(localeInput?: string) {
   const locale = resolveLocale(localeInput);
   const t = getFixedT(locale);
@@ -506,7 +505,7 @@ export function buildPlaceJsonLd(
         '@type': place.category === 'kuliner' ? 'FoodEstablishment' : 'TouristAttraction',
         '@id': `${url}#place`,
         name: place.name,
-        description: place.shortDescription,
+        description: place.shortDescription || `Tempat ${place.category} di Kabupaten Sambas.`,
         url,
         ...(image ? { image } : {}),
         address: SAMBAS_ADDRESS,

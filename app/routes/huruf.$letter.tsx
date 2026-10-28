@@ -33,11 +33,11 @@ import {
 
 const ALPHABET = 'abcdefghijklmnopqrstuvwxyz'.split('');
 
-export function meta({ data, params }: Route.MetaArgs) {
+export function meta({ loaderData, params }: Route.MetaArgs) {
   const locale = isAppLocale(params.locale) ? params.locale : DEFAULT_LOCALE;
   const t = getFixedT(locale);
-  const letter = (data?.letter ?? params.letter ?? '').toLowerCase();
-  const empty = (data?.items?.length ?? 0) === 0;
+  const letter = (loaderData?.letter ?? params.letter ?? '').toLowerCase();
+  const empty = (loaderData?.items?.length ?? 0) === 0;
   return [
     ...buildMetaTags({
       title: t('letter_seoTitle', { letter: letter.toUpperCase() }),
@@ -49,12 +49,12 @@ export function meta({ data, params }: Route.MetaArgs) {
     }),
     // JSON-LD hanya produksi (staging noindex); RR7 me-escape HTML
     // untuk key script:ld+json. Skip jika kosong / noindex.
-    ...(env.isProd && data?.letter && !empty
+    ...(env.isProd && loaderData?.letter && !empty
       ? [
           {
             'script:ld+json': buildLetterJsonLd(
-              data.letter,
-              data.items ?? [],
+              loaderData.letter,
+              loaderData.items ?? [],
               locale,
             ),
           },

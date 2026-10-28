@@ -90,7 +90,7 @@ function generateHeadersFile(): Plugin {
 
       const target = `${root.replace(/\/+$/, '')}/public/_headers`;
       // Tulis hanya kalau berubah, supaya build tidak mengotori working tree.
-      let current: string | null = null;
+      let current: string | null;
       try {
         current = readFileSync(target, 'utf8');
       } catch {
@@ -111,12 +111,12 @@ export default defineConfig({
   // Tanpa ini @mantine/core (ditemukan belakangan) memicu pass kedua dan
   // menghasilkan dua copy React di browser (Invalid hook call).
   optimizeDeps: {
+    exclude: ['maplibre-gl'],
     include: [
       'react',
       'react-dom',
       'react-dom/client',
       'react-router',
-      'react-router-dom',
       '@mantine/core',
       '@mantine/hooks',
       'lucide-react',

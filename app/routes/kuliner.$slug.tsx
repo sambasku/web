@@ -15,7 +15,7 @@ import {
   ThemeIcon,
   Title,
 } from '@mantine/core';
-import { ArrowLeft, ChefHat, MapPin, UtensilsCrossed } from 'lucide-react';
+import { ArrowLeft, ChefHat, UtensilsCrossed } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { Route } from './+types/kuliner.$slug';
 import {
@@ -35,10 +35,10 @@ import { getFixedT } from '@/application/i18n/i18n-instance';
 import { useLocalePath } from '@/application/i18n/use-locale';
 import { displayImageUrl } from '@/presentation/utils/display-image-url';
 
-export function meta({ params, data }: Route.MetaArgs) {
+export function meta({ params, loaderData }: Route.MetaArgs) {
   const locale = isAppLocale(params.locale) ? params.locale : DEFAULT_LOCALE;
   const t = getFixedT(locale);
-  const c = data?.cuisine;
+  const c = loaderData?.cuisine;
   if (!c) {
     return buildMetaTags({
       title: t('kuliner_notFoundTitle'),
@@ -135,10 +135,6 @@ export default function KulinerDetailPage() {
             <Title order={1} size="h2">
               {c.name}
             </Title>
-          </Group>
-          <Group gap={6} c="dimmed">
-            <MapPin size={13} aria-hidden />
-            <Text size="xs">{c.region}</Text>
           </Group>
         </Stack>
       </Stack>

@@ -28,6 +28,8 @@ export const AnalyticsEvents = {
   themeChange: 'theme_change',
   localeChange: 'locale_change',
   discussionView: 'discussion_view',
+  wisataContributeOpen: 'wisata_contribute_open',
+  wisataContributeSubmit: 'wisata_contribute_submit',
 } as const;
 
 export type AnalyticsEventName =

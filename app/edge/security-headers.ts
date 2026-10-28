@@ -65,9 +65,10 @@ export function buildCsp({
     // jadi CSP ini TIDAK perlu host baru - dan tidak perlu dilonggarkan
     // (pentest BH-02). Pengecualian: Unsplash wajib hotlink (API Guidelines).
     // GA4 kadang memakai pixel collect di img-src.
-    "img-src 'self' data: blob: https://ik.imagekit.io https://cdn.jsdelivr.net https://wsrv.nl https://images.unsplash.com https://plus.unsplash.com https://*.google-analytics.com https://*.googletagmanager.com",
+    "img-src 'self' data: blob: https://ik.imagekit.io https://cdn.jsdelivr.net https://wsrv.nl https://images.unsplash.com https://plus.unsplash.com https://tiles.openfreemap.org https://*.google-analytics.com https://*.googletagmanager.com",
     "media-src 'self' blob: https://cdn.jsdelivr.net",
-    `connect-src 'self' ${apiConnectOrigins.join(' ')} https://cloudflareinsights.com https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com`,
+    `connect-src 'self' ${apiConnectOrigins.join(' ')} https://cloudflareinsights.com https://tiles.openfreemap.org https://nominatim.openstreetmap.org https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com`,
+    "worker-src blob:",
     "frame-ancestors 'none'",
   ].join('; ');
 }

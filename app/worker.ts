@@ -1,6 +1,8 @@
 import { createRequestHandler } from 'react-router';
 import { env } from './infrastructure/config/env';
+import { SITEMAP_OBJECT_KEY } from './application/utils/sitemap-items';
 import {
+  SITEMAP_STALE_RETRY_S,
   STALE_MAX_S,
   cacheKeyRequest,
   cacheTtlSeconds,
@@ -8,6 +10,8 @@ import {
   freshSeconds,
   isCacheableRequest,
   isOgImagePath,
+  isSitemapPath,
+  serveLastGood,
   withCanonicalPath,
 } from './edge/cache-policy';
 import {
@@ -37,15 +41,7 @@ const SECURITY_HEADERS = buildSecurityHeaders({
 // @cloudflare/workers-types versi ini tidak mengetikkan caches.default
 const edgeCache: Cache = (caches as unknown as { default: Cache }).default;
 
-async function render(request: Request): Promise<Response> {
-  // HEAD dirender sebagai GET supaya body terisi penuh dan entry cache yang
-  // dihasilkan valid untuk GET berikutnya (pentest B-12); body untuk klien
-  // HEAD dibuang oleh forHead.
-  const effective =
-    request.method === 'HEAD'
-      ? new Request(request.url, { method: 'GET', headers: request.headers })
-      : request;
-  const response = await requestHandler(effective);
+function withSecurityHeaders(response: Response, pathname: string): Response {
   const headers = new Headers(response.headers);
   for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
     headers.set(key, value);
@@ -53,7 +49,7 @@ async function render(request: Request): Promise<Response> {
   // Kartu OG difetch crawler/unfurler lintas origin; CORP same-origin
   // menghalangi sebagian proxy unfurl. Crawler umumnya mengabaikan CORP,
   // tapi longgarkan khusus path ini supaya share card aman di semua klien.
-  if (isOgImagePath(new URL(request.url).pathname)) {
+  if (isOgImagePath(pathname)) {
     headers.set('Cross-Origin-Resource-Policy', 'cross-origin');
   }
   // Staging tidak boleh terlisting di search engine.
@@ -67,7 +63,44 @@ async function render(request: Request): Promise<Response> {
   });
 }
 
-type EdgeEnv = { CF_VERSION_METADATA?: WorkerVersionMetadata };
+async function render(request: Request, bucket?: R2Bucket): Promise<Response> {
+  const pathname = new URL(request.url).pathname;
+  // File harian di R2. Tidak ada objek, atau bacaan gagal: pembangun di route.
+  if (bucket && env.isProd && isSitemapPath(pathname)) {
+    try {
+      const object = await bucket.get(SITEMAP_OBJECT_KEY);
+      if (object) {
+        return withSecurityHeaders(
+          new Response(object.body, {
+            status: 200,
+            headers: {
+              'Content-Type': 'application/xml; charset=utf-8',
+              'Cache-Control': 'public, max-age=3600, s-maxage=86400',
+            },
+          }),
+          pathname,
+        );
+      }
+    } catch (err) {
+      console.error('[sitemap] gagal membaca R2, jatuh ke pembangun', err);
+    }
+  }
+
+  // HEAD dirender sebagai GET supaya body terisi penuh dan entry cache yang
+  // dihasilkan valid untuk GET berikutnya (pentest B-12); body untuk klien
+  // HEAD dibuang oleh forHead.
+  const effective =
+    request.method === 'HEAD'
+      ? new Request(request.url, { method: 'GET', headers: request.headers })
+      : request;
+  const response = await requestHandler(effective);
+  return withSecurityHeaders(response, pathname);
+}
+
+type EdgeEnv = {
+  CF_VERSION_METADATA?: WorkerVersionMetadata;
+  SITEMAP?: R2Bucket;
+};
 
 /// HEAD tidak boleh membawa body (semantik HTTP); header - termasuk
 /// Content-Length hasil render GET - tetap utuh (pentest B-12).
@@ -101,8 +134,9 @@ async function renderAndCache(
   request: Request,
   ctx: ExecutionContext,
   versionId: string,
+  bucket?: R2Bucket,
 ): Promise<Response> {
-  const response = await render(request);
+  const response = await render(request, bucket);
   const ttlS = cacheTtlSeconds(new URL(request.url).pathname, response.status);
   if (ttlS > 0) {
     const headers = new Headers(response.headers);
@@ -125,6 +159,38 @@ async function renderAndCache(
     ctx.waitUntil(edgeCache.put(cacheKeyRequest(request, versionId), forCache));
   }
   return response;
+}
+
+/** Rebuild di belakang. Gagal: tahan salinan 200 selama SITEMAP_STALE_RETRY_S. */
+async function refreshExpiredSitemap(
+  request: Request,
+  ctx: ExecutionContext,
+  versionId: string,
+  stale: Response,
+  bucket: R2Bucket | undefined,
+): Promise<void> {
+  try {
+    const response = await renderAndCache(request, ctx, versionId, bucket);
+    if (response.status === 200) {
+      await response.body?.cancel();
+      await stale.body?.cancel();
+      return;
+    }
+    await response.body?.cancel();
+    const headers = new Headers(stale.headers);
+    headers.set('x-cached-at', String(Date.now()));
+    headers.set('x-cache-ttl', String(SITEMAP_STALE_RETRY_S));
+    await edgeCache.put(
+      cacheKeyRequest(request, versionId),
+      new Response(stale.body, {
+        status: stale.status,
+        statusText: stale.statusText,
+        headers,
+      }),
+    );
+  } catch (err) {
+    console.error('[sitemap] gagal menyegarkan cache basi', err);
+  }
 }
 
 const HTTPS_ONLY_HOSTS = new Set([
@@ -181,7 +247,7 @@ export default {
     const { pathname } = url;
 
     if (!isCacheableRequest(method, pathname, url.search)) {
-      return forHead(canonical, forBrowser(await render(canonical), 'bypass'));
+      return forHead(canonical, forBrowser(await render(canonical, env.SITEMAP), 'bypass'));
     }
 
     const versionId = env.CF_VERSION_METADATA?.id ?? 'dev';
@@ -192,12 +258,23 @@ export default {
       const ageS =
         (Date.now() - Number(cached.headers.get('x-cached-at') ?? 0)) / 1000;
       if (ageS >= ttlS) {
-        const response = await renderAndCache(canonical, ctx, versionId);
+        if (serveLastGood(pathname, cached.status)) {
+          const forClient = cached.clone();
+          ctx.waitUntil(
+            refreshExpiredSitemap(canonical, ctx, versionId, cached, env.SITEMAP),
+          );
+          return forHead(canonical, forBrowser(forClient, 'stale'));
+        }
+        const response = await renderAndCache(canonical, ctx, versionId, env.SITEMAP);
         return forHead(canonical, forBrowser(response, 'miss'));
       }
       const freshS = Math.min(freshSeconds(pathname), ttlS);
       if (ageS > freshS) {
-        ctx.waitUntil(renderAndCache(canonical, ctx, versionId));
+        ctx.waitUntil(
+          renderAndCache(canonical, ctx, versionId, env.SITEMAP).then(async (response) => {
+            await response.body?.cancel();
+          }),
+        );
       }
       return forHead(
         canonical,
@@ -205,7 +282,7 @@ export default {
       );
     }
 
-    const response = await renderAndCache(canonical, ctx, versionId);
+    const response = await renderAndCache(canonical, ctx, versionId, env.SITEMAP);
     return forHead(canonical, forBrowser(response, 'miss'));
   },
 } satisfies ExportedHandler<EdgeEnv>;

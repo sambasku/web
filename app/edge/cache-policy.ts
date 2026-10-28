@@ -66,7 +66,11 @@ export function cacheKeyUrl(
   pathname: string,
   versionId: string,
 ): string {
-  return `${origin}${canonicalCachePath(pathname)}?__build=${versionId}`;
+  const path = canonicalCachePath(pathname);
+  // Sitemap tidak memuat URL chunk ber-hash. Id deploy di kunci ini
+  // memaksa bangun ulang (satu halaman API per 100 lemma) tiap wrangler deploy.
+  if (isSitemapPath(path)) return `${origin}${path}`;
+  return `${origin}${path}?__build=${versionId}`;
 }
 
 /// Cache API hanya menerima GET; HEAD di-cache sebagai GET (pentest B-12).
@@ -94,6 +98,15 @@ const NEGATIVE_TTL_S = 60;
 export const SITEMAP_PATH = '/sitemap.xml';
 const SITEMAP_FRESH_S = 86400;
 
+/// Setelah rebuild sitemap gagal, entry basi ini menahan percobaan ulang
+/// supaya tiap hit crawler tidak mengulang puluhan panggilan API.
+export const SITEMAP_STALE_RETRY_S = 600;
+
+/** Ada salinan 200: sajikan meski TTL habis. Rebuild berjalan di belakang. */
+export function serveExpiredSitemap(pathname: string, cachedStatus: number): boolean {
+  return isSitemapPath(pathname) && cachedStatus === 200;
+}
+
 /// Struktur sitemap: hanya index kanonik yang di-cache.
 export function isSitemapPath(pathname: string): boolean {
   return canonicalCachePath(pathname) === SITEMAP_PATH;
@@ -103,6 +116,16 @@ export function isSitemapPath(pathname: string): boolean {
 /// jam; jendela segar 1 jam seimbang antara beban API dan kesegaran feed.
 export const RSS_PATH = '/rss.xml';
 const RSS_FRESH_S = 3600;
+
+/**
+ * Sitemap dan RSS menolak menerbitkan isi kosong (503). Kalau salinan 200
+ * masih ada, sajikan itu. Rebuild berjalan di belakang.
+ */
+export function serveLastGood(pathname: string, cachedStatus: number): boolean {
+  if (cachedStatus !== 200) return false;
+  const path = canonicalCachePath(pathname);
+  return path === SITEMAP_PATH || path === RSS_PATH;
+}
 
 export const LLMS_FULL_PATH = '/llms-full.txt';
 const LLMS_FULL_FRESH_S = 86400;
