@@ -72,6 +72,11 @@ body {
   font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
 }
 
+/* Peran verifikator: biru (mobile verifierBlue), bukan hijau status kata. */
+:root {
+  --verifier-blue: #2a66ff;
+}
+
 /* A11y (Lighthouse color-contrast): dimmed bawaan Mantine lolos batas 4.5:1
    di dua tema. Light: gray-6 → gray-7. Dark: dark-2 (#828282) → dark-1.
    Selector HARUS :root[...] - spesifisitas sama dengan definisi Mantine
@@ -90,6 +95,7 @@ body {
   --mantine-color-orange-light-color: #ab390c;
   /* Pill outline (tanggal, kelas kata) memakai blue-6, ~3.6:1 di atas putih. */
   --mantine-color-blue-outline: var(--mantine-color-blue-9);
+  --verifier-blue: #2a66ff;
 }
 
 /* Skip-link: tersembunyi sampai fokus keyboard (UX-13). */
@@ -133,6 +139,8 @@ body {
   --mantine-color-dimmed: var(--mantine-color-dark-1);
   /* Placeholder dark-3 (#696969) hanya ~2.5:1 di atas input dark-6. */
   --mantine-color-placeholder: var(--mantine-color-dark-1);
+  /* Mobile dark verifierBlue: kontras ~5:1 di kartu zinc gelap. */
+  --verifier-blue: #5b8cff;
 }
 
 /* QR: light = black on white; dark = inverted for theme fit (still scannable). */

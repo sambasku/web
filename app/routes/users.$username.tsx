@@ -2,7 +2,6 @@ import { Link, useLoaderData } from 'react-router';
 import {
   Anchor,
   Avatar,
-  Badge,
   Card,
   Container,
   Group,
@@ -23,6 +22,7 @@ import { useLocalePath } from '@/application/i18n/use-locale';
 
 import { env } from '@/infrastructure/config/env';
 import { displayImageUrl } from '@/presentation/utils/display-image-url';
+import { VerifierMark } from '@/presentation/components/verifier-mark';
 
 export function meta({ loaderData, params }: Route.MetaArgs) {
   const locale = isAppLocale(params.locale) ? params.locale : DEFAULT_LOCALE;
@@ -95,11 +95,7 @@ export default function PublicProfilePage() {
               <Title order={1} fw={800} size="h2">
                 {profile.display_name}
               </Title>
-              {profile.is_verifier ? (
-                <Badge color="teal" variant="light">
-                  Verifikator
-                </Badge>
-              ) : null}
+              <VerifierMark show={profile.is_verifier} size={20} />
             </Group>
             <Text c="dimmed" size="sm">
               @{profile.username}

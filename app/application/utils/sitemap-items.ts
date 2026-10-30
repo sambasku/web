@@ -76,7 +76,7 @@ export function buildSitemapItems(input: {
     (slug) =>
       ({
         bare: `/wisata/${encodeURIComponent(slug)}`,
-        priority: '0.7',
+        priority: '0.55',
         changefreq: 'monthly',
       }) satisfies SitemapItem,
   );
@@ -84,58 +84,62 @@ export function buildSitemapItems(input: {
     (slug) =>
       ({
         bare: `/kuliner/${encodeURIComponent(slug)}`,
-        priority: '0.7',
+        priority: '0.55',
         changefreq: 'monthly',
       }) satisfies SitemapItem,
   );
-const acara = uniqueSlugs(input.acaraSlugs ?? []).map(
-  (slug) =>
-    ({
-      bare: `/acara/${encodeURIComponent(slug)}`,
-      priority: '0.7',
-      changefreq: 'weekly',
-    }) satisfies SitemapItem,
-);
+  const acara = uniqueSlugs(input.acaraSlugs ?? []).map(
+    (slug) =>
+      ({
+        bare: `/acara/${encodeURIComponent(slug)}`,
+        priority: '0.55',
+        changefreq: 'weekly',
+      }) satisfies SitemapItem,
+  );
 
-const usaha = uniqueSlugs(input.usahaSlugs ?? []).map(
-  (slug) =>
-    ({
-      bare: `/usaha/${encodeURIComponent(slug)}`,
-      priority: '0.7',
-      changefreq: 'monthly',
-    }) satisfies SitemapItem,
-);
+  const usaha = uniqueSlugs(input.usahaSlugs ?? []).map(
+    (slug) =>
+      ({
+        bare: `/usaha/${encodeURIComponent(slug)}`,
+        priority: '0.55',
+        changefreq: 'monthly',
+      }) satisfies SitemapItem,
+  );
 
+  // Urutan: hub brand dulu, detail domain, baru lemma di paling belakang
+  // dengan priority rendah. Google sitelinks branded query sering mengangkat
+  // URL yang dominan di sitemap + internal link; lemma tinggi = sitelinks
+  // berisi kata-kata acak, bukan menu situs.
   return [
     { bare: '/', priority: '1.0', changefreq: 'daily' },
-    { bare: '/eksplorasi', priority: '0.8', changefreq: 'weekly' },
+    { bare: '/eksplorasi', priority: '0.9', changefreq: 'weekly' },
     { bare: '/words', priority: '0.9', changefreq: 'daily' },
-    { bare: '/wisata', priority: '0.8', changefreq: 'weekly' },
-    ...wisata,
-    { bare: '/kuliner', priority: '0.8', changefreq: 'weekly' },
-    ...kuliner,
-    { bare: '/acara', priority: '0.8', changefreq: 'weekly' },
-    ...acara,
-    { bare: '/usaha', priority: '0.8', changefreq: 'weekly' },
-    ...usaha,
+    { bare: '/wisata', priority: '0.9', changefreq: 'weekly' },
+    { bare: '/kuliner', priority: '0.9', changefreq: 'weekly' },
+    { bare: '/acara', priority: '0.85', changefreq: 'weekly' },
+    { bare: '/usaha', priority: '0.85', changefreq: 'weekly' },
+    { bare: '/faq', priority: '0.85', changefreq: 'monthly' },
+    { bare: '/api-publik', priority: '0.8', changefreq: 'monthly' },
+    { bare: '/ruang-diskusi', priority: '0.75', changefreq: 'daily' },
+    { bare: '/privacy-policy', priority: '0.3', changefreq: 'yearly' },
     ...letters.map(
       (letter) =>
         ({
           bare: `/huruf/${letter}`,
-          priority: '0.6',
+          priority: '0.5',
           changefreq: 'weekly',
         }) satisfies SitemapItem,
     ),
-    { bare: '/ruang-diskusi', priority: '0.7', changefreq: 'daily' },
-    { bare: '/faq', priority: '0.8', changefreq: 'monthly' },
-    { bare: '/api-publik', priority: '0.6', changefreq: 'monthly' },
-    { bare: '/privacy-policy', priority: '0.5', changefreq: 'yearly' },
-    { bare: '/hapus-akun', priority: '0.4', changefreq: 'yearly' },
+    ...wisata,
+    ...kuliner,
+    ...acara,
+    ...usaha,
     ...words.map(
       (word) =>
         ({
           bare: `/words/${encodeURIComponent(word.lemma)}`,
-          priority: '0.7',
+          // Di bawah hub; cukup untuk discovery long-tail, lemah untuk sitelinks.
+          priority: '0.35',
           changefreq: 'weekly',
           lastmod: lastmodOf(word.updatedAt),
         }) satisfies SitemapItem,

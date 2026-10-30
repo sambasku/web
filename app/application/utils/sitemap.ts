@@ -46,19 +46,36 @@ function xhtmlAlternates(appUrl: string, bare: string): string {
 }
 
 /**
+ * Locale non-default (id-SBS) dibatasi supaya tidak menyaingi /id untuk
+ * branded sitelinks / query "sambasku". hreflang tetap dipasang penuh.
+ */
+export function priorityForLocale(
+  priority: string,
+  locale: AppLocale,
+): string {
+  if (locale === DEFAULT_LOCALE) return priority;
+  const n = Number.parseFloat(priority);
+  if (!Number.isFinite(n)) return priority;
+  return Math.min(n * 0.5, 0.4).toFixed(1);
+}
+
+/**
  * urlset lengkap: setiap item × setiap locale seoIndex, tiap URL membawa
  * pasangan hreflang-nya.
  */
 export function buildUrlsetXml(appUrl: string, items: SitemapItem[]): string {
   const urls = items
     .flatMap((item) =>
-      seoLocales().map((l) => ({
-        loc: `${appUrl}${localePath(l.code as AppLocale, item.bare)}`,
-        bare: item.bare,
-        priority: item.priority,
-        changefreq: item.changefreq,
-        lastmod: item.lastmod,
-      })),
+      seoLocales().map((l) => {
+        const locale = l.code as AppLocale;
+        return {
+          loc: `${appUrl}${localePath(locale, item.bare)}`,
+          bare: item.bare,
+          priority: priorityForLocale(item.priority, locale),
+          changefreq: item.changefreq,
+          lastmod: item.lastmod,
+        };
+      }),
     )
     .map(
       (u) => `  <url>

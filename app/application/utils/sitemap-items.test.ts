@@ -30,6 +30,15 @@ describe('buildSitemapItems', () => {
     assert.ok(items.some((item) => item.bare === '/kuliner/bubur-pedas'));
     assert.ok(items.some((item) => item.bare === '/huruf/c'));
     assert.equal(items.find((item) => item.bare === '/words/capal')?.lastmod, '2026-10-05');
+    assert.equal(items.find((item) => item.bare === '/words/capal')?.priority, '0.35');
+    assert.ok(Number(items.find((item) => item.bare === '/')?.priority) >
+      Number(items.find((item) => item.bare === '/words/capal')?.priority));
+    assert.equal(items.some((item) => item.bare === '/hapus-akun'), false);
+    // Hub sebelum lemma: sitelinks brand cenderung mengangkat URL awal.
+    const homeIdx = items.findIndex((item) => item.bare === '/');
+    const wordsHubIdx = items.findIndex((item) => item.bare === '/words');
+    const lemmaIdx = items.findIndex((item) => item.bare === '/words/capal');
+    assert.ok(homeIdx < wordsHubIdx && wordsHubIdx < lemmaIdx);
   });
 
   it('lemma ganda satu URL, lastmod yang lebih baru', () => {

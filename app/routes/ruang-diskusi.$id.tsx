@@ -32,6 +32,7 @@ import { useLocalePath } from '@/application/i18n/use-locale';
 import { formatDateId } from '@/application/utils/formatters';
 import { displayImageUrl } from '@/presentation/utils/display-image-url';
 import { safeExternalUrl } from '@/presentation/utils/safe-external-url';
+import { VerifierMark } from '@/presentation/components/verifier-mark';
 import type { DiscussionReply } from '@/domain/entities/discussion.entity';
 import { useTranslation } from 'react-i18next';
 import { useEffect, useState } from 'react';
@@ -273,11 +274,7 @@ export default function RuangDiskusiDetailPage() {
                       <Text size="sm" fw={600}>
                         {reply.display_name?.trim() || reply.username || 'Pengguna'}
                       </Text>
-                      {reply.is_verifier ? (
-                        <Badge size="sm" color="teal" variant="light">
-                          Verifikator
-                        </Badge>
-                      ) : null}
+                      <VerifierMark show={reply.is_verifier} size={14} />
                       {reply.is_pinned ? (
                         <Badge
                           size="sm"

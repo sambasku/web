@@ -38,6 +38,7 @@ import { WordTypeBadge } from '@/presentation/components/word/word-type-badge';
 import { UsageLabelsBadges } from '@/presentation/components/word/usage-labels-badges';
 import { WordImagesGallery } from '@/presentation/components/word/word-images-gallery';
 import { SearchBar } from '@/presentation/components/word/search-bar';
+import { VerifierMark } from '@/presentation/components/verifier-mark';
 import '@/presentation/styles/fonts-italic.css';
 import { WordAudioPlayer } from '@/presentation/components/word/pronunciation-player';
 import { formatWordClass } from '@/application/utils/formatters';
@@ -521,13 +522,13 @@ export default function WordDetailPage() {
                     username: attributionLabel(word.created_by),
                   })}
                 </Text>
-                {['admin', 'editor', 'root', 'reviewer'].includes(
-                  word.verified_by.role,
-                ) ? (
-                  <Badge size="xs" variant="light">
-                    {t('word_verifierBadge')}
-                  </Badge>
-                ) : null}
+                <VerifierMark
+                  show={['admin', 'editor', 'root', 'reviewer'].includes(
+                    word.verified_by.role,
+                  )}
+                  size={14}
+                  label={t('word_verifierBadge')}
+                />
               </Group>
             ) : (
               <>

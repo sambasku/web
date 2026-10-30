@@ -166,12 +166,42 @@ export function buildMetaTags({
 const PLAY_STORE_URL =
   'https://play.google.com/store/apps/details?id=com.iamutaki.sambasku';
 const GITHUB_URL = 'https://github.com/sambasku';
+
+/** Hub yang ingin muncul sebagai sitelinks brand, bukan halaman lemma. */
+const HOME_NAV_HUBS: ReadonlyArray<{ bare: string; labelKey: string }> = [
+  { bare: '/eksplorasi', labelKey: 'explore_heading' },
+  { bare: '/words', labelKey: 'explore_cardWords' },
+  { bare: '/wisata', labelKey: 'explore_cardWisata' },
+  { bare: '/kuliner', labelKey: 'explore_cardKuliner' },
+  { bare: '/faq', labelKey: 'nav_faq' },
+  { bare: '/api-publik', labelKey: 'nav_apiPublik' },
+];
+
 export function buildHomeJsonLd(localeInput?: string) {
   const locale = resolveLocale(localeInput);
   const t = getFixedT(locale);
+  // Brand sitelinks: selalu arahkan navigasi utama ke locale default (/id),
+  // meskipun halaman yang dirender adalah /id-SBS. Mengurangi kanibal
+  // homepage dialect untuk query "sambasku".
+  const navLocale = DEFAULT_LOCALE;
   const homeUrl = `${env.appUrl}${localePath(locale, '/')}`;
+  const defaultHomeUrl = `${env.appUrl}${localePath(DEFAULT_LOCALE, '/')}`;
   const websiteId = `${homeUrl}#website`;
   const organizationId = `${env.appUrl}/#organization`;
+  const navId = `${defaultHomeUrl}#main-nav`;
+
+  const navigation = {
+    '@type': 'ItemList' as const,
+    '@id': navId,
+    name: t('nav_menu'),
+    numberOfItems: HOME_NAV_HUBS.length,
+    itemListElement: HOME_NAV_HUBS.map((hub, index) => ({
+      '@type': 'SiteNavigationElement' as const,
+      position: index + 1,
+      name: t(hub.labelKey),
+      url: `${env.appUrl}${localePath(navLocale, hub.bare)}`,
+    })),
+  };
 
   return {
     '@context': 'https://schema.org',
@@ -180,11 +210,16 @@ export function buildHomeJsonLd(localeInput?: string) {
         '@type': 'WebSite',
         '@id': websiteId,
         name: t('seo_websiteName'),
-        alternateName: [env.appName, t('seo_websiteAlternateName')],
-        url: homeUrl,
+        alternateName: [
+          'SambasKu',
+          env.appName,
+          t('seo_websiteAlternateName'),
+        ],
+        url: locale === DEFAULT_LOCALE ? defaultHomeUrl : homeUrl,
         description: t('seo_homeDescription'),
         inLanguage: locale,
         publisher: { '@id': organizationId },
+        hasPart: { '@id': navId },
         // Tanpa SearchAction: /search selalu noindex (thin content), jadi
         // menunjuknya dari beranda hanya memberi sinyal ke URL yang tidak
         // boleh diindeks.
@@ -192,7 +227,8 @@ export function buildHomeJsonLd(localeInput?: string) {
       {
         '@type': 'Organization',
         '@id': organizationId,
-        name: env.appName,
+        name: 'SambasKu',
+        legalName: env.appName,
         url: env.appUrl,
         foundingDate: '2019',
         logo: {
@@ -201,6 +237,7 @@ export function buildHomeJsonLd(localeInput?: string) {
         },
         sameAs: [PLAY_STORE_URL, GITHUB_URL],
       },
+      navigation,
     ],
   };
 }
