@@ -14,6 +14,10 @@ import {
 } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { apiClient, AppError } from '@/infrastructure/api/api-client';
+import {
+  AnalyticsEvents,
+  trackEvent,
+} from '@/infrastructure/analytics/analytics';
 import { formError } from '@/application/utils/form-error';
 import { fetchUsahaCategories } from '@/domain/usaha';
 import { submitUsahaContribution } from '@/domain/usaha-contributions';
@@ -54,6 +58,7 @@ export function UsahaContributeForm() {
   const [done, setDone] = useState(false);
 
   useEffect(() => {
+    trackEvent(AnalyticsEvents.usahaContributeOpen);
     fetchUsahaCategories().then((items) =>
       setCategories(items.map((c) => ({ value: c.id, label: c.name }))),
     );
@@ -105,6 +110,7 @@ export function UsahaContributeForm() {
         cover_url: /^https:\/\//.test(coverUrl.trim()) ? coverUrl.trim() : null,
         wants_claim: wantsClaim,
       });
+      trackEvent(AnalyticsEvents.usahaContributeSubmit);
       setDone(true);
     } catch (err) {
       const message =

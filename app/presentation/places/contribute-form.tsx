@@ -218,7 +218,10 @@ export function ContributeForm({
           method: 'POST',
           body: JSON.stringify({ urls }),
         });
-        trackEvent(AnalyticsEvents.wisataContributeSubmit, { slug: place.slug });
+        trackEvent(AnalyticsEvents.wisataContributeSubmit, {
+          mode: 'photo',
+          slug: place.slug,
+        });
         setDone(true);
         return;
       }
@@ -247,7 +250,7 @@ export function ContributeForm({
         method: 'POST',
         body: JSON.stringify(payload),
       });
-      trackEvent(AnalyticsEvents.wisataContributeSubmit, { slug });
+      trackEvent(AnalyticsEvents.wisataContributeSubmit, { mode, slug });
       setDone(true);
     } catch (err) {
       setError(errorText(err));

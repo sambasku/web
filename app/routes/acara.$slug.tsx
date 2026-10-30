@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { Link, useLoaderData } from 'react-router';
 import {
   Anchor,
@@ -35,6 +35,10 @@ import { useLocalePath } from '@/application/i18n/use-locale';
 import { fetchEventBySlug } from '@/domain/events';
 import { formatDateTimeId } from '@/application/utils/formatters';
 import { env } from '@/infrastructure/config/env';
+import {
+  AnalyticsEvents,
+  trackEvent,
+} from '@/infrastructure/analytics/analytics';
 import { safeExternalUrl } from '@/presentation/utils/safe-external-url';
 import { displayImageUrl } from '@/presentation/utils/display-image-url';
 import { EventStatusBadge } from '@/presentation/events/event-card';
@@ -123,6 +127,11 @@ export default function EventDetailPage() {
   const { event } = useLoaderData<typeof loader>();
   const lp = useLocalePath();
   const { t } = useTranslation();
+
+  useEffect(() => {
+    if (!event) return;
+    trackEvent(AnalyticsEvents.eventOpen, { slug: event.slug });
+  }, [event]);
 
   if (!event) {
     return (

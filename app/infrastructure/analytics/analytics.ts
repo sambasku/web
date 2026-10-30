@@ -28,8 +28,24 @@ export const AnalyticsEvents = {
   themeChange: 'theme_change',
   localeChange: 'locale_change',
   discussionView: 'discussion_view',
+
+  /** Detail dibuka - selaras mobile AnalyticsEvents. */
+  poiOpen: 'poi_open',
+  cuisineOpen: 'cuisine_open',
+  usahaOpen: 'usaha_open',
+  eventOpen: 'event_open',
+
+  /** Daftar usulan milik user (web: wisata + acara; usaha/kuliner belum punya halaman). */
+  usulanWisataOpen: 'usulan_wisata_open',
+  usulanAcaraOpen: 'usulan_acara_open',
+
+  /** Form kontribusi dibuka / dikirim. */
   wisataContributeOpen: 'wisata_contribute_open',
+  usahaContributeOpen: 'usaha_contribute_open',
+  acaraContributeOpen: 'acara_contribute_open',
   wisataContributeSubmit: 'wisata_contribute_submit',
+  usahaContributeSubmit: 'usaha_contribute_submit',
+  acaraContributeSubmit: 'acara_contribute_submit',
 } as const;
 
 export type AnalyticsEventName =

@@ -6,6 +6,10 @@ import { buildMetaTags } from '@/application/utils/seo';
 import { DEFAULT_LOCALE, isAppLocale, localePath } from '@/application/i18n/locales';
 import { useLocalePath } from '@/application/i18n/use-locale';
 import { apiClient } from '@/infrastructure/api/api-client';
+import {
+  AnalyticsEvents,
+  trackEvent,
+} from '@/infrastructure/analytics/analytics';
 import { authHeaders, readAccessToken } from '@/infrastructure/auth/access-token';
 
 export function meta({ params }: Route.MetaArgs) {
@@ -34,6 +38,7 @@ export default function WisataUsulanPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    trackEvent(AnalyticsEvents.usulanWisataOpen);
     if (!readAccessToken()) {
       setItems([]);
       return;

@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { Link, useLoaderData } from 'react-router';
 import {
   Anchor,
@@ -25,6 +25,10 @@ import {
 import { buildCuisineJsonLd } from '@/application/utils/cuisine-seo';
 import { buildMetaTags } from '@/application/utils/seo';
 import { env } from '@/infrastructure/config/env';
+import {
+  AnalyticsEvents,
+  trackEvent,
+} from '@/infrastructure/analytics/analytics';
 import { safeExternalUrl } from '@/presentation/utils/safe-external-url';
 import {
   DEFAULT_LOCALE,
@@ -111,6 +115,10 @@ export default function KulinerDetailPage() {
   const lp = useLocalePath();
   const cover = cuisineCover(c);
   const heroUrl = cover ? displayImageUrl(cover.url, { width: 1200 }) : undefined;
+
+  useEffect(() => {
+    trackEvent(AnalyticsEvents.cuisineOpen, { slug: c.slug });
+  }, [c.slug]);
 
   return (
     <Container size="lg" py="xl">

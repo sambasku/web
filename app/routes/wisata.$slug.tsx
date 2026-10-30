@@ -36,6 +36,10 @@ import {
 import { fetchEvents } from '@/domain/events';
 import { recordPlaceViewOnce } from '@/domain/place-view-beacon';
 import { env } from '@/infrastructure/config/env';
+import {
+  AnalyticsEvents,
+  trackEvent,
+} from '@/infrastructure/analytics/analytics';
 import { safeExternalUrl } from '@/presentation/utils/safe-external-url';
 import { displayImageUrl } from '@/presentation/utils/display-image-url';
 import { EventMiniList } from '@/presentation/events/event-card';
@@ -174,6 +178,11 @@ export default function PlaceSharePage() {
   // best-effort, tidak boleh ganggu render.
   useEffect(() => {
     if (!place) return;
+    trackEvent(AnalyticsEvents.poiOpen, {
+      slug: place.slug,
+      category: place.category,
+      entry: 'web',
+    });
     recordPlaceViewOnce(slug, sendPlaceView);
   }, [slug, place]);
 

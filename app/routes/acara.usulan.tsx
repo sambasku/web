@@ -11,6 +11,10 @@ import {
 } from '@/application/i18n/locales';
 import { getFixedT } from '@/application/i18n/i18n-instance';
 import { useLocalePath } from '@/application/i18n/use-locale';
+import {
+  AnalyticsEvents,
+  trackEvent,
+} from '@/infrastructure/analytics/analytics';
 import { readAccessToken } from '@/infrastructure/auth/access-token';
 import {
   fetchMyEventContributions,
@@ -51,6 +55,7 @@ export default function EventUsulanPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    trackEvent(AnalyticsEvents.usulanAcaraOpen);
     if (!readAccessToken()) {
       setItems([]);
       return;

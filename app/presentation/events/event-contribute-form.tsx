@@ -17,6 +17,10 @@ import {
 } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { apiClient, AppError } from '@/infrastructure/api/api-client';
+import {
+  AnalyticsEvents,
+  trackEvent,
+} from '@/infrastructure/analytics/analytics';
 import { formError } from '@/application/utils/form-error';
 import { fetchEventCategories } from '@/domain/events';
 import { inSambas, PlaceMap } from '@/presentation/places/place-map';
@@ -73,6 +77,7 @@ export function EventContributeForm() {
   const [done, setDone] = useState(false);
 
   useEffect(() => {
+    trackEvent(AnalyticsEvents.acaraContributeOpen);
     void fetchEventCategories().then((items) => {
       setCategories(items.map((c) => ({ value: c.id, label: c.name })));
     });
@@ -130,6 +135,7 @@ export function EventContributeForm() {
         village_id: villageId,
         poster_urls: posters,
       });
+      trackEvent(AnalyticsEvents.acaraContributeSubmit);
       setDone(true);
     } catch (err) {
       const message =

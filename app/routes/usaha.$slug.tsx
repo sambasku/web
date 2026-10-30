@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Link, useLoaderData } from 'react-router';
 import {
   Anchor,
@@ -33,6 +34,10 @@ import { useLocalePath } from '@/application/i18n/use-locale';
 import { fetchUsahaBySlug } from '@/domain/usaha';
 import { usahaKindLabel, usahaLocationLine } from '@/domain/usaha-parse';
 import { env } from '@/infrastructure/config/env';
+import {
+  AnalyticsEvents,
+  trackEvent,
+} from '@/infrastructure/analytics/analytics';
 import { displayImageUrl } from '@/presentation/utils/display-image-url';
 import { safeExternalUrl } from '@/presentation/utils/safe-external-url';
 import { UsahaStatusBadge } from '@/presentation/usaha/usaha-card';
@@ -137,6 +142,11 @@ export default function UsahaDetailPage() {
   const { usaha } = useLoaderData<typeof loader>();
   const { t } = useTranslation();
   const lp = useLocalePath();
+
+  useEffect(() => {
+    if (!usaha) return;
+    trackEvent(AnalyticsEvents.usahaOpen, { slug: usaha.slug });
+  }, [usaha]);
 
   if (!usaha) {
     return (

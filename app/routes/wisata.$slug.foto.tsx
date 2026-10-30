@@ -23,5 +23,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 
 export default function WisataFotoPage() {
   const { place } = useLoaderData<typeof loader>();
+  // Analytics: ContributeForm mode=photo → wisata_contribute_open/submit.
+  // (Di mobile place_photos_open = galeri; web belum punya galeri terpisah.)
   return <ContributeForm mode="photo" place={place} />;
 }
