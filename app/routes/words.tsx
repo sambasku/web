@@ -32,19 +32,19 @@ import {
 import { getFixedT } from '@/application/i18n/i18n-instance';
 import { useLocalePath } from '@/application/i18n/use-locale';
 
-export function meta({ data, params }: Route.MetaArgs) {
+export function meta({ loaderData, params }: Route.MetaArgs) {
   const locale = isAppLocale(params.locale) ? params.locale : DEFAULT_LOCALE;
   const t = getFixedT(locale);
-  const query = data?.q
-    ? t('word_listTitleQuery', { q: data.q })
-    : data?.letter
-      ? t('word_listTitleQuery', { q: data.letter })
+  const query = loaderData?.q
+    ? t('word_listTitleQuery', { q: loaderData.q })
+    : loaderData?.letter
+      ? t('word_listTitleQuery', { q: loaderData.letter })
       : t('word_listTitle');
   const search =
-    data?.q
-      ? `?q=${encodeURIComponent(data.q)}`
-      : data?.letter
-        ? `?letter=${encodeURIComponent(data.letter)}`
+    loaderData?.q
+      ? `?q=${encodeURIComponent(loaderData.q)}`
+      : loaderData?.letter
+        ? `?letter=${encodeURIComponent(loaderData.letter)}`
         : '';
   return buildMetaTags({
     title: query,

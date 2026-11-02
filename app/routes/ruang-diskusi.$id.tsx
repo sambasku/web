@@ -32,6 +32,7 @@ import { useLocalePath } from '@/application/i18n/use-locale';
 import { formatDateId } from '@/application/utils/formatters';
 import { displayImageUrl } from '@/presentation/utils/display-image-url';
 import { safeExternalUrl } from '@/presentation/utils/safe-external-url';
+import { VerifierMark } from '@/presentation/components/verifier-mark';
 import type { DiscussionReply } from '@/domain/entities/discussion.entity';
 import { useTranslation } from 'react-i18next';
 import { useEffect, useState } from 'react';
@@ -41,9 +42,9 @@ import {
 } from '@/infrastructure/analytics/analytics';
 import { hasViolenceWarning } from '@/domain/image-content-warnings';
 
-export function meta({ data, params }: Route.MetaArgs) {
+export function meta({ loaderData, params }: Route.MetaArgs) {
   const locale = isAppLocale(params.locale) ? params.locale : DEFAULT_LOCALE;
-  if (!data?.help) {
+  if (!loaderData?.help) {
     return buildMetaTags({
       title: 'Ruang Diskusi Tidak Ditemukan',
       description:
@@ -54,9 +55,9 @@ export function meta({ data, params }: Route.MetaArgs) {
   }
 
   const excerpt =
-    data.help.body?.trim().slice(0, 140) ||
+    loaderData.help.body?.trim().slice(0, 140) ||
     'Obrolan warga di Ruang Diskusi.';
-  const safeImage = data.help.images.find(
+  const safeImage = loaderData.help.images.find(
     (img) => !hasViolenceWarning(img.content_warnings),
   );
   const rawImage = safeImage?.public_url;
@@ -65,7 +66,7 @@ export function meta({ data, params }: Route.MetaArgs) {
   return buildMetaTags({
     title: 'Ruang Diskusi',
     description: excerpt,
-    path: localePath(locale, `/ruang-diskusi/${encodeURIComponent(data.help.id)}`),
+    path: localePath(locale, `/ruang-diskusi/${encodeURIComponent(loaderData.help.id)}`),
     image: ogImage,
     type: 'article',
     locale,
@@ -273,11 +274,7 @@ export default function RuangDiskusiDetailPage() {
                       <Text size="sm" fw={600}>
                         {reply.display_name?.trim() || reply.username || 'Pengguna'}
                       </Text>
-                      {reply.is_verifier ? (
-                        <Badge size="sm" color="teal" variant="light">
-                          Verifikator
-                        </Badge>
-                      ) : null}
+                      <VerifierMark show={reply.is_verifier} size={14} />
                       {reply.is_pinned ? (
                         <Badge
                           size="sm"

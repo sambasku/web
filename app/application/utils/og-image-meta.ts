@@ -20,7 +20,7 @@ export function resolveOgImageSize(
     return { width: imageWidth, height: imageHeight };
   }
   if (!image) return { width: LOGO_OG_SIZE, height: LOGO_OG_SIZE };
-  let pathname = finalImage;
+  let pathname: string;
   try {
     pathname = new URL(finalImage, 'https://sambasku.local').pathname;
   } catch {

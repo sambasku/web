@@ -45,7 +45,7 @@ export async function loader() {
 
   const t = getFixedT(DEFAULT_LOCALE);
 
-  let latest: LatestWord[] = [];
+  let latest: LatestWord[];
   try {
     latest = await loadLatestWords();
   } catch (err) {

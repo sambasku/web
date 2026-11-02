@@ -27,8 +27,10 @@ export interface SearchBarProps {
 
 /**
  * Kotak pencarian + typeahead: saran lemma muncul setelah 2 karakter dengan
- * debounce 300 ms. Enter tetap membuka halaman /search penuh; memilih saran
- * (klik atau panah + Enter) langsung ke halaman kata.
+ * debounce 300 ms. Tidak ada auto-select saat kursor lewat overlay - `active`
+ * hanya bergerak lewat ArrowDown/ArrowUp, jadi Enter tanpa panah selalu
+ * membuka halaman /search penuh. Memilih saran (klik atau panah + Enter)
+ * langsung ke halaman kata.
  */
 export function SearchBar({
   initialQuery = '',
@@ -179,6 +181,8 @@ export function SearchBar({
                   to={lp(`/words/${encodeURIComponent(word.lemma)}`)}
                   state={{ analyticsSource: 'search' }}
                   onClick={() => setOpen(false)}
+                  role="option"
+                  aria-selected={i === active}
                   w="100%"
                   px="sm"
                   py={7}
@@ -189,7 +193,6 @@ export function SearchBar({
                         ? 'var(--mantine-color-default-hover)'
                         : undefined,
                   }}
-                  onMouseEnter={() => setActive(i)}
                 >
                   <Group justify="space-between" gap="sm" wrap="nowrap">
                     <Text size="sm" fw={600} component="span">

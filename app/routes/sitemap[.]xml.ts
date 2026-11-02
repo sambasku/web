@@ -5,7 +5,9 @@ import {
 } from '../application/utils/sitemap-items';
 import { listWordsAtoZ } from '../application/use-cases/word.use-case';
 import { fetchCuisines } from '../domain/cuisines';
+import { fetchEvents } from '../domain/events';
 import { fetchPlaces } from '../domain/places';
+import { fetchUsahas } from '../domain/usaha';
 import { env } from '../infrastructure/config/env';
 
 /**
@@ -35,11 +37,19 @@ export async function loader() {
         nextCursor: res.meta?.next_cursor ?? null,
       };
     }, MAX_PAGES);
-    const [cuisines, places] = await Promise.all([fetchCuisines(), fetchPlaces()]);
+    const [cuisines, places, events, usahas] = await Promise.all([
+      fetchCuisines(),
+      fetchPlaces(),
+      fetchEvents(),
+      fetchUsahas(),
+    ]);
+
     const items = buildSitemapItems({
       words,
       wisataSlugs: places?.map((place) => place.slug) ?? [],
       kulinerSlugs: cuisines?.map((cuisine) => cuisine.slug) ?? [],
+      acaraSlugs: events?.map((event) => event.slug) ?? [],
+      usahaSlugs: usahas?.map((usaha) => usaha.slug) ?? [],
     });
     return new Response(buildUrlsetXml(env.appUrl, items), {
       headers: {

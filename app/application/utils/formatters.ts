@@ -17,6 +17,21 @@ export function formatDateId(dateInput: string | Date | null | undefined): strin
   return `${day} ${month} ${year}`;
 }
 
+/** Tanggal + jam, mis. "5 Okt 2026, 09.30". Tanpa jam kalau tidak ada. */
+export function formatDateTimeId(
+  dateInput: string | Date | null | undefined,
+): string {
+  if (!dateInput) return '-';
+  const d = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
+  if (isNaN(d.getTime())) return '-';
+  const day = d.getDate();
+  const month = MONTH_NAMES_ID[d.getMonth()];
+  const year = d.getFullYear();
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mm = String(d.getMinutes()).padStart(2, '0');
+  return `${day} ${month} ${year}, ${hh}.${mm}`;
+}
+
 export function formatWordType(type: WordType): string {
   switch (type) {
     case 'word':

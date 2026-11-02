@@ -4,6 +4,7 @@ import { Heart, ExternalLink, Rss } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Logo } from './logo';
 import { useLocalePath } from '@/application/i18n/use-locale';
+import { withSambaskuUtm } from '@/presentation/utils/external-link';
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
@@ -51,7 +52,7 @@ export function Footer() {
             </Anchor>
           ))}
           <Anchor
-            href="https://github.com/sambasku#organisasi"
+            href={withSambaskuUtm('https://github.com/sambasku#organisasi')}
             target="_blank"
             rel="noopener noreferrer"
             size="xs"
@@ -64,7 +65,7 @@ export function Footer() {
             </Group>
           </Anchor>
           <Anchor
-            href="https://github.com/sambasku#sejarah"
+            href={withSambaskuUtm('https://github.com/sambasku#sejarah')}
             target="_blank"
             rel="noopener noreferrer"
             size="xs"
@@ -93,7 +94,9 @@ export function Footer() {
           {t('common_copyright', { year: currentYear })}
           {' · '}
           <Anchor
-            href="https://creativecommons.org/licenses/by-sa/4.0/deed.id"
+            href={withSambaskuUtm(
+              'https://creativecommons.org/licenses/by-sa/4.0/deed.id',
+            )}
             target="_blank"
             rel="noopener noreferrer license"
             size="xs"

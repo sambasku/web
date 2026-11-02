@@ -1,8 +1,10 @@
 import { Anchor, Image } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
+import { withSambaskuUtm } from '@/presentation/utils/external-link';
 
-const PLAY_STORE_URL =
-  'https://play.google.com/store/apps/details?id=com.iamutaki.sambasku';
+const PLAY_STORE_URL = withSambaskuUtm(
+  'https://play.google.com/store/apps/details?id=com.iamutaki.sambasku',
+);
 
 /** google_play.webp 250x75. */
 const BADGE_ASPECT = 250 / 75;

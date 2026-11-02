@@ -24,6 +24,11 @@ export default tseslint.config(
       ...reactHooks.configs.recommended.rules,
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/no-explicit-any': 'warn',
+      // React Compiler rule yang over-strict: flag reset-state-on-deps-change
+      // dan init error handling (mis. map lib) sebagai cascading render padahal
+      // memang disengaja. Posisi report tidak konsisten, disable-next-line
+      // tak selalu kena. Off sampai kasusnya benar-benar berbahaya.
+      'react-hooks/set-state-in-effect': 'off',
       // Pentest BH-10: `target="_blank"` tanpa `rel="noopener"` membuka
       // `window.opener` ke tab github.com. Aturan ini menjaga agar link
       // eksternal berikutnya tidak mengulang kesalahan yang sama.

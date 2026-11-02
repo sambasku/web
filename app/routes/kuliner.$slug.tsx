@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { Link, useLoaderData } from 'react-router';
 import {
   Anchor,
@@ -15,7 +15,7 @@ import {
   ThemeIcon,
   Title,
 } from '@mantine/core';
-import { ArrowLeft, ChefHat, MapPin, UtensilsCrossed } from 'lucide-react';
+import { ArrowLeft, ChefHat, UtensilsCrossed } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { Route } from './+types/kuliner.$slug';
 import {
@@ -25,6 +25,10 @@ import {
 import { buildCuisineJsonLd } from '@/application/utils/cuisine-seo';
 import { buildMetaTags } from '@/application/utils/seo';
 import { env } from '@/infrastructure/config/env';
+import {
+  AnalyticsEvents,
+  trackEvent,
+} from '@/infrastructure/analytics/analytics';
 import { safeExternalUrl } from '@/presentation/utils/safe-external-url';
 import {
   DEFAULT_LOCALE,
@@ -35,10 +39,10 @@ import { getFixedT } from '@/application/i18n/i18n-instance';
 import { useLocalePath } from '@/application/i18n/use-locale';
 import { displayImageUrl } from '@/presentation/utils/display-image-url';
 
-export function meta({ params, data }: Route.MetaArgs) {
+export function meta({ params, loaderData }: Route.MetaArgs) {
   const locale = isAppLocale(params.locale) ? params.locale : DEFAULT_LOCALE;
   const t = getFixedT(locale);
-  const c = data?.cuisine;
+  const c = loaderData?.cuisine;
   if (!c) {
     return buildMetaTags({
       title: t('kuliner_notFoundTitle'),
@@ -112,6 +116,10 @@ export default function KulinerDetailPage() {
   const cover = cuisineCover(c);
   const heroUrl = cover ? displayImageUrl(cover.url, { width: 1200 }) : undefined;
 
+  useEffect(() => {
+    trackEvent(AnalyticsEvents.cuisineOpen, { slug: c.slug });
+  }, [c.slug]);
+
   return (
     <Container size="lg" py="xl">
       <Stack gap="lg">
@@ -135,10 +143,6 @@ export default function KulinerDetailPage() {
             <Title order={1} size="h2">
               {c.name}
             </Title>
-          </Group>
-          <Group gap={6} c="dimmed">
-            <MapPin size={13} aria-hidden />
-            <Text size="xs">{c.region}</Text>
           </Group>
         </Stack>
       </Stack>

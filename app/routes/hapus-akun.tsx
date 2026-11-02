@@ -34,6 +34,8 @@ export function meta({ params }: Route.MetaArgs) {
       'Cara menghapus akun SambasKu dan data pribadimu lewat aplikasi Android atau situs, termasuk data yang dihapus dan yang tetap tersimpan.',
     path: localePath(locale, '/hapus-akun'),
     locale,
+    // Wajib ada untuk Play policy, tapi bukan halaman brand/kamus.
+    noindexAlways: true,
   });
 }
 

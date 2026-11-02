@@ -18,6 +18,7 @@ import {
 } from '@/application/i18n/locales';
 import { getFixedT } from '@/application/i18n/i18n-instance';
 import { useLocalePath } from '@/application/i18n/use-locale';
+import { withSambaskuUtm } from '@/presentation/utils/external-link';
 
 export function meta({ params }: Route.MetaArgs) {
   const locale = isAppLocale(params.locale) ? params.locale : DEFAULT_LOCALE;
@@ -88,7 +89,7 @@ export default function FaqPage() {
           </Anchor>
           {' · '}
           <Anchor
-            href="https://github.com/sambasku"
+            href={withSambaskuUtm('https://github.com/sambasku')}
             target="_blank"
             rel="noopener noreferrer"
           >

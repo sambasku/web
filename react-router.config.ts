@@ -7,7 +7,6 @@ export default {
   buildDirectory: "dist",
   // Wajib untuk integrasi @cloudflare/vite-plugin v1.x: RR memakai
   // Vite Environment API sehingga mengikuti outDir environment "ssr".
-  future: {
-    v8_viteEnvironmentApi: true,
-  },
+  // RR v8: flag `future.v8_viteEnvironmentApi` dihapus - Vite Environment
+  // API sekarang selalu aktif, jadi blok `future` dihapus total.
 } satisfies Config;

@@ -157,7 +157,7 @@ export default function KontribusiMassalPage() {
       setError(
         err instanceof AppError
           ? err.message
-          : 'Gagal mengirim batch. Coba lagi nanti.',
+          : 'Gagal mengirim batch. Coba lagi dalam beberapa saat.',
       );
     } finally {
       setSubmitting(false);
@@ -245,7 +245,7 @@ export default function KontribusiMassalPage() {
                       {index + 1}
                     </Text>
                     <TextInput
-                      placeholder="Sambas"
+                      placeholder="Kata bahasa Sambas"
                       aria-label={`Kata Sambas baris ${index + 1}`}
                       value={row.sambas}
                       style={{ flex: 1 }}

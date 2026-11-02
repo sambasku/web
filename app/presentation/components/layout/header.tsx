@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router';
 import { Anchor, Box, Burger, Container, Group, Image } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { ThemeToggle } from '../theme-toggle';
+import { withSambaskuUtm } from '@/presentation/utils/external-link';
 import { Logo } from './logo';
 import { LanguageSwitcher } from './language-switcher';
 import { primaryNavItems } from './primary-nav-items';
@@ -62,7 +63,9 @@ export function Header() {
         <Group gap="xs" wrap="nowrap">
           <LanguageSwitcher />
           <Anchor
-            href="https://play.google.com/store/apps/details?id=com.iamutaki.sambasku"
+            href={withSambaskuUtm(
+              'https://play.google.com/store/apps/details?id=com.iamutaki.sambasku',
+            )}
             target="_blank"
             rel="noopener noreferrer"
             underline="never"

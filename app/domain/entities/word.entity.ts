@@ -14,6 +14,13 @@ export interface WordSummary {
   status: WordStatus;
   is_verified: boolean;
   matched_translation?: string | null;
+  /**
+   * PRD relasi-lemma: 'related_group' = hasil perluasan kelompok makna,
+   * bukan cocok langsung. Null/absen = hasil langsung.
+   */
+  match_type?: string | null;
+  /** Form variasi yang cocok (doc 11). */
+  matched_variant?: string | null;
   /** Gloss daftar A-Z / search, mis. `[n] gelas`. */
   sense?: string | null;
   /** ISO dari GET /words. Sitemap memakai ini sebagai lastmod. */
@@ -104,6 +111,19 @@ export interface RelatedWord {
   lemma: string;
   relation_type: string;
 }
+/** PRD relasi-lemma: kelompok lema bermakna sama/berdekatan (published). */
+export interface MeaningGroup {
+  group_id: string;
+  name: string;
+  description?: string | null;
+  members: MeaningGroupMember[];
+}
+/** Anggota lain dalam kelompok makna (kata ini sendiri tidak diulang). */
+export interface MeaningGroupMember {
+  word_id: string;
+  lemma: string;
+  notes?: string | null;
+}
 
 export interface WordVariant {
   id: string;
@@ -144,6 +164,8 @@ export interface WordDetail {
   images: WordImage[];
   related_words: RelatedWord[];
   appears_in?: RelatedWord[];
+  /** PRD relasi-lemma: kelompok makna published; kosong/absen = tidak ada. */
+  meaning_groups?: MeaningGroup[];
   variants: WordVariant[];
 }
 

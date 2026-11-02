@@ -30,6 +30,15 @@ describe('buildSitemapItems', () => {
     assert.ok(items.some((item) => item.bare === '/kuliner/bubur-pedas'));
     assert.ok(items.some((item) => item.bare === '/huruf/c'));
     assert.equal(items.find((item) => item.bare === '/words/capal')?.lastmod, '2026-10-05');
+    assert.equal(items.find((item) => item.bare === '/words/capal')?.priority, '0.35');
+    assert.ok(Number(items.find((item) => item.bare === '/')?.priority) >
+      Number(items.find((item) => item.bare === '/words/capal')?.priority));
+    assert.equal(items.some((item) => item.bare === '/hapus-akun'), false);
+    // Hub sebelum lemma: sitelinks brand cenderung mengangkat URL awal.
+    const homeIdx = items.findIndex((item) => item.bare === '/');
+    const wordsHubIdx = items.findIndex((item) => item.bare === '/words');
+    const lemmaIdx = items.findIndex((item) => item.bare === '/words/capal');
+    assert.ok(homeIdx < wordsHubIdx && wordsHubIdx < lemmaIdx);
   });
 
   it('lemma ganda satu URL, lastmod yang lebih baru', () => {
@@ -44,6 +53,21 @@ describe('buildSitemapItems', () => {
     const hits = items.filter((item) => item.bare === '/words/lajjang');
     assert.equal(hits.length, 1);
     assert.equal(hits[0]?.lastmod, '2026-10-05');
+  });
+
+  it('acara published masuk sitemap, slug dobel ditulis sekali', () => {
+    const items = buildSitemapItems({
+      words: [],
+      wisataSlugs: [],
+      kulinerSlugs: [],
+      acaraSlugs: ['pawai-blok-keywords', 'pawai-blok-keywords'],
+    });
+    assert.equal(items.filter((item) => item.bare === '/acara').length, 1);
+    const acara = items.filter((item) => item.bare.startsWith('/acara/'));
+    assert.deepEqual(
+      acara.map((item) => item.bare),
+      ['/acara/pawai-blok-keywords'],
+    );
   });
 });
 

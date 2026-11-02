@@ -3,14 +3,14 @@ import { describe, it } from 'node:test';
 import { safeExternalUrl } from './safe-external-url.ts';
 
 describe('safeExternalUrl (pentest HR-01, issue #59)', () => {
-  it('menerima https apa adanya', () => {
+  it('menerima https dan menambahkan UTM referal', () => {
     assert.equal(
       safeExternalUrl('https://example.com/artikel?a=1'),
-      'https://example.com/artikel?a=1',
+      'https://example.com/artikel?a=1&utm_source=sambasku.com&utm_medium=referral',
     );
     assert.equal(
       safeExternalUrl('HTTPS://EXAMPLE.COM/X'),
-      'HTTPS://EXAMPLE.COM/X',
+      'HTTPS://EXAMPLE.COM/X?utm_source=sambasku.com&utm_medium=referral',
     );
   });
 

@@ -1,6 +1,6 @@
 import {
-  type AppLoadContext,
   type EntryContext,
+  type RouterContextProvider,
   ServerRouter,
 } from 'react-router';
 import { isbot } from 'isbot';
@@ -13,9 +13,8 @@ export default async function handleRequest(
   responseStatusCode: number,
   responseHeaders: Headers,
   routerContext: EntryContext,
-  // If you have middleware enabled:
-  // loadContext: RouterContextProvider
-  _loadContext: AppLoadContext,
+  // RR v8: middleware selalu aktif, loadContext kini RouterContextProvider.
+  _loadContext: RouterContextProvider,
 ) {
   // https://httpwg.org/specs/rfc9110.html#HEAD
   if (request.method.toUpperCase() === 'HEAD') {
