@@ -39,6 +39,11 @@ import {
   AnalyticsEvents,
   trackEvent,
 } from '@/infrastructure/analytics/analytics';
+import {
+  ImageLightbox,
+  LightboxTrigger,
+  useImageLightbox,
+} from '@/presentation/components/image-lightbox';
 import { safeExternalUrl } from '@/presentation/utils/safe-external-url';
 import { displayImageUrl } from '@/presentation/utils/display-image-url';
 import { EventStatusBadge } from '@/presentation/events/event-card';
@@ -127,6 +132,8 @@ export default function EventDetailPage() {
   const { event } = useLoaderData<typeof loader>();
   const lp = useLocalePath();
   const { t } = useTranslation();
+  const lightbox = useImageLightbox();
+  const openAria = t('imageLightbox_openAria');
 
   useEffect(() => {
     if (!event) return;
@@ -152,6 +159,10 @@ export default function EventDetailPage() {
   const posters = event.posterUrls
     .map((url) => displayImageUrl(url, { width: 960 }))
     .filter((url): url is string => Boolean(url));
+  const posterLightbox = posters.map((src, i) => ({
+    src,
+    alt: `${event.name} - poster ${i + 1}`,
+  }));
   const mapsUrl =
     event.mapsUrl ??
     (event.lat !== null && event.lng !== null
@@ -164,17 +175,30 @@ export default function EventDetailPage() {
   return (
     <Container size="md" px={0} pb={32}>
       {posters.length === 1 ? (
-        <Image src={posters[0]} alt={event.name} style={{ aspectRatio: '16 / 9' }} fit="cover" />
+        <LightboxTrigger
+          label={openAria}
+          onOpen={() => lightbox.open(posterLightbox, 0)}
+        >
+          <Image src={posters[0]} alt={event.name} style={{ aspectRatio: '16 / 9' }} fit="cover" />
+        </LightboxTrigger>
       ) : posters.length > 1 ? (
         <SimpleGrid cols={2} spacing={4} p={4}>
           {posters.map((src, i) => (
-            <Image
+            <LightboxTrigger
               key={src}
-              src={src}
-              alt={`${event.name} - poster ${i + 1}`}
-              style={{ aspectRatio: i === 0 ? '16 / 9' : '1 / 1', gridColumn: i === 0 ? 'span 2' : undefined }}
-              fit="cover"
-            />
+              label={openAria}
+              onOpen={() => lightbox.open(posterLightbox, i)}
+              style={{
+                gridColumn: i === 0 ? 'span 2' : undefined,
+              }}
+            >
+              <Image
+                src={src}
+                alt={`${event.name} - poster ${i + 1}`}
+                style={{ aspectRatio: i === 0 ? '16 / 9' : '1 / 1' }}
+                fit="cover"
+              />
+            </LightboxTrigger>
           ))}
         </SimpleGrid>
       ) : null}
@@ -355,6 +379,14 @@ export default function EventDetailPage() {
           </Group>
         </Anchor>
       </Stack>
+
+      <ImageLightbox
+        opened={lightbox.opened}
+        onClose={lightbox.close}
+        images={lightbox.images}
+        index={lightbox.index}
+        onIndexChange={lightbox.setIndex}
+      />
     </Container>
   );
 }

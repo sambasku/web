@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Link, useLoaderData } from 'react-router';
 import {
   Anchor,
@@ -38,6 +38,12 @@ import {
   AnalyticsEvents,
   trackEvent,
 } from '@/infrastructure/analytics/analytics';
+import {
+  ImageLightbox,
+  LightboxTrigger,
+  useImageLightbox,
+  type ImageLightboxItem,
+} from '@/presentation/components/image-lightbox';
 import { displayImageUrl } from '@/presentation/utils/display-image-url';
 import { safeExternalUrl } from '@/presentation/utils/safe-external-url';
 import { UsahaStatusBadge } from '@/presentation/usaha/usaha-card';
@@ -142,10 +148,25 @@ export default function UsahaDetailPage() {
   const { usaha } = useLoaderData<typeof loader>();
   const { t } = useTranslation();
   const lp = useLocalePath();
+  const lightbox = useImageLightbox();
+  const openAria = t('imageLightbox_openAria');
 
   useEffect(() => {
     if (!usaha) return;
     trackEvent(AnalyticsEvents.usahaOpen, { slug: usaha.slug });
+  }, [usaha]);
+
+  const catalogLightbox = useMemo((): ImageLightboxItem[] => {
+    if (!usaha) return [];
+    const items: ImageLightboxItem[] = [];
+    for (const item of usaha.items) {
+      const src = item.imageUrl
+        ? displayImageUrl(item.imageUrl, { width: 1200 })
+        : undefined;
+      if (!src) continue;
+      items.push({ src, alt: item.name });
+    }
+    return items;
   }, [usaha]);
 
   if (!usaha) {
@@ -167,6 +188,9 @@ export default function UsahaDetailPage() {
   const cover = usaha.coverUrl
     ? displayImageUrl(usaha.coverUrl, { width: 960 })
     : null;
+  const coverLightbox: ImageLightboxItem[] = cover
+    ? [{ src: cover, alt: usaha.name }]
+    : [];
   const location = usahaLocationLine(usaha);
   const mapsUrl =
     safeExternalUrl(usaha.mapsUrl) ??
@@ -222,12 +246,17 @@ export default function UsahaDetailPage() {
   return (
     <Container size="md" px={0} pb={32}>
       {cover ? (
-        <Image
-          src={cover}
-          alt={usaha.name}
-          style={{ aspectRatio: '16 / 9' }}
-          fit="cover"
-        />
+        <LightboxTrigger
+          label={openAria}
+          onOpen={() => lightbox.open(coverLightbox, 0)}
+        >
+          <Image
+            src={cover}
+            alt={usaha.name}
+            style={{ aspectRatio: '16 / 9' }}
+            fit="cover"
+          />
+        </LightboxTrigger>
       ) : null}
 
       <Stack gap={0} px="md">
@@ -357,19 +386,36 @@ export default function UsahaDetailPage() {
               const image = item.imageUrl
                 ? displayImageUrl(item.imageUrl, { width: 240 })
                 : null;
+              const fullSrc = item.imageUrl
+                ? displayImageUrl(item.imageUrl, { width: 1200 })
+                : undefined;
+              const catalogIndex = fullSrc
+                ? catalogLightbox.findIndex((entry) => entry.src === fullSrc)
+                : -1;
               return (
                 <Paper key={item.id} withBorder radius="md" p="sm">
                   <Group gap={10} wrap="nowrap" align="flex-start">
                     {image ? (
-                      <Image
-                        src={image}
-                        alt={item.name}
-                        w={56}
-                        h={56}
-                        radius={8}
-                        fit="cover"
-                        loading="lazy"
-                      />
+                      <LightboxTrigger
+                        label={openAria}
+                        onOpen={() =>
+                          lightbox.open(
+                            catalogLightbox,
+                            Math.max(0, catalogIndex),
+                          )
+                        }
+                        style={{ width: 56, flexShrink: 0 }}
+                      >
+                        <Image
+                          src={image}
+                          alt={item.name}
+                          w={56}
+                          h={56}
+                          radius={8}
+                          fit="cover"
+                          loading="lazy"
+                        />
+                      </LightboxTrigger>
                     ) : null}
                     <Stack gap={2} style={{ minWidth: 0 }}>
                       <Text size="sm" fw={600} lineClamp={2}>
@@ -404,6 +450,14 @@ export default function UsahaDetailPage() {
           </Group>
         </Anchor>
       </Stack>
+
+      <ImageLightbox
+        opened={lightbox.opened}
+        onClose={lightbox.close}
+        images={lightbox.images}
+        index={lightbox.index}
+        onIndexChange={lightbox.setIndex}
+      />
     </Container>
   );
 }
