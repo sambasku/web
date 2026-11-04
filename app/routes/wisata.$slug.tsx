@@ -26,6 +26,7 @@ import { useLocalePath } from '@/application/i18n/use-locale';
 import {
   fetchPlaceBySlug,
   fetchPlaceImages,
+  placeCategoryLabel,
   placeCover,
   placeLabel,
   placeTypeLabels as PLACE_TYPE_LABELS,
@@ -250,7 +251,7 @@ export default function PlaceSharePage() {
         </Title>
         <Group gap={6} mt={8}>
           <Badge variant="light" color="gray">
-            {placeLabel(place)}
+            {placeCategoryLabel(place.category)}
           </Badge>
           {place.category !== 'kuliner' && place.type && (
             <Badge variant="light" color="gray">

@@ -7,6 +7,7 @@ import { apiClient, AppError } from '@/infrastructure/api/api-client';
 export {
   mapPlace,
   placeCover,
+  placeCategoryLabel,
   placeLabel,
   placeTypeLabels,
   type Place,
