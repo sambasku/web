@@ -1,4 +1,4 @@
-import { type RouteConfig, index, route } from '@react-router/dev/routes';
+import { type RouteConfig, index, route } from "@react-router/dev/routes";
 
 /**
  * Rute ber-locale di bawah `/:locale/*`.
@@ -6,92 +6,115 @@ import { type RouteConfig, index, route } from '@react-router/dev/routes';
  * Deeplink `/reset-password` + sitemap/robots tetap tanpa prefix (bukan SEO chrome).
  */
 export default [
-  index('routes/root-redirect.tsx'),
-  route('sitemap.xml', 'routes/sitemap[.]xml.ts'),
-  route('sitemap-static.xml', 'routes/sitemap-static[.]xml.ts'),
-  route('sitemap-words/:letter', 'routes/sitemap-words.$letter.ts'),
+  index("routes/root-redirect.tsx"),
+  route("sitemap.xml", "routes/sitemap[.]xml.ts"),
+  route("sitemap-static.xml", "routes/sitemap-static[.]xml.ts"),
+  route("sitemap-words/:letter", "routes/sitemap-words.$letter.ts"),
   // Kartu OG per kata: di luar pohon locale (segmen statis 'og' menang
   // dari :locale dalam ranking route).
-  route('og/words/:lemma', 'routes/og.words[.]png.ts'),
-  route('robots.txt', 'routes/robots[.]txt.ts'),
-  route('rss.xml', 'routes/rss[.]xml.ts'),
-  route('llms-full.txt', 'routes/llms-full[.]txt.ts'),
-  route('reset-password', 'routes/reset-password.tsx'),
+  route("og/words/:lemma", "routes/og.words[.]png.ts"),
+  route("robots.txt", "routes/robots[.]txt.ts"),
+  route("rss.xml", "routes/rss[.]xml.ts"),
+  route("llms-full.txt", "routes/llms-full[.]txt.ts"),
+  route("reset-password", "routes/reset-password.tsx"),
   // Callback OAuth GitHub (AppAuth HTTPS) - tanpa locale, sama deeplink.
-  route('oauth/github', 'routes/oauth.github.tsx'),
+  route("oauth/github", "routes/oauth.github.tsx"),
 
   // Legacy tanpa locale → 301/302 ke /{defaultLocale}/...
-  route('search', 'routes/legacy-redirect.tsx', { id: 'legacy-search' }),
-  route('kontribusi', 'routes/legacy-redirect.tsx', { id: 'legacy-kontribusi' }),
-  route('kontribusi/massal', 'routes/legacy-redirect.tsx', {
-    id: 'legacy-kontribusi-massal',
+  route("search", "routes/legacy-redirect.tsx", { id: "legacy-search" }),
+  route("kontribusi", "routes/legacy-redirect.tsx", {
+    id: "legacy-kontribusi",
   }),
-  route('ruang-diskusi', 'routes/legacy-redirect.tsx', {
-    id: 'legacy-ruang-diskusi',
+  route("kontribusi/massal", "routes/legacy-redirect.tsx", {
+    id: "legacy-kontribusi-massal",
   }),
-  route('ruang-diskusi/:id', 'routes/legacy-redirect.tsx', {
-    id: 'legacy-ruang-diskusi-id',
+  route("ruang-diskusi", "routes/legacy-redirect.tsx", {
+    id: "legacy-ruang-diskusi",
+  }),
+  route("ruang-diskusi/:id", "routes/legacy-redirect.tsx", {
+    id: "legacy-ruang-diskusi-id",
   }),
   // Path lama Bantuan Terjemahan → Ruang Diskusi
-  route('bantuan-terjemahan', 'routes/bantuan-terjemahan-redirect.tsx', {
-    id: 'legacy-bantuan',
+  route("bantuan-terjemahan", "routes/bantuan-terjemahan-redirect.tsx", {
+    id: "legacy-bantuan",
   }),
-  route('bantuan-terjemahan/:id', 'routes/bantuan-terjemahan-redirect.tsx', {
-    id: 'legacy-bantuan-id',
+  route("bantuan-terjemahan/:id", "routes/bantuan-terjemahan-redirect.tsx", {
+    id: "legacy-bantuan-id",
   }),
-  route('faq', 'routes/legacy-redirect.tsx', { id: 'legacy-faq' }),
-  route('api-publik', 'routes/legacy-redirect.tsx', { id: 'legacy-api-publik' }),
-  route('privacy-policy', 'routes/legacy-redirect.tsx', { id: 'legacy-privacy' }),
-  route('syarat-ketentuan', 'routes/legacy-redirect.tsx', { id: 'legacy-terms' }),
-  route('hapus-akun', 'routes/legacy-redirect.tsx', { id: 'legacy-hapus' }),
-  route('words', 'routes/legacy-redirect.tsx', { id: 'legacy-words' }),
-  route('words/:lemma', 'routes/legacy-redirect.tsx', { id: 'legacy-words-lemma' }),
-  route('users/:username', 'routes/legacy-redirect.tsx', { id: 'legacy-users' }),
-  route('wisata', 'routes/legacy-redirect.tsx', { id: 'legacy-wisata-list' }),
-  route('wisata/:slug', 'routes/legacy-redirect.tsx', { id: 'legacy-wisata' }),
-  route('eksplorasi', 'routes/legacy-redirect.tsx', { id: 'legacy-eksplorasi' }),
-  route('acara', 'routes/legacy-redirect.tsx', { id: 'legacy-acara-list' }),
-  route('acara/:slug', 'routes/legacy-redirect.tsx', { id: 'legacy-acara' }),
-  route('usaha', 'routes/legacy-redirect.tsx', { id: 'legacy-usaha-list' }),
-  route('usaha/:slug', 'routes/legacy-redirect.tsx', { id: 'legacy-usaha' }),
+  route("faq", "routes/legacy-redirect.tsx", { id: "legacy-faq" }),
+  route("api-publik", "routes/legacy-redirect.tsx", {
+    id: "legacy-api-publik",
+  }),
+  route("privacy-policy", "routes/legacy-redirect.tsx", {
+    id: "legacy-privacy",
+  }),
+  route("syarat-ketentuan", "routes/legacy-redirect.tsx", {
+    id: "legacy-terms",
+  }),
+  route("hapus-akun", "routes/legacy-redirect.tsx", { id: "legacy-hapus" }),
+  route("words", "routes/legacy-redirect.tsx", { id: "legacy-words" }),
+  route("words/:lemma", "routes/legacy-redirect.tsx", {
+    id: "legacy-words-lemma",
+  }),
+  route("users/:username", "routes/legacy-redirect.tsx", {
+    id: "legacy-users",
+  }),
+  route("wisata", "routes/legacy-redirect.tsx", { id: "legacy-wisata-list" }),
+  route("wisata/:slug", "routes/legacy-redirect.tsx", { id: "legacy-wisata" }),
+  route("eksplorasi", "routes/legacy-redirect.tsx", {
+    id: "legacy-eksplorasi",
+  }),
+  route("acara", "routes/legacy-redirect.tsx", { id: "legacy-acara-list" }),
+  route("acara/:slug", "routes/legacy-redirect.tsx", { id: "legacy-acara" }),
+  route("usaha", "routes/legacy-redirect.tsx", { id: "legacy-usaha-list" }),
+  route("usaha/:slug", "routes/legacy-redirect.tsx", { id: "legacy-usaha" }),
+  route("ensiklopedia", "routes/legacy-redirect.tsx", {
+    id: "legacy-ensiklopedia",
+  }),
+  route("ensiklopedia/:slug", "routes/legacy-redirect.tsx", {
+    id: "legacy-ensiklopedia-slug",
+  }),
 
-  route(':locale', 'routes/locale-layout.tsx', [
-    index('routes/home.tsx'),
-    route('search', 'routes/search.tsx'),
-    route('kontribusi', 'routes/kontribusi.tsx'),
-    route('kontribusi/massal', 'routes/kontribusi.massal.tsx'),
-    route('ruang-diskusi', 'routes/ruang-diskusi.tsx'),
-    route('ruang-diskusi/:id', 'routes/ruang-diskusi.$id.tsx'),
-    route('bantuan-terjemahan', 'routes/bantuan-terjemahan-redirect.tsx', {
-      id: 'locale-legacy-bantuan',
+  route(":locale", "routes/locale-layout.tsx", [
+    index("routes/home.tsx"),
+    route("search", "routes/search.tsx"),
+    route("kontribusi", "routes/kontribusi.tsx"),
+    route("kontribusi/massal", "routes/kontribusi.massal.tsx"),
+    route("ruang-diskusi", "routes/ruang-diskusi.tsx"),
+    route("ruang-diskusi/:id", "routes/ruang-diskusi.$id.tsx"),
+    route("bantuan-terjemahan", "routes/bantuan-terjemahan-redirect.tsx", {
+      id: "locale-legacy-bantuan",
     }),
-    route('bantuan-terjemahan/:id', 'routes/bantuan-terjemahan-redirect.tsx', {
-      id: 'locale-legacy-bantuan-id',
+    route("bantuan-terjemahan/:id", "routes/bantuan-terjemahan-redirect.tsx", {
+      id: "locale-legacy-bantuan-id",
     }),
-    route('faq', 'routes/faq.tsx'),
-    route('api-publik', 'routes/api-publik.tsx'),
-    route('privacy-policy', 'routes/privacy-policy.tsx'),
-    route('syarat-ketentuan', 'routes/syarat-ketentuan.tsx'),
-    route('hapus-akun', 'routes/hapus-akun.tsx'),
-    route('words', 'routes/words.tsx'),
-    route('words/:lemma', 'routes/words.$lemma.tsx'),
-    route('huruf/:letter', 'routes/huruf.$letter.tsx'),
-    route('kuliner', 'routes/kuliner.tsx'),
-    route('kuliner/:slug', 'routes/kuliner.$slug.tsx'),
-    route('acara', 'routes/acara.tsx'),
-    route('acara/usulan', 'routes/acara.usulan.tsx'),
-    route('acara/kontribusi', 'routes/acara.kontribusi.tsx'),
-    route('acara/:slug', 'routes/acara.$slug.tsx'),
-    route('usaha', 'routes/usaha.tsx'),
-    route('usaha/kontribusi', 'routes/usaha.kontribusi.tsx'),
-    route('usaha/:slug', 'routes/usaha.$slug.tsx'),
-    route('wisata', 'routes/wisata.tsx'),
-    route('wisata/usulan', 'routes/wisata.usulan.tsx'),
-    route('wisata/kontribusi', 'routes/wisata.kontribusi.tsx'),
-    route('wisata/:slug/sunting', 'routes/wisata.$slug.sunting.tsx'),
-    route('wisata/:slug/foto', 'routes/wisata.$slug.foto.tsx'),
-    route('wisata/:slug', 'routes/wisata.$slug.tsx'),
-    route('eksplorasi', 'routes/eksplorasi.tsx'),
-    route('users/:username', 'routes/users.$username.tsx'),
+    route("faq", "routes/faq.tsx"),
+    route("api-publik", "routes/api-publik.tsx"),
+    route("privacy-policy", "routes/privacy-policy.tsx"),
+    route("syarat-ketentuan", "routes/syarat-ketentuan.tsx"),
+    route("hapus-akun", "routes/hapus-akun.tsx"),
+    route("words", "routes/words.tsx"),
+    route("words/:lemma", "routes/words.$lemma.tsx"),
+    route("huruf/:letter", "routes/huruf.$letter.tsx"),
+    route("kuliner", "routes/kuliner.tsx"),
+    route("kuliner/:slug", "routes/kuliner.$slug.tsx"),
+    route("acara", "routes/acara.tsx"),
+    route("acara/usulan", "routes/acara.usulan.tsx"),
+    route("acara/kontribusi", "routes/acara.kontribusi.tsx"),
+    route("acara/:slug", "routes/acara.$slug.tsx"),
+    route("usaha", "routes/usaha.tsx"),
+    route("usaha/kontribusi", "routes/usaha.kontribusi.tsx"),
+    route("usaha/:slug", "routes/usaha.$slug.tsx"),
+    route("wisata", "routes/wisata.tsx"),
+    route("wisata/usulan", "routes/wisata.usulan.tsx"),
+    route("wisata/kontribusi", "routes/wisata.kontribusi.tsx"),
+    route("wisata/:slug/sunting", "routes/wisata.$slug.sunting.tsx"),
+    route("wisata/:slug/foto", "routes/wisata.$slug.foto.tsx"),
+    route("wisata/:slug", "routes/wisata.$slug.tsx"),
+    route("ensiklopedia", "routes/encyclopedia.tsx"),
+    route("ensiklopedia/usulan", "routes/encyclopedia.usulan.tsx"),
+    route("ensiklopedia/:slug", "routes/encyclopedia.$slug.tsx"),
+    route("eksplorasi", "routes/eksplorasi.tsx"),
+    route("users/:username", "routes/users.$username.tsx"),
   ]),
 ] satisfies RouteConfig;
