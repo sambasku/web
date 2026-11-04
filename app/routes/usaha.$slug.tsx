@@ -4,7 +4,6 @@ import {
   Anchor,
   Badge,
   Breadcrumbs,
-  Button,
   Container,
   Divider,
   Group,
@@ -15,7 +14,7 @@ import {
   Text,
   Title,
 } from '@mantine/core';
-import { ArrowLeft, Globe, MapPin, MessageCircle, Phone } from 'lucide-react';
+import { ArrowLeft, Globe, Link as LinkIcon, MapPin, Phone } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { Route } from './+types/usaha.$slug';
 import { buildMetaTags } from '@/application/utils/seo';
@@ -199,28 +198,34 @@ export default function UsahaDetailPage() {
           `https://www.google.com/maps/search/?api=1&query=${usaha.lat},${usaha.lng}`,
         )
       : undefined);
+  /** Compact: satu baris label (+ href). Field kosong tidak masuk. */
   const contacts: Array<{
     key: string;
     icon: React.ReactNode;
     label: string;
-    value: string;
     href?: string;
   }> = [];
   if (usaha.phone) {
     contacts.push({
       key: 'phone',
       icon: <Phone size={16} aria-hidden />,
-      label: t('usaha_contributeFieldPhone'),
-      value: usaha.phone,
+      label: usaha.phone,
       href: telHref(usaha.phone) ?? undefined,
     });
   }
   if (usaha.whatsapp) {
     contacts.push({
       key: 'wa',
-      icon: <MessageCircle size={16} aria-hidden />,
+      icon: (
+        <img
+          src="/whatsapp.svg"
+          alt=""
+          width={16}
+          height={16}
+          aria-hidden
+        />
+      ),
       label: t('usaha_contributeFieldWhatsapp'),
-      value: usaha.whatsapp,
       href: safeExternalUrl(waHref(usaha.whatsapp) ?? undefined),
     });
   }
@@ -229,17 +234,23 @@ export default function UsahaDetailPage() {
       key: 'web',
       icon: <Globe size={16} aria-hidden />,
       label: t('usaha_contributeFieldWebsite'),
-      value: usaha.website,
       href: safeExternalUrl(usaha.website),
     });
   }
   if (usaha.socialUrl) {
     contacts.push({
       key: 'social',
-      icon: <Globe size={16} aria-hidden />,
+      icon: <LinkIcon size={16} aria-hidden />,
       label: t('usaha_contributeFieldSocial'),
-      value: usaha.socialUrl,
       href: safeExternalUrl(usaha.socialUrl),
+    });
+  }
+  if (mapsUrl) {
+    contacts.push({
+      key: 'map',
+      icon: <MapPin size={16} aria-hidden />,
+      label: t('usaha_mapsButton'),
+      href: mapsUrl,
     });
   }
 
@@ -332,45 +343,26 @@ export default function UsahaDetailPage() {
                 </Group>
               ) : null}
               {contacts.map((row) => (
-                <Group key={row.key} gap={8} wrap="nowrap" align="flex-start">
+                <Group key={row.key} gap={8} wrap="nowrap" align="center">
                   <span
                     style={{ flexShrink: 0, color: 'var(--mantine-color-teal-6)' }}
                   >
                     {row.icon}
                   </span>
-                  <Stack gap={0} style={{ minWidth: 0 }}>
-                    {row.href ? (
-                      <SafeExtLink href={row.href} fw={600}>
-                        {row.value}
-                      </SafeExtLink>
-                    ) : (
-                      <Text size="sm" fw={600} lh={1.3}>
-                        {row.value}
-                      </Text>
-                    )}
-                    <Text size="xs" c="dimmed">
+                  {row.href ? (
+                    <SafeExtLink href={row.href} fw={600}>
+                      {row.label}
+                    </SafeExtLink>
+                  ) : (
+                    <Text size="sm" fw={600} lh={1.3}>
                       {row.label}
                     </Text>
-                  </Stack>
+                  )}
                 </Group>
               ))}
             </Stack>
           )}
         </Paper>
-
-        {mapsUrl ? (
-          <Button
-            component="a"
-            href={mapsUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            color="teal"
-            leftSection={<MapPin size={18} />}
-            mt={16}
-          >
-            {t('usaha_mapsButton')}
-          </Button>
-        ) : null}
 
         <Divider mt={20} />
         <Text fw={700} mt={12}>
