@@ -1,7 +1,7 @@
-import type { SitemapItem } from './sitemap.ts';
+import type { SitemapItem } from "./sitemap.ts";
 
 /** Kunci objek di bucket R2 `sambasku-web-sitemap`. */
-export const SITEMAP_OBJECT_KEY = 'sitemap.xml';
+export const SITEMAP_OBJECT_KEY = "sitemap.xml";
 
 export interface SitemapWord {
   lemma: string;
@@ -20,7 +20,9 @@ export interface SitemapWordPage {
 }
 
 /** YYYY-MM-DD dari ISO. Bentuk lain diabaikan supaya lastmod tidak bohong. */
-export function lastmodOf(updatedAt: string | null | undefined): string | undefined {
+export function lastmodOf(
+  updatedAt: string | null | undefined,
+): string | undefined {
   if (!updatedAt) return undefined;
   const day = updatedAt.slice(0, 10);
   return /^\d{4}-\d{2}-\d{2}$/.test(day) ? day : undefined;
@@ -28,7 +30,7 @@ export function lastmodOf(updatedAt: string | null | undefined): string | undefi
 
 function letterOf(lemma: string): string | null {
   const c = lemma.trim().charAt(0).toLowerCase();
-  return c >= 'a' && c <= 'z' ? c : null;
+  return c >= "a" && c <= "z" ? c : null;
 }
 
 /** Lemma yang sama di dua baris API hanya satu URL. lastmod yang lebih baru menang. */
@@ -40,15 +42,17 @@ function uniqueWords(words: readonly SitemapWord[]): SitemapWord[] {
       byLemma.set(word.lemma, word);
       continue;
     }
-    const prevDay = lastmodOf(prev.updatedAt) ?? '';
-    const nextDay = lastmodOf(word.updatedAt) ?? '';
+    const prevDay = lastmodOf(prev.updatedAt) ?? "";
+    const nextDay = lastmodOf(word.updatedAt) ?? "";
     if (nextDay > prevDay) byLemma.set(word.lemma, word);
   }
   return [...byLemma.values()];
 }
 
 function uniqueSlugs(slugs: readonly string[]): string[] {
-  return [...new Set(slugs.map((slug) => slug.trim()).filter((slug) => slug !== ''))];
+  return [
+    ...new Set(slugs.map((slug) => slug.trim()).filter((slug) => slug !== "")),
+  ];
 }
 
 /**
@@ -62,6 +66,7 @@ export function buildSitemapItems(input: {
   kulinerSlugs: readonly string[];
   acaraSlugs?: readonly string[];
   usahaSlugs?: readonly string[];
+  encyclopediaSlugs?: readonly string[];
 }): SitemapItem[] {
   const words = uniqueWords(input.words);
   const letters = [
@@ -76,24 +81,24 @@ export function buildSitemapItems(input: {
     (slug) =>
       ({
         bare: `/wisata/${encodeURIComponent(slug)}`,
-        priority: '0.55',
-        changefreq: 'monthly',
+        priority: "0.55",
+        changefreq: "monthly",
       }) satisfies SitemapItem,
   );
   const kuliner = uniqueSlugs(input.kulinerSlugs).map(
     (slug) =>
       ({
         bare: `/kuliner/${encodeURIComponent(slug)}`,
-        priority: '0.55',
-        changefreq: 'monthly',
+        priority: "0.55",
+        changefreq: "monthly",
       }) satisfies SitemapItem,
   );
   const acara = uniqueSlugs(input.acaraSlugs ?? []).map(
     (slug) =>
       ({
         bare: `/acara/${encodeURIComponent(slug)}`,
-        priority: '0.55',
-        changefreq: 'weekly',
+        priority: "0.55",
+        changefreq: "weekly",
       }) satisfies SitemapItem,
   );
 
@@ -101,8 +106,17 @@ export function buildSitemapItems(input: {
     (slug) =>
       ({
         bare: `/usaha/${encodeURIComponent(slug)}`,
-        priority: '0.55',
-        changefreq: 'monthly',
+        priority: "0.55",
+        changefreq: "monthly",
+      }) satisfies SitemapItem,
+  );
+
+  const encyclopedia = uniqueSlugs(input.encyclopediaSlugs ?? []).map(
+    (slug) =>
+      ({
+        bare: `/ensiklopedia/${encodeURIComponent(slug)}`,
+        priority: "0.6",
+        changefreq: "monthly",
       }) satisfies SitemapItem,
   );
 
@@ -111,36 +125,38 @@ export function buildSitemapItems(input: {
   // URL yang dominan di sitemap + internal link; lemma tinggi = sitelinks
   // berisi kata-kata acak, bukan menu situs.
   return [
-    { bare: '/', priority: '1.0', changefreq: 'daily' },
-    { bare: '/eksplorasi', priority: '0.9', changefreq: 'weekly' },
-    { bare: '/words', priority: '0.9', changefreq: 'daily' },
-    { bare: '/wisata', priority: '0.9', changefreq: 'weekly' },
-    { bare: '/kuliner', priority: '0.9', changefreq: 'weekly' },
-    { bare: '/acara', priority: '0.85', changefreq: 'weekly' },
-    { bare: '/usaha', priority: '0.85', changefreq: 'weekly' },
-    { bare: '/faq', priority: '0.85', changefreq: 'monthly' },
-    { bare: '/api-publik', priority: '0.8', changefreq: 'monthly' },
-    { bare: '/ruang-diskusi', priority: '0.75', changefreq: 'daily' },
-    { bare: '/privacy-policy', priority: '0.3', changefreq: 'yearly' },
+    { bare: "/", priority: "1.0", changefreq: "daily" },
+    { bare: "/eksplorasi", priority: "0.9", changefreq: "weekly" },
+    { bare: "/words", priority: "0.9", changefreq: "daily" },
+    { bare: "/wisata", priority: "0.9", changefreq: "weekly" },
+    { bare: "/kuliner", priority: "0.9", changefreq: "weekly" },
+    { bare: "/ensiklopedia", priority: "0.9", changefreq: "weekly" },
+    { bare: "/acara", priority: "0.85", changefreq: "weekly" },
+    { bare: "/usaha", priority: "0.85", changefreq: "weekly" },
+    { bare: "/faq", priority: "0.85", changefreq: "monthly" },
+    { bare: "/api-publik", priority: "0.8", changefreq: "monthly" },
+    { bare: "/ruang-diskusi", priority: "0.75", changefreq: "daily" },
+    { bare: "/privacy-policy", priority: "0.3", changefreq: "yearly" },
     ...letters.map(
       (letter) =>
         ({
           bare: `/huruf/${letter}`,
-          priority: '0.5',
-          changefreq: 'weekly',
+          priority: "0.5",
+          changefreq: "weekly",
         }) satisfies SitemapItem,
     ),
     ...wisata,
     ...kuliner,
     ...acara,
     ...usaha,
+    ...encyclopedia,
     ...words.map(
       (word) =>
         ({
           bare: `/words/${encodeURIComponent(word.lemma)}`,
           // Di bawah hub; cukup untuk discovery long-tail, lemah untuk sitelinks.
-          priority: '0.35',
-          changefreq: 'weekly',
+          priority: "0.35",
+          changefreq: "weekly",
           lastmod: lastmodOf(word.updatedAt),
         }) satisfies SitemapItem,
     ),
@@ -164,9 +180,9 @@ export async function collectVerifiedWords(
     }
     if (!res.hasMore || !res.nextCursor) return words;
     if (page === maxPages - 1) {
-      throw new Error('sitemap terpotong: masih ada halaman kata');
+      throw new Error("sitemap terpotong: masih ada halaman kata");
     }
     cursor = res.nextCursor;
   }
-  throw new Error('sitemap terpotong: masih ada halaman kata');
+  throw new Error("sitemap terpotong: masih ada halaman kata");
 }

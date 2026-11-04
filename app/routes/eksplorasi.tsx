@@ -1,115 +1,141 @@
-import { Link, useLoaderData } from 'react-router';
-import { Anchor, Card, Container, Group, Image, SimpleGrid, Stack, Text, ThemeIcon, Title } from '@mantine/core';
+import { Link, useLoaderData } from "react-router";
+import {
+  Anchor,
+  Card,
+  Container,
+  Group,
+  Image,
+  SimpleGrid,
+  Stack,
+  Text,
+  ThemeIcon,
+  Title,
+} from "@mantine/core";
 import {
   BookOpen,
   CalendarPlus,
   Compass,
+  LibraryBig,
   MapPin,
   Search,
   Store,
   UtensilsCrossed,
-} from 'lucide-react';
-import { useTranslation } from 'react-i18next';
-import type { Route } from './+types/eksplorasi';
-import { buildMetaTags } from '@/application/utils/seo';
+} from "lucide-react";
+import { useTranslation } from "react-i18next";
+import type { Route } from "./+types/eksplorasi";
+import { buildMetaTags } from "@/application/utils/seo";
 import {
   DEFAULT_LOCALE,
   isAppLocale,
   localePath,
-} from '@/application/i18n/locales';
-import { getFixedT } from '@/application/i18n/i18n-instance';
-import { useLocalePath } from '@/application/i18n/use-locale';
-import { displayImageUrl } from '@/presentation/utils/display-image-url';
-import { fetchCuisines, cuisineCover } from '@/domain/cuisines';
-import { fetchPlaces, placeCover } from '@/domain/places';
-
+} from "@/application/i18n/locales";
+import { getFixedT } from "@/application/i18n/i18n-instance";
+import { useLocalePath } from "@/application/i18n/use-locale";
+import { displayImageUrl } from "@/presentation/utils/display-image-url";
+import { fetchCuisines, cuisineCover } from "@/domain/cuisines";
+import { fetchPlaces, placeCover } from "@/domain/places";
 /**
  * Halaman Eksplorasi: hub kategori konten web (grid ala tab Eksplorasi di
  * aplikasi mobile). Kartu kamus/wisata/kuliner memakai thumbnail asli dari
  * data; kartu cari & diskusi ikon saja karena bentuknya utilitas.
  */
-
 export function meta({ params }: Route.MetaArgs) {
   const locale = isAppLocale(params.locale) ? params.locale : DEFAULT_LOCALE;
   const t = getFixedT(locale);
   return buildMetaTags({
-    title: t('explore_title'),
-    description: t('explore_description'),
-    path: localePath(locale, '/eksplorasi'),
+    title: t("explore_title"),
+    description: t("explore_description"),
+    path: localePath(locale, "/eksplorasi"),
     locale,
   });
 }
-
+export async function loader({ request }: Route.LoaderArgs) {
+  const [places, cuisines] = await Promise.all([
+    fetchPlaces(request.signal),
+    fetchCuisines(request.signal),
+  ]);
+  return { places: places ?? [], cuisines: cuisines ?? [] };
+}
 export default function EksplorasiPage() {
   const { t } = useTranslation();
   const lp = useLocalePath();
   const { places, cuisines } = useLoaderData<typeof loader>();
-  const wisataCover = places.find((p) => p.category === 'wisata');
+  const wisataCover = places.find((p) => p.category === "wisata");
   const kulinerCover = cuisines.length > 0 ? cuisineCover(cuisines[0]) : null;
-
   const cards = [
     {
-      to: lp('/words'),
+      to: lp("/words"),
       icon: BookOpen,
-      title: t('explore_cardWords'),
-      desc: t('explore_cardWordsDesc'),
+      title: t("explore_cardWords"),
+      desc: t("explore_cardWordsDesc"),
       image: undefined,
-      color: 'teal',
+      color: "teal",
     },
     {
-      to: lp('/wisata'),
+      to: lp("/wisata"),
       icon: MapPin,
-      title: t('explore_cardWisata'),
-      desc: t('explore_cardWisataDesc'),
-      image: wisataCover && placeCover(wisataCover)
-        ? displayImageUrl(placeCover(wisataCover)!.url, { width: 640, height: 360 })
-        : undefined,
-      color: 'teal',
+      title: t("explore_cardWisata"),
+      desc: t("explore_cardWisataDesc"),
+      image:
+        wisataCover && placeCover(wisataCover)
+          ? displayImageUrl(placeCover(wisataCover)!.url, {
+              width: 640,
+              height: 360,
+            })
+          : undefined,
+      color: "teal",
     },
     {
-      to: lp('/kuliner'),
+      to: lp("/kuliner"),
       icon: UtensilsCrossed,
-      title: t('explore_cardKuliner'),
-      desc: t('explore_cardKulinerDesc'),
+      title: t("explore_cardKuliner"),
+      desc: t("explore_cardKulinerDesc"),
       image: kulinerCover
         ? displayImageUrl(kulinerCover.url, { width: 640, height: 360 })
         : undefined,
-      color: 'orange',
+      color: "orange",
     },
     {
-      to: lp('/acara'),
+      to: lp("/acara"),
       icon: CalendarPlus,
-      title: t('explore_cardEvent'),
-      desc: t('explore_cardEventDesc'),
+      title: t("explore_cardEvent"),
+      desc: t("explore_cardEventDesc"),
       image: undefined,
-      color: 'grape',
+      color: "grape",
     },
     {
-      to: lp('/usaha'),
+      to: lp("/usaha"),
       icon: Store,
-      title: t('explore_cardUsaha'),
-      desc: t('explore_cardUsahaDesc'),
+      title: t("explore_cardUsaha"),
+      desc: t("explore_cardUsahaDesc"),
       image: undefined,
-      color: 'teal',
+      color: "teal",
     },
     {
-      to: lp('/search'),
+      to: lp("/ensiklopedia"),
+      icon: LibraryBig,
+      title: t("explore_cardEncyclopedia"),
+      desc: t("explore_cardEncyclopediaDesc"),
+      image: undefined,
+      color: "indigo",
+    },
+    {
+      to: lp("/search"),
       icon: Search,
-      title: t('explore_cardSearch'),
-      desc: t('explore_cardSearchDesc'),
+      title: t("explore_cardSearch"),
+      desc: t("explore_cardSearchDesc"),
       image: undefined,
-      color: 'violet',
+      color: "violet",
     },
     {
-      to: lp('/ruang-diskusi'),
+      to: lp("/ruang-diskusi"),
       icon: Compass,
-      title: t('explore_cardDiskusi'),
-      desc: t('explore_cardDiskusiDesc'),
+      title: t("explore_cardDiskusi"),
+      desc: t("explore_cardDiskusiDesc"),
       image: undefined,
-      color: 'orange',
+      color: "orange",
     },
   ];
-
   return (
     <Container size="lg" py="xl">
       <Stack gap="lg">
@@ -119,11 +145,11 @@ export default function EksplorasiPage() {
               <Compass size={16} />
             </ThemeIcon>
             <Title order={1} size="h2">
-              {t('explore_heading')}
+              {t("explore_heading")}
             </Title>
           </Group>
           <Text size="sm" c="dimmed" maw={640}>
-            {t('explore_intro')}
+            {t("explore_intro")}
           </Text>
         </Stack>
 
@@ -136,7 +162,6 @@ export default function EksplorasiPage() {
     </Container>
   );
 }
-
 function ExploreCard({
   to,
   icon: Icon,
@@ -165,7 +190,12 @@ function ExploreCard({
         {image ? (
           <Image src={image} alt={title} h={140} fit="cover" />
         ) : (
-          <Stack align="center" justify="center" h="140px" bg={`var(--mantine-color-${color}-0)`}>
+          <Stack
+            align="center"
+            justify="center"
+            h="140px"
+            bg={`var(--mantine-color-${color}-0)`}
+          >
             <Icon
               size={64}
               strokeWidth={1.6}
@@ -185,15 +215,6 @@ function ExploreCard({
     </Card>
   );
 }
-
-export async function loader({ request }: Route.LoaderArgs) {
-  const [places, cuisines] = await Promise.all([
-    fetchPlaces(request.signal),
-    fetchCuisines(request.signal),
-  ]);
-  return { places: places ?? [], cuisines: cuisines ?? [] };
-}
-
 export function ErrorBoundary() {
   return (
     <Container size="md" py={44}>
