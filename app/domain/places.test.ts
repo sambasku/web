@@ -1,7 +1,19 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { mapPlace, placeLabel, placeTypeLabels } from './places-parse.ts';
+import {
+  mapPlace,
+  placeCategoryLabel,
+  placeLabel,
+  placeTypeLabels,
+} from './places-parse.ts';
+
+test('placeCategoryLabel: wisata/kuliner/budaya tanpa type', () => {
+  assert.equal(placeCategoryLabel('wisata'), 'Wisata');
+  assert.equal(placeCategoryLabel('kuliner'), 'Kuliner');
+  assert.equal(placeCategoryLabel('budaya'), 'Budaya');
+  assert.equal(placeCategoryLabel('lain'), 'Wisata');
+});
 
 test('placeLabel: kuliner selalu Kuliner walau type terisi', () => {
   assert.equal(

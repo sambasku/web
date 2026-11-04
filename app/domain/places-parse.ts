@@ -146,6 +146,11 @@ export const placeTypeLabels: Record<PlaceType, string> = {
   belanja: 'Belanja',
 };
 
+/** Label kategori saja (badge detail). Bukan type - supaya tidak dobel dengan placeTypeLabels. */
+export const placeCategoryLabel = (category: string): string =>
+  category === 'kuliner' ? 'Kuliner' : category === 'budaya' ? 'Budaya' : 'Wisata';
+
+/** Label singkat untuk list/kartu: type wisata, atau kategori. */
 export const placeLabel = (p: { category: string; type: PlaceType | null }): string =>
   p.category === 'kuliner'
     ? 'Kuliner'

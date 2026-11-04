@@ -295,5 +295,10 @@
   "word_verifiedBy": "Diverifikasi oleh {{username}}",
   "word_createdVerifiedBy": "Dibuek dan diverifikasi oleh {{username}}",
   "search_suggestAria": "Saran pancarek'an",
-  "word_listCategoryFilterPlaceholder": "Kategori"
+  "word_listCategoryFilterPlaceholder": "Kategori",
+  "imageLightbox_close": "Tutup preview",
+  "imageLightbox_prev": "Foto sebalomnye",
+  "imageLightbox_next": "Foto selanjutnye",
+  "imageLightbox_counter": "{{current}} / {{total}}",
+  "imageLightbox_openAria": "Basarkan foto"
 }

@@ -426,5 +426,10 @@
   "usaha_closedNotice": "Usaha ini sudah tutup permanen. Info tetap kami simpan sebagai catatan.",
   "usaha_seoDetailTitle": "{{name}} - Usaha Sambas",
   "usaha_seoDescSuffix": "Lihat kontak dan lokasinya.",
-  "usaha_seoDescFallback": "Usaha di Kabupaten Sambas, Kalimantan Barat."
+  "usaha_seoDescFallback": "Usaha di Kabupaten Sambas, Kalimantan Barat.",
+  "imageLightbox_close": "Tutup preview",
+  "imageLightbox_prev": "Foto sebelumnya",
+  "imageLightbox_next": "Foto berikutnya",
+  "imageLightbox_counter": "{{current}} / {{total}}",
+  "imageLightbox_openAria": "Perbesar foto"
 }

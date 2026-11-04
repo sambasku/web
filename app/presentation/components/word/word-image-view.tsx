@@ -41,11 +41,14 @@ export function WordImageView({
   image,
   revealed,
   onRequestReveal,
+  onOpen,
   alt,
 }: {
   image: WordImage;
   revealed: boolean;
   onRequestReveal?: () => void;
+  /** Buka lightbox (hanya foto yang sudah bisa dilihat). */
+  onOpen?: () => void;
   alt: string;
 }) {
   const { t } = useTranslation();
@@ -119,6 +122,25 @@ export function WordImageView({
             </Text>
           </Stack>
         </Box>
+      </UnstyledButton>
+    );
+  }
+
+  if (onOpen) {
+    return (
+      <UnstyledButton
+        type="button"
+        onClick={onOpen}
+        aria-label={alt}
+        style={{
+          display: 'block',
+          width: '100%',
+          cursor: 'zoom-in',
+          borderRadius: 'var(--mantine-radius-md)',
+          overflow: 'hidden',
+        }}
+      >
+        <Image src={src} alt={alt} radius="md" h={200} fit="cover" />
       </UnstyledButton>
     );
   }

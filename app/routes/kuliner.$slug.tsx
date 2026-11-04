@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useMemo, type ReactNode } from 'react';
 import { Link, useLoaderData } from 'react-router';
 import {
   Anchor,
@@ -10,6 +10,7 @@ import {
   Image,
   List,
   Paper,
+  SimpleGrid,
   Stack,
   Text,
   ThemeIcon,
@@ -37,6 +38,12 @@ import {
 } from '@/application/i18n/locales';
 import { getFixedT } from '@/application/i18n/i18n-instance';
 import { useLocalePath } from '@/application/i18n/use-locale';
+import {
+  ImageLightbox,
+  LightboxTrigger,
+  useImageLightbox,
+  type ImageLightboxItem,
+} from '@/presentation/components/image-lightbox';
 import { displayImageUrl } from '@/presentation/utils/display-image-url';
 
 export function meta({ params, loaderData }: Route.MetaArgs) {
@@ -113,8 +120,31 @@ export default function KulinerDetailPage() {
   const { cuisine: c } = useLoaderData<typeof loader>();
   const { t } = useTranslation();
   const lp = useLocalePath();
+  const lightbox = useImageLightbox();
+  const openAria = t('imageLightbox_openAria');
   const cover = cuisineCover(c);
   const heroUrl = cover ? displayImageUrl(cover.url, { width: 1200 }) : undefined;
+  const lightboxItems = useMemo((): ImageLightboxItem[] => {
+    const items: ImageLightboxItem[] = [];
+    for (const img of c.images) {
+      const src = displayImageUrl(img.url, { width: 1600 });
+      if (!src) continue;
+      items.push({
+        src,
+        alt: img.attribution
+          ? `${c.name} - foto oleh ${img.attribution.name}`
+          : c.name,
+        caption: img.attribution?.name,
+      });
+    }
+    return items;
+  }, [c.images, c.name]);
+  const coverIndex = cover
+    ? Math.max(
+        0,
+        c.images.findIndex((img) => img.url === cover.url),
+      )
+    : 0;
 
   useEffect(() => {
     trackEvent(AnalyticsEvents.cuisineOpen, { slug: c.slug });
@@ -149,13 +179,42 @@ export default function KulinerDetailPage() {
 
       <Stack gap="lg">
         {heroUrl ? (
-          <Image
-            src={heroUrl}
-            alt={cover?.attribution ? `${c.name} - foto oleh ${cover.attribution.name}` : c.name}
-            radius="md"
-            mah={480}
-            fit="cover"
-          />
+          <LightboxTrigger
+            label={openAria}
+            onOpen={() => lightbox.open(lightboxItems, coverIndex)}
+          >
+            <Image
+              src={heroUrl}
+              alt={cover?.attribution ? `${c.name} - foto oleh ${cover.attribution.name}` : c.name}
+              radius="md"
+              mah={480}
+              fit="cover"
+            />
+          </LightboxTrigger>
+        ) : null}
+
+        {c.images.length > 1 ? (
+          <SimpleGrid cols={{ base: 2, sm: 3 }} spacing="sm">
+            {c.images.map((img, i) => {
+              const thumb = displayImageUrl(img.url, { width: 400 });
+              if (!thumb) return null;
+              return (
+                <LightboxTrigger
+                  key={img.url}
+                  label={openAria}
+                  onOpen={() => lightbox.open(lightboxItems, i)}
+                >
+                  <Image
+                    src={thumb}
+                    alt={c.name}
+                    radius="md"
+                    style={{ aspectRatio: '16 / 10' }}
+                    fit="cover"
+                  />
+                </LightboxTrigger>
+              );
+            })}
+          </SimpleGrid>
         ) : null}
 
         {cover?.attribution ? (
@@ -249,6 +308,14 @@ export default function KulinerDetailPage() {
           </Group>
         </Anchor>
       </Stack>
+
+      <ImageLightbox
+        opened={lightbox.opened}
+        onClose={lightbox.close}
+        images={lightbox.images}
+        index={lightbox.index}
+        onIndexChange={lightbox.setIndex}
+      />
     </Container>
   );
 }

@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Link, useLoaderData } from 'react-router';
 import {
   Anchor,
@@ -15,6 +15,7 @@ import {
   Title,
 } from '@mantine/core';
 import { Clock, MapPin, Phone } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import type { Route } from './+types/wisata.$slug';
 import { buildMetaTags, buildPlaceJsonLd } from '@/application/utils/seo';
 import {
@@ -26,6 +27,7 @@ import { useLocalePath } from '@/application/i18n/use-locale';
 import {
   fetchPlaceBySlug,
   fetchPlaceImages,
+  placeCategoryLabel,
   placeCover,
   placeLabel,
   placeTypeLabels as PLACE_TYPE_LABELS,
@@ -40,6 +42,12 @@ import {
   AnalyticsEvents,
   trackEvent,
 } from '@/infrastructure/analytics/analytics';
+import {
+  ImageLightbox,
+  LightboxTrigger,
+  useImageLightbox,
+  type ImageLightboxItem,
+} from '@/presentation/components/image-lightbox';
 import { safeExternalUrl } from '@/presentation/utils/safe-external-url';
 import { displayImageUrl } from '@/presentation/utils/display-image-url';
 import { EventMiniList } from '@/presentation/events/event-card';
@@ -167,13 +175,32 @@ function SafeAnchor({
   );
 }
 
+function placeLightboxItems(
+  images: PlaceImage[],
+  alt: string,
+): ImageLightboxItem[] {
+  const items: ImageLightboxItem[] = [];
+  for (const img of images) {
+    const src = displayImageUrl(img.url, { width: 1600 });
+    if (!src) continue;
+    items.push({
+      src,
+      alt,
+      caption: img.attribution?.name,
+    });
+  }
+  return items;
+}
+
 export default function PlaceSharePage() {
   const lp = useLocalePath();
+  const { t } = useTranslation();
   const { slug, place, events } = useLoaderData<typeof loader>();
   const [gallery, setGallery] = useState<PlaceImage[]>(place?.images ?? []);
   const [nextOffset, setNextOffset] = useState<number | null>(
     place && place.imageCount > place.images.length ? place.images.length : null,
   );
+  const lightbox = useImageLightbox();
   // Metrik popularitas (docs/api/45): beacon sekali per sesi per slug,
   // best-effort, tidak boleh ganggu render.
   useEffect(() => {
@@ -185,6 +212,11 @@ export default function PlaceSharePage() {
     });
     recordPlaceViewOnce(slug, sendPlaceView);
   }, [slug, place]);
+
+  const lightboxItems = useMemo(
+    () => (place ? placeLightboxItems(gallery, place.name) : []),
+    [gallery, place],
+  );
 
   if (!place) {
     return (
@@ -214,16 +246,28 @@ export default function PlaceSharePage() {
     place.hours ? { icon: Clock, value: place.hours, caption: 'Jam buka' } : null,
     place.contact ? { icon: Phone, value: place.contact, caption: 'Kontak' } : null,
   ].filter((i) => i !== null);
+  const coverLightboxIndex = cover
+    ? Math.max(
+        0,
+        gallery.findIndex((img) => img.url === cover.url),
+      )
+    : 0;
+  const openAria = t('imageLightbox_openAria');
 
   return (
     <Container size="md" px={0} pb={32}>
       {cover ? (
-        <Image
-          src={displayImageUrl(cover.url, { width: 960 })}
-          alt={place.name}
-          style={{ aspectRatio: '16 / 10' }}
-          fit="cover"
-        />
+        <LightboxTrigger
+          label={openAria}
+          onOpen={() => lightbox.open(lightboxItems, coverLightboxIndex)}
+        >
+          <Image
+            src={displayImageUrl(cover.url, { width: 960 })}
+            alt={place.name}
+            style={{ aspectRatio: '16 / 10' }}
+            fit="cover"
+          />
+        </LightboxTrigger>
       ) : (
         <Box bg="gray.2" style={{ aspectRatio: '16 / 10' }} />
       )}
@@ -250,7 +294,7 @@ export default function PlaceSharePage() {
         </Title>
         <Group gap={6} mt={8}>
           <Badge variant="light" color="gray">
-            {placeLabel(place)}
+            {placeCategoryLabel(place.category)}
           </Badge>
           {place.category !== 'kuliner' && place.type && (
             <Badge variant="light" color="gray">
@@ -316,15 +360,20 @@ export default function PlaceSharePage() {
               Foto
             </Text>
             <SimpleGrid cols={{ base: 2, sm: 3 }} spacing="sm" mt={8}>
-              {gallery.map((img) => (
+              {gallery.map((img, i) => (
                 <Stack key={img.url} gap={4}>
-                  <Image
-                    src={displayImageUrl(img.url, { width: 400 })}
-                    alt={place.name}
-                    radius="md"
-                    style={{ aspectRatio: '16 / 10' }}
-                    fit="cover"
-                  />
+                  <LightboxTrigger
+                    label={openAria}
+                    onOpen={() => lightbox.open(lightboxItems, i)}
+                  >
+                    <Image
+                      src={displayImageUrl(img.url, { width: 400 })}
+                      alt={place.name}
+                      radius="md"
+                      style={{ aspectRatio: '16 / 10' }}
+                      fit="cover"
+                    />
+                  </LightboxTrigger>
                   {img.attribution?.name ? (
                     <Text size="xs" c="dimmed" lineClamp={1}>
                       {img.attribution.name}
@@ -423,6 +472,14 @@ export default function PlaceSharePage() {
           </Stack>
         ) : null}
       </Stack>
+
+      <ImageLightbox
+        opened={lightbox.opened}
+        onClose={lightbox.close}
+        images={lightbox.images}
+        index={lightbox.index}
+        onIndexChange={lightbox.setIndex}
+      />
     </Container>
   );
 }

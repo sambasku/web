@@ -32,10 +32,16 @@ import { useLocalePath } from '@/application/i18n/use-locale';
 import { formatDateId } from '@/application/utils/formatters';
 import { displayImageUrl } from '@/presentation/utils/display-image-url';
 import { safeExternalUrl } from '@/presentation/utils/safe-external-url';
+import {
+  ImageLightbox,
+  LightboxTrigger,
+  useImageLightbox,
+  type ImageLightboxItem,
+} from '@/presentation/components/image-lightbox';
 import { VerifierMark } from '@/presentation/components/verifier-mark';
 import type { DiscussionReply } from '@/domain/entities/discussion.entity';
 import { useTranslation } from 'react-i18next';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   AnalyticsEvents,
   trackEvent,
@@ -114,6 +120,8 @@ export default function RuangDiskusiDetailPage() {
   const lp = useLocalePath();
   const { t } = useTranslation();
   const [violenceRevealed, setViolenceRevealed] = useState(false);
+  const lightbox = useImageLightbox();
+  const openAria = t('imageLightbox_openAria');
 
   const { help } = useLoaderData<typeof loader>();
   const replies = sortReplies(help.replies);
@@ -122,6 +130,23 @@ export default function RuangDiskusiDetailPage() {
   // HR-01: link_url input bebas pembuat diskusi - hanya https yang boleh
   // jadi anchor; skema lain tampil sebagai teks polos.
   const linkUrl = safeExternalUrl(help.link_url?.trim());
+
+  const viewableImages = useMemo((): {
+    items: ImageLightboxItem[];
+    indexByUrl: Map<string, number>;
+  } => {
+    const items: ImageLightboxItem[] = [];
+    const indexByUrl = new Map<string, number>();
+    for (const img of help.images) {
+      const violent = hasViolenceWarning(img.content_warnings);
+      if (violent && !violenceRevealed) continue;
+      const src = displayImageUrl(img.public_url, { width: 1600 });
+      if (!src) continue;
+      indexByUrl.set(img.public_url, items.length);
+      items.push({ src, alt: 'Lampiran ruang diskusi' });
+    }
+    return { items, indexByUrl };
+  }, [help.images, violenceRevealed]);
 
   useEffect(() => {
     trackEvent(AnalyticsEvents.discussionView, {
@@ -237,15 +262,23 @@ export default function RuangDiskusiDetailPage() {
                     </Button>
                   );
                 }
+                const at = viewableImages.indexByUrl.get(img.public_url);
                 return (
-                  <Image
+                  <LightboxTrigger
                     key={img.public_url}
-                    src={src}
-                    alt="Lampiran ruang diskusi"
-                    radius="md"
-                    fit="cover"
-                    mah={320}
-                  />
+                    label={openAria}
+                    onOpen={() =>
+                      lightbox.open(viewableImages.items, at ?? 0)
+                    }
+                  >
+                    <Image
+                      src={src}
+                      alt="Lampiran ruang diskusi"
+                      radius="md"
+                      fit="cover"
+                      mah={320}
+                    />
+                  </LightboxTrigger>
                 );
               })}
             </SimpleGrid>
@@ -310,6 +343,14 @@ export default function RuangDiskusiDetailPage() {
           )}
         </Stack>
       </Stack>
+
+      <ImageLightbox
+        opened={lightbox.opened}
+        onClose={lightbox.close}
+        images={lightbox.images}
+        index={lightbox.index}
+        onIndexChange={lightbox.setIndex}
+      />
     </Container>
   );
 }
