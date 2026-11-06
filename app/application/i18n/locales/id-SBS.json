@@ -391,5 +391,8 @@
   "encyclopedia_fieldChangeNote": "Catatan Perubahan (ape yang direk ubah?)",
   "encyclopedia_fieldRequired": "Judul, ringkasan, kategori, dangan ise artikel wajib diisi.",
   "encyclopedia_submitSuccessTitle": "Usolan udah tekirim!",
-  "encyclopedia_submitSuccessBody": "Makaseh banyak atas kontribusimu. Usolan direk akan lakak itok ditinjau tim verifikator."
+  "encyclopedia_submitSuccessBody": "Makaseh banyak atas kontribusimu. Usolan direk akan lakak itok ditinjau tim verifikator.",
+  "usaha_addressHeading": "Alamat",
+  "usaha_addressEmpty": "Alamat balom dicantumkan.",
+  "usaha_appCta": "Liat info laengnye di aplikasi SambasKu"
 }

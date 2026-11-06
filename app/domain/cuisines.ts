@@ -1,12 +1,12 @@
 /**
- * Data kuliner. Sumber utama API (`/api/v1/culinary/cuisines`), cadangan
- * CDN lama (`data/cuisines.json` via jsDelivr) saat API kosong/gagal.
- * Atribusi & lisensi tetap verbatim dari kedua sumber.
+ * Data kuliner. Sumber utama API (`/api/v1/culinary/cuisines`).
+ * Cadangan CDN (`data/cuisines.json` via jsDelivr) hanya saat request API gagal.
+ * Daftar published kosong tetap kosong, bukan file CDN.
  *
  * Parse murni ada di `cuisines-parse.ts` (bisa dites tanpa alias `@/`);
  * file ini cuma pengambil data.
  */
-import { apiClient } from '@/infrastructure/api/api-client';
+import { apiClient, AppError } from '@/infrastructure/api/api-client';
 import {
   parseApiCuisine,
   parseCdnCuisines,
@@ -37,23 +37,36 @@ async function fetchCuisinesFromCdn(
   }
 }
 
-/** Null: API dan CDN dua-duanya gagal (caller putuskan render). */
+/** Maks 5 halaman x 100 = 500 kuliner. */
+const PAGE_CAP = 5;
+
+/**
+ * Daftar kuliner published. Null hanya kalau API gagal dan CDN juga gagal.
+ * Respons API yang sah (termasuk daftar kosong) tidak jatuh ke CDN.
+ */
 export async function fetchCuisines(
   signal?: AbortSignal,
 ): Promise<Cuisine[] | null> {
   try {
-    const res = await apiClient<{ items: unknown[] }>(
-      '/culinary/cuisines?limit=100',
-      { signal },
-    );
-    const items = res.data?.items;
-    if (!Array.isArray(items)) return fetchCuisinesFromCdn(signal);
-    const parsed = items
-      .map(parseApiCuisine)
-      .filter((c): c is Cuisine => c !== null);
-    // API kosong bisa berarti DB belum di-seed: pakai CDN sebagai cadangan
-    // supaya halaman kuliner publik tidak kosong saat migrasi.
-    return parsed.length > 0 ? parsed : fetchCuisinesFromCdn(signal);
+    const items: Cuisine[] = [];
+    let before: string | undefined;
+    for (let page = 0; page < PAGE_CAP; page++) {
+      const q = new URLSearchParams({ limit: '100' });
+      if (before) q.set('before', before);
+      const res = await apiClient<{
+        items: unknown[];
+        next_cursor: string | null;
+      }>(`/culinary/cuisines?${q}`, { signal });
+      const rows = res.data?.items;
+      if (!Array.isArray(rows)) return items;
+      for (const row of rows) {
+        const parsed = parseApiCuisine(row);
+        if (parsed) items.push(parsed);
+      }
+      if (!res.data.next_cursor) break;
+      before = res.data.next_cursor;
+    }
+    return items;
   } catch {
     return fetchCuisinesFromCdn(signal);
   }
@@ -63,6 +76,15 @@ export async function fetchCuisineBySlug(
   slug: string,
   signal?: AbortSignal,
 ): Promise<Cuisine | null> {
-  const all = await fetchCuisines(signal);
-  return all?.find((c) => c.slug === slug) ?? null;
+  try {
+    const res = await apiClient<unknown>(
+      `/culinary/cuisines/${encodeURIComponent(slug)}`,
+      { signal },
+    );
+    return parseApiCuisine(res.data);
+  } catch (error) {
+    if (error instanceof AppError && error.statusCode === 404) return null;
+    const all = await fetchCuisinesFromCdn(signal);
+    return all?.find((c) => c.slug === slug) ?? null;
+  }
 }

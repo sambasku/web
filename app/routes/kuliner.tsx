@@ -160,9 +160,11 @@ function CuisineCard({ c }: { c: Cuisine }) {
         <Text component="h2" fz={{ base: 15, sm: 17 }} fw={600} lh={1.3} m={0}>
           {c.name}
         </Text>
-        <Text fz={{ base: 12, sm: 14 }} c="dimmed" lineClamp={1}>
-          {c.description}
-        </Text>
+        {c.description ? (
+          <Text fz={{ base: 12, sm: 14 }} c="dimmed" lineClamp={1}>
+            {c.description}
+          </Text>
+        ) : null}
       </Stack>
     </Anchor>
   );

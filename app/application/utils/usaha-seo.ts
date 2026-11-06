@@ -18,9 +18,9 @@ import {
 export interface UsahaSeoLabels {
   /** Nama crumb beranda, mis. "Kamus Sambas". */
   homeCrumb: string;
-  /** Judul daftar usaha, mis. "Usaha Sambas". */
+  /** Judul daftar usaha, mis. "Usaha". */
   listHeading: string;
-  /** Template judul detail, mis. "{{name}} - Usaha Sambas". */
+  /** Template judul detail, mis. "{{name}} - Usaha". */
   detailTitleTemplate: string;
   /** Kalimat penutup deskripsi. */
   descSuffix: string;
@@ -60,7 +60,7 @@ export function buildUsahaSeoCopy(usaha: Usaha, labels: UsahaSeoLabels) {
  * JSON-LD detail usaha.
  * - `@type` = `LocalBusiness` (subtipe generik, cukup untuk direktori).
  * - `address` pakai addressLocality Kabupaten Sambas + petunjuk lokasi kalau ada.
- * - `telephone` / `sameAs` hanya dari data bersih (tanpa UTM).
+ * - Telepon, tautan kontak, dan koordinat tidak ikut: PII itu hanya di aplikasi.
  */
 export function buildUsahaJsonLd(
   usaha: Usaha,
@@ -86,20 +86,7 @@ export function buildUsahaJsonLd(
       addressRegion: 'Kalimantan Barat',
       addressCountry: 'ID',
     },
-    ...(usaha.lat !== null && usaha.lng !== null
-      ? {
-          geo: {
-            '@type': 'GeoCoordinates',
-            latitude: usaha.lat,
-            longitude: usaha.lng,
-          },
-        }
-      : {}),
-    ...(usaha.phone ? { telephone: usaha.phone } : {}),
     ...(usaha.coverUrl ? { image: usaha.coverUrl } : {}),
-    ...(usaha.socialUrl || usaha.website
-      ? { sameAs: [usaha.website, usaha.socialUrl].filter(Boolean) }
-      : {}),
   };
 
   const breadcrumb = {

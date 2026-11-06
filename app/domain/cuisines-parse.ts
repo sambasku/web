@@ -88,9 +88,9 @@ export function parseCuisine(raw: unknown): Cuisine | null {
   const id = str(r.id);
   const slug = str(r.slug);
   const name = str(r.name);
-  const description = str(r.description);
-  const region = str(r.region);
-  if (!id || !slug || !name || !description || !region) return null;
+  const description = str(r.description) ?? '';
+  const region = str(r.region) ?? '';
+  if (!id || !slug || !name) return null;
 
   const images: CuisineImage[] = [];
   if (Array.isArray(r.images)) {
