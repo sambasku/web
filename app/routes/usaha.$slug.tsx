@@ -3,8 +3,6 @@ import { Link, useLoaderData } from 'react-router';
 import {
   Anchor,
   Badge,
-  Breadcrumbs,
-  Button,
   Container,
   Divider,
   Group,
@@ -15,7 +13,7 @@ import {
   Text,
   Title,
 } from '@mantine/core';
-import { ArrowLeft, Globe, MapPin, MessageCircle, Phone } from 'lucide-react';
+import { ArrowLeft, MapPin } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { Route } from './+types/usaha.$slug';
 import { buildMetaTags } from '@/application/utils/seo';
@@ -44,8 +42,8 @@ import {
   useImageLightbox,
   type ImageLightboxItem,
 } from '@/presentation/components/image-lightbox';
+import { AppDownloadBadges } from '@/presentation/components/layout/app-download-badges';
 import { displayImageUrl } from '@/presentation/utils/display-image-url';
-import { safeExternalUrl } from '@/presentation/utils/safe-external-url';
 import { UsahaStatusBadge } from '@/presentation/usaha/usaha-card';
 
 export function meta({ params, loaderData }: Route.MetaArgs) {
@@ -100,48 +98,20 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   const usaha = await fetchUsahaBySlug(slug, request.signal).catch(() => {
     throw new Response('Gagal memuat data usaha', { status: 503 });
   });
-  return { usaha };
-}
-
-/** Link eksternal aman + UTM otomatis (rule #32, HR-01). */
-function SafeExtLink({
-  href,
-  children,
-  fw,
-}: {
-  href: string;
-  children: React.ReactNode;
-  fw?: number;
-}) {
-  const safe = safeExternalUrl(href);
-  if (!safe) return <Text size="sm">{children}</Text>;
-  return (
-    <Anchor
-      href={safe}
-      target="_blank"
-      rel="noopener noreferrer"
-      size="sm"
-      fw={fw}
-    >
-      {children}
-    </Anchor>
-  );
-}
-
-function waHref(raw: string): string | null {
-  const digits = raw.replace(/\D/g, '');
-  if (!digits) return null;
-  const normalized = digits.startsWith('62')
-    ? digits
-    : digits.startsWith('0')
-      ? `62${digits.slice(1)}`
-      : digits;
-  return `https://wa.me/${normalized}`;
-}
-
-function telHref(raw: string): string | null {
-  const digits = raw.replace(/[^0-9+]/g, '');
-  return digits ? `tel:${digits}` : null;
+  if (!usaha) return { usaha: null };
+  // Kontak dan koordinat tidak boleh ikut ke HTML (payload loader ikut ter-serialize).
+  return {
+    usaha: {
+      ...usaha,
+      phone: null,
+      whatsapp: null,
+      website: null,
+      socialUrl: null,
+      mapsUrl: null,
+      lat: null,
+      lng: null,
+    },
+  };
 }
 
 export default function UsahaDetailPage() {
@@ -192,56 +162,10 @@ export default function UsahaDetailPage() {
     ? [{ src: cover, alt: usaha.name }]
     : [];
   const location = usahaLocationLine(usaha);
-  const mapsUrl =
-    safeExternalUrl(usaha.mapsUrl) ??
-    (usaha.lat !== null && usaha.lng !== null
-      ? safeExternalUrl(
-          `https://www.google.com/maps/search/?api=1&query=${usaha.lat},${usaha.lng}`,
-        )
-      : undefined);
-  const contacts: Array<{
-    key: string;
-    icon: React.ReactNode;
-    label: string;
-    value: string;
-    href?: string;
-  }> = [];
-  if (usaha.phone) {
-    contacts.push({
-      key: 'phone',
-      icon: <Phone size={16} aria-hidden />,
-      label: t('usaha_contributeFieldPhone'),
-      value: usaha.phone,
-      href: telHref(usaha.phone) ?? undefined,
-    });
-  }
-  if (usaha.whatsapp) {
-    contacts.push({
-      key: 'wa',
-      icon: <MessageCircle size={16} aria-hidden />,
-      label: t('usaha_contributeFieldWhatsapp'),
-      value: usaha.whatsapp,
-      href: safeExternalUrl(waHref(usaha.whatsapp) ?? undefined),
-    });
-  }
-  if (usaha.website) {
-    contacts.push({
-      key: 'web',
-      icon: <Globe size={16} aria-hidden />,
-      label: t('usaha_contributeFieldWebsite'),
-      value: usaha.website,
-      href: safeExternalUrl(usaha.website),
-    });
-  }
-  if (usaha.socialUrl) {
-    contacts.push({
-      key: 'social',
-      icon: <Globe size={16} aria-hidden />,
-      label: t('usaha_contributeFieldSocial'),
-      value: usaha.socialUrl,
-      href: safeExternalUrl(usaha.socialUrl),
-    });
-  }
+  const locality =
+    usaha.village?.name && usaha.village.name !== location
+      ? usaha.village.name
+      : 'Kabupaten Sambas';
 
   return (
     <Container size="md" px={0} pb={32}>
@@ -260,19 +184,23 @@ export default function UsahaDetailPage() {
       ) : null}
 
       <Stack gap={0} px="md">
-        <Stack gap={0} pt={12}>
-          <Breadcrumbs separator="/">
-            <Anchor component={Link} to={lp('/')} size="xs" c="dimmed">
-              {t('word_homeCrumb')}
-            </Anchor>
-            <Anchor component={Link} to={lp('/usaha')} size="xs" c="dimmed">
-              {t('usaha_heading')}
-            </Anchor>
-            <Text size="xs" fw={500} lineClamp={1}>
-              {usaha.name}
-            </Text>
-          </Breadcrumbs>
-        </Stack>
+        <Group gap={6} wrap="wrap" pt={12}>
+          <Anchor component={Link} to={lp('/')} size="xs" c="dimmed">
+            {t('word_homeCrumb')}
+          </Anchor>
+          <Text size="xs" c="dimmed">
+            /
+          </Text>
+          <Anchor component={Link} to={lp('/usaha')} size="xs" c="dimmed">
+            {t('usaha_heading')}
+          </Anchor>
+          <Text size="xs" c="dimmed">
+            /
+          </Text>
+          <Text size="xs" fw={500}>
+            {usaha.name}
+          </Text>
+        </Group>
 
         <Title order={1} fw={800} fz={{ base: 22, sm: 30 }} lh={1.25} mt={8}>
           {usaha.name}
@@ -305,72 +233,37 @@ export default function UsahaDetailPage() {
         ) : null}
 
         <Text fw={700} mt={20}>
-          {t('usaha_contactHeading')}
+          {t('usaha_addressHeading')}
         </Text>
         <Paper withBorder radius="md" p="md" mt={8}>
-          {contacts.length === 0 && !location ? (
-            <Text size="sm" c="dimmed">
-              {t('usaha_contactEmpty')}
-            </Text>
-          ) : (
-            <Stack gap="sm">
-              {location ? (
-                <Group gap={8} wrap="nowrap" align="flex-start">
-                  <MapPin
-                    size={16}
-                    style={{ flexShrink: 0, color: 'var(--mantine-color-teal-6)' }}
-                    aria-hidden
-                  />
-                  <Stack gap={0}>
-                    <Text size="sm" fw={600} lh={1.3}>
-                      {location}
-                    </Text>
-                    <Text size="xs" c="dimmed">
-                      {usaha.village?.name ?? 'Kabupaten Sambas'}
-                    </Text>
-                  </Stack>
-                </Group>
-              ) : null}
-              {contacts.map((row) => (
-                <Group key={row.key} gap={8} wrap="nowrap" align="flex-start">
-                  <span
-                    style={{ flexShrink: 0, color: 'var(--mantine-color-teal-6)' }}
-                  >
-                    {row.icon}
-                  </span>
-                  <Stack gap={0} style={{ minWidth: 0 }}>
-                    {row.href ? (
-                      <SafeExtLink href={row.href} fw={600}>
-                        {row.value}
-                      </SafeExtLink>
-                    ) : (
-                      <Text size="sm" fw={600} lh={1.3}>
-                        {row.value}
-                      </Text>
-                    )}
-                    <Text size="xs" c="dimmed">
-                      {row.label}
-                    </Text>
-                  </Stack>
-                </Group>
-              ))}
+          <Stack gap="md">
+            {location ? (
+              <Group gap={8} wrap="nowrap" align="flex-start">
+                <MapPin
+                  size={16}
+                  style={{ flexShrink: 0, color: 'var(--mantine-color-teal-6)' }}
+                  aria-hidden
+                />
+                <Stack gap={0}>
+                  <Text size="sm" fw={600} lh={1.3}>
+                    {location}
+                  </Text>
+                  <Text size="xs" c="dimmed">
+                    {locality}
+                  </Text>
+                </Stack>
+              </Group>
+            ) : (
+              <Text size="sm" c="dimmed">
+                {t('usaha_addressEmpty')}
+              </Text>
+            )}
+            <Stack gap={8}>
+              <Text size="sm">{t('usaha_appCta')}</Text>
+              <AppDownloadBadges />
             </Stack>
-          )}
+          </Stack>
         </Paper>
-
-        {mapsUrl ? (
-          <Button
-            component="a"
-            href={mapsUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            color="teal"
-            leftSection={<MapPin size={18} />}
-            mt={16}
-          >
-            {t('usaha_mapsButton')}
-          </Button>
-        ) : null}
 
         <Divider mt={20} />
         <Text fw={700} mt={12}>

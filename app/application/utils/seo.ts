@@ -1,8 +1,8 @@
-import type { Place } from '@/domain/places';
-import type { WordDetail, WordSummary } from '@/domain/entities/word.entity';
-import { pickSafePrimaryImageUrl } from '@/domain/image-content-warnings';
-import { env } from '@/infrastructure/config/env';
-import { getFixedT } from '@/application/i18n/i18n-instance';
+import type { Place } from "@/domain/places";
+import type { WordDetail, WordSummary } from "@/domain/entities/word.entity";
+import { pickSafePrimaryImageUrl } from "@/domain/image-content-warnings";
+import { env } from "@/infrastructure/config/env";
+import { getFixedT } from "@/application/i18n/i18n-instance";
 import {
   DEFAULT_LOCALE,
   type AppLocale,
@@ -10,11 +10,11 @@ import {
   isAppLocale,
   localePath,
   seoLocales,
-} from '@/application/i18n/locales';
+} from "@/application/i18n/locales";
 import {
   lemmaAltFromLocalizedPath,
   resolveOgImageSize,
-} from './og-image-meta.ts';
+} from "./og-image-meta.ts";
 
 export interface SeoMetaProps {
   title: string;
@@ -34,7 +34,7 @@ export interface SeoMetaProps {
    */
   imageWidth?: number;
   imageHeight?: number;
-  type?: 'website' | 'article';
+  type?: "website" | "article";
   locale?: AppLocale | string;
   /**
    * Meta keywords - sinyal kecil (Google mengabaikan sejak 2009, Bing masih
@@ -54,7 +54,7 @@ function resolveLocale(locale?: string): AppLocale {
 
 /** Path tanpa query, untuk pasangan hreflang. */
 function pathWithoutQuery(path: string): string {
-  return path.split('?')[0] || '/';
+  return path.split("?")[0] || "/";
 }
 
 /**
@@ -63,12 +63,12 @@ function pathWithoutQuery(path: string): string {
 function barePathFromLocalized(path: string): string {
   const clean = pathWithoutQuery(path);
   const { path: bare } = (() => {
-    const segments = clean.split('/').filter(Boolean);
+    const segments = clean.split("/").filter(Boolean);
     if (segments[0] && isAppLocale(segments[0])) {
       const rest = segments.slice(1);
-      return { path: rest.length ? `/${rest.join('/')}` : '/' };
+      return { path: rest.length ? `/${rest.join("/")}` : "/" };
     }
-    return { path: clean.startsWith('/') ? clean : `/${clean}` };
+    return { path: clean.startsWith("/") ? clean : `/${clean}` };
   })();
   return bare;
 }
@@ -77,20 +77,20 @@ export function buildHreflangLinks(localizedPath: string) {
   if (!env.isProd) return [];
   const bare = barePathFromLocalized(localizedPath);
   const links: Array<{
-    tagName: 'link';
+    tagName: "link";
     rel: string;
     hrefLang: string;
     href: string;
   }> = seoLocales().map((l) => ({
-    tagName: 'link' as const,
-    rel: 'alternate',
+    tagName: "link" as const,
+    rel: "alternate",
     hrefLang: l.code,
     href: `${env.appUrl}${localePath(l.code, bare)}`,
   }));
   links.push({
-    tagName: 'link',
-    rel: 'alternate',
-    hrefLang: 'x-default',
+    tagName: "link",
+    rel: "alternate",
+    hrefLang: "x-default",
     href: `${env.appUrl}${localePath(DEFAULT_LOCALE, bare)}`,
   });
   return links;
@@ -99,21 +99,21 @@ export function buildHreflangLinks(localizedPath: string) {
 export function buildMetaTags({
   title,
   description,
-  path = '',
+  path = "",
   image,
   imageAlt,
   imageWidth,
   imageHeight,
-  type = 'website',
+  type = "website",
   locale: localeInput,
   keywords,
   noindexAlways = false,
 }: SeoMetaProps) {
   const locale = resolveLocale(localeInput);
   const localeCfg = getLocaleConfig(locale);
-  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
   const url = `${env.appUrl}${normalizedPath}`;
-  const canonical = `${env.appUrl}${pathWithoutQuery(normalizedPath) || '/'}`;
+  const canonical = `${env.appUrl}${pathWithoutQuery(normalizedPath) || "/"}`;
   const siteName = env.appName;
   const fullTitle = title.includes(siteName) ? title : `${title} | ${siteName}`;
   const finalImage = image ?? `${env.appUrl}/logo.png`;
@@ -121,60 +121,60 @@ export function buildMetaTags({
     imageAlt?.trim() || lemmaAltFromLocalizedPath(normalizedPath) || fullTitle;
   const ogSize = resolveOgImageSize(image, finalImage, imageWidth, imageHeight);
   const noindex = noindexAlways || !env.isProd;
-  const twitterCard = image ? 'summary_large_image' : 'summary';
+  const twitterCard = image ? "summary_large_image" : "summary";
 
   const ogAlternates = seoLocales()
     .filter((l) => l.code !== locale)
     .map((l) => ({
-      property: 'og:locale:alternate' as const,
+      property: "og:locale:alternate" as const,
       content: l.ogLocale,
     }));
 
   return [
     { title: fullTitle },
-    { name: 'description', content: description },
-    ...(keywords ? [{ name: 'keywords', content: keywords }] : []),
+    { name: "description", content: description },
+    ...(keywords ? [{ name: "keywords", content: keywords }] : []),
     ...(noindex
-      ? [{ name: 'robots', content: 'noindex, nofollow' }]
+      ? [{ name: "robots", content: "noindex, nofollow" }]
       : [
-          { tagName: 'link' as const, rel: 'canonical', href: canonical },
+          { tagName: "link" as const, rel: "canonical", href: canonical },
           ...buildHreflangLinks(normalizedPath),
         ]),
-    { property: 'og:title', content: fullTitle },
-    { property: 'og:description', content: description },
-    { property: 'og:url', content: url },
-    { property: 'og:site_name', content: siteName },
-    { property: 'og:locale', content: localeCfg.ogLocale },
+    { property: "og:title", content: fullTitle },
+    { property: "og:description", content: description },
+    { property: "og:url", content: url },
+    { property: "og:site_name", content: siteName },
+    { property: "og:locale", content: localeCfg.ogLocale },
     ...ogAlternates,
-    { property: 'og:type', content: type },
-    { property: 'og:image', content: finalImage },
+    { property: "og:type", content: type },
+    { property: "og:image", content: finalImage },
     ...(ogSize
       ? [
-          { property: 'og:image:width', content: String(ogSize.width) },
-          { property: 'og:image:height', content: String(ogSize.height) },
+          { property: "og:image:width", content: String(ogSize.width) },
+          { property: "og:image:height", content: String(ogSize.height) },
         ]
       : []),
-    { property: 'og:image:alt', content: imageAltText },
-    { name: 'twitter:card', content: twitterCard },
-    { name: 'twitter:title', content: fullTitle },
-    { name: 'twitter:description', content: description },
-    { name: 'twitter:image', content: finalImage },
-    { name: 'twitter:image:alt', content: imageAltText },
+    { property: "og:image:alt", content: imageAltText },
+    { name: "twitter:card", content: twitterCard },
+    { name: "twitter:title", content: fullTitle },
+    { name: "twitter:description", content: description },
+    { name: "twitter:image", content: finalImage },
+    { name: "twitter:image:alt", content: imageAltText },
   ];
 }
 
 const PLAY_STORE_URL =
-  'https://play.google.com/store/apps/details?id=com.iamutaki.sambasku';
-const GITHUB_URL = 'https://github.com/sambasku';
+  "https://play.google.com/store/apps/details?id=com.iamutaki.sambasku";
+const GITHUB_URL = "https://github.com/sambasku";
 
 /** Hub yang ingin muncul sebagai sitelinks brand, bukan halaman lemma. */
 const HOME_NAV_HUBS: ReadonlyArray<{ bare: string; labelKey: string }> = [
-  { bare: '/eksplorasi', labelKey: 'explore_heading' },
-  { bare: '/words', labelKey: 'explore_cardWords' },
-  { bare: '/wisata', labelKey: 'explore_cardWisata' },
-  { bare: '/kuliner', labelKey: 'explore_cardKuliner' },
-  { bare: '/faq', labelKey: 'nav_faq' },
-  { bare: '/api-publik', labelKey: 'nav_apiPublik' },
+  { bare: "/eksplorasi", labelKey: "explore_heading" },
+  { bare: "/words", labelKey: "explore_cardWords" },
+  { bare: "/wisata", labelKey: "explore_cardWisata" },
+  { bare: "/kuliner", labelKey: "explore_cardKuliner" },
+  { bare: "/faq", labelKey: "nav_faq" },
+  { bare: "/api-publik", labelKey: "nav_apiPublik" },
 ];
 
 export function buildHomeJsonLd(localeInput?: string) {
@@ -184,19 +184,19 @@ export function buildHomeJsonLd(localeInput?: string) {
   // meskipun halaman yang dirender adalah /id-SBS. Mengurangi kanibal
   // homepage dialect untuk query "sambasku".
   const navLocale = DEFAULT_LOCALE;
-  const homeUrl = `${env.appUrl}${localePath(locale, '/')}`;
-  const defaultHomeUrl = `${env.appUrl}${localePath(DEFAULT_LOCALE, '/')}`;
+  const homeUrl = `${env.appUrl}${localePath(locale, "/")}`;
+  const defaultHomeUrl = `${env.appUrl}${localePath(DEFAULT_LOCALE, "/")}`;
   const websiteId = `${homeUrl}#website`;
   const organizationId = `${env.appUrl}/#organization`;
   const navId = `${defaultHomeUrl}#main-nav`;
 
   const navigation = {
-    '@type': 'ItemList' as const,
-    '@id': navId,
-    name: t('nav_menu'),
+    "@type": "ItemList" as const,
+    "@id": navId,
+    name: t("nav_menu"),
     numberOfItems: HOME_NAV_HUBS.length,
     itemListElement: HOME_NAV_HUBS.map((hub, index) => ({
-      '@type': 'SiteNavigationElement' as const,
+      "@type": "SiteNavigationElement" as const,
       position: index + 1,
       name: t(hub.labelKey),
       url: `${env.appUrl}${localePath(navLocale, hub.bare)}`,
@@ -204,35 +204,31 @@ export function buildHomeJsonLd(localeInput?: string) {
   };
 
   return {
-    '@context': 'https://schema.org',
-    '@graph': [
+    "@context": "https://schema.org",
+    "@graph": [
       {
-        '@type': 'WebSite',
-        '@id': websiteId,
-        name: t('seo_websiteName'),
-        alternateName: [
-          'SambasKu',
-          env.appName,
-          t('seo_websiteAlternateName'),
-        ],
+        "@type": "WebSite",
+        "@id": websiteId,
+        name: t("seo_websiteName"),
+        alternateName: ["SambasKu", env.appName, t("seo_websiteAlternateName")],
         url: locale === DEFAULT_LOCALE ? defaultHomeUrl : homeUrl,
-        description: t('seo_homeDescription'),
+        description: t("seo_homeDescription"),
         inLanguage: locale,
-        publisher: { '@id': organizationId },
-        hasPart: { '@id': navId },
+        publisher: { "@id": organizationId },
+        hasPart: { "@id": navId },
         // Tanpa SearchAction: /search selalu noindex (thin content), jadi
         // menunjuknya dari beranda hanya memberi sinyal ke URL yang tidak
         // boleh diindeks.
       },
       {
-        '@type': 'Organization',
-        '@id': organizationId,
-        name: 'SambasKu',
+        "@type": "Organization",
+        "@id": organizationId,
+        name: "SambasKu",
         legalName: env.appName,
         url: env.appUrl,
-        foundingDate: '2019',
+        foundingDate: "2019",
         logo: {
-          '@type': 'ImageObject',
+          "@type": "ImageObject",
           url: `${env.appUrl}/favicon-192.png`,
         },
         sameAs: [PLAY_STORE_URL, GITHUB_URL],
@@ -247,7 +243,7 @@ const SEO_DESCRIPTION_MAX = 158;
 function truncateSeo(text: string, max = SEO_DESCRIPTION_MAX): string {
   if (text.length <= max) return text;
   const cut = text.slice(0, max - 1);
-  const lastSpace = cut.lastIndexOf(' ');
+  const lastSpace = cut.lastIndexOf(" ");
   const base = (lastSpace > 80 ? cut.slice(0, lastSpace) : cut).trimEnd();
   return `${base}…`;
 }
@@ -268,42 +264,42 @@ export function buildWordSeoCopy(
   const lemma = word.lemma;
   const firstMeaning = word.meanings[0];
   const definition =
-    firstMeaning?.definition?.trim() || t('word_seoDescFallbackDefinition');
+    firstMeaning?.definition?.trim() || t("word_seoDescFallbackDefinition");
   const translation = firstIndonesianTranslation(word);
 
-  const title = t('word_seoTitleTemplate', { lemma });
+  const title = t("word_seoTitleTemplate", { lemma });
 
   const parts = [
-    t('word_seoDescDefinition', { lemma, definition }),
-    translation ? t('word_seoDescTranslation', { translation }) : null,
-    t('word_seoDescSuffix'),
+    t("word_seoDescDefinition", { lemma, definition }),
+    translation ? t("word_seoDescTranslation", { translation }) : null,
+    t("word_seoDescSuffix"),
   ].filter(Boolean);
 
   return {
     title,
-    description: truncateSeo(parts.join(' ')),
+    description: truncateSeo(parts.join(" ")),
   };
 }
 
 export function buildFaqJsonLd(localeInput?: string) {
   const locale = resolveLocale(localeInput);
   const t = getFixedT(locale);
-  const items = t('faq_items', { returnObjects: true }) as Array<{
+  const items = t("faq_items", { returnObjects: true }) as Array<{
     question: string;
     answer: string;
   }>;
 
   return {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    name: t('faq_jsonLdName'),
-    url: `${env.appUrl}${localePath(locale, '/faq')}`,
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    name: t("faq_jsonLdName"),
+    url: `${env.appUrl}${localePath(locale, "/faq")}`,
     inLanguage: locale,
     mainEntity: (Array.isArray(items) ? items : []).map((item) => ({
-      '@type': 'Question',
+      "@type": "Question",
       name: item.question,
       acceptedAnswer: {
-        '@type': 'Answer',
+        "@type": "Answer",
         text: item.answer,
       },
     })),
@@ -318,24 +314,24 @@ export function buildFaqJsonLd(localeInput?: string) {
 export function buildDiscussionFaqJsonLd(localeInput?: string) {
   const locale = resolveLocale(localeInput);
   const t = getFixedT(locale);
-  const discussUrl = `${env.appUrl}${localePath(locale, '/ruang-diskusi')}`;
+  const discussUrl = `${env.appUrl}${localePath(locale, "/ruang-diskusi")}`;
 
   return {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    '@id': `${discussUrl}#faq`,
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "@id": `${discussUrl}#faq`,
     url: discussUrl,
     inLanguage: locale,
     mainEntity: [
       {
-        '@type': 'Question',
-        name: t('diskusi_faqQ1'),
-        acceptedAnswer: { '@type': 'Answer', text: t('diskusi_faqA1') },
+        "@type": "Question",
+        name: t("diskusi_faqQ1"),
+        acceptedAnswer: { "@type": "Answer", text: t("diskusi_faqA1") },
       },
       {
-        '@type': 'Question',
-        name: t('diskusi_faqQ2'),
-        acceptedAnswer: { '@type': 'Answer', text: t('diskusi_faqA2') },
+        "@type": "Question",
+        name: t("diskusi_faqQ2"),
+        acceptedAnswer: { "@type": "Answer", text: t("diskusi_faqA2") },
       },
     ],
   };
@@ -353,23 +349,23 @@ export function buildLetterJsonLd(
   const locale = resolveLocale(localeInput);
   const t = getFixedT(locale);
   const letterUrl = `${env.appUrl}${localePath(locale, `/huruf/${letter}`)}`;
-  const wordsIndexUrl = `${env.appUrl}${localePath(locale, '/words')}`;
-  const homeUrl = `${env.appUrl}${localePath(locale, '/')}`;
+  const wordsIndexUrl = `${env.appUrl}${localePath(locale, "/words")}`;
+  const homeUrl = `${env.appUrl}${localePath(locale, "/")}`;
 
   const collection = {
-    '@type': 'CollectionPage',
-    '@id': `${letterUrl}#collection`,
-    name: t('letter_heading', { letter: letter.toUpperCase() }),
+    "@type": "CollectionPage",
+    "@id": `${letterUrl}#collection`,
+    name: t("letter_heading", { letter: letter.toUpperCase() }),
     url: letterUrl,
-    isPartOf: { '@id': `${homeUrl}#website` },
+    isPartOf: { "@id": `${homeUrl}#website` },
     inLanguage: locale,
     mainEntity: {
-      '@type': 'ItemList',
+      "@type": "ItemList",
       itemListElement: words.map((word, i) => {
         const sense = word.sense?.trim();
         const name = sense ? `${word.lemma} - ${sense}` : word.lemma;
         return {
-          '@type': 'ListItem',
+          "@type": "ListItem",
           position: i + 1,
           name,
           ...(sense ? { description: sense } : {}),
@@ -380,33 +376,33 @@ export function buildLetterJsonLd(
   };
 
   const breadcrumb = {
-    '@type': 'BreadcrumbList',
-    '@id': `${letterUrl}#breadcrumb`,
+    "@type": "BreadcrumbList",
+    "@id": `${letterUrl}#breadcrumb`,
     itemListElement: [
       {
-        '@type': 'ListItem',
+        "@type": "ListItem",
         position: 1,
-        name: t('word_homeCrumb'),
+        name: t("word_homeCrumb"),
         item: homeUrl,
       },
       {
-        '@type': 'ListItem',
+        "@type": "ListItem",
         position: 2,
-        name: t('word_wordsCrumb'),
+        name: t("word_wordsCrumb"),
         item: wordsIndexUrl,
       },
       {
-        '@type': 'ListItem',
+        "@type": "ListItem",
         position: 3,
-        name: t('letter_heading', { letter: letter.toUpperCase() }),
+        name: t("letter_heading", { letter: letter.toUpperCase() }),
         item: letterUrl,
       },
     ],
   };
 
   return {
-    '@context': 'https://schema.org',
-    '@graph': [collection, breadcrumb],
+    "@context": "https://schema.org",
+    "@graph": [collection, breadcrumb],
   };
 }
 
@@ -417,24 +413,24 @@ export function buildWordJsonLd(word: WordDetail, localeInput?: string) {
   const translation = firstIndonesianTranslation(word);
   const primaryImage = pickSafePrimaryImageUrl(word.images);
   const wordUrl = `${env.appUrl}${localePath(locale, `/words/${encodeURIComponent(word.lemma)}`)}`;
-  const wordsIndexUrl = `${env.appUrl}${localePath(locale, '/words')}`;
-  const homeUrl = `${env.appUrl}${localePath(locale, '/')}`;
+  const wordsIndexUrl = `${env.appUrl}${localePath(locale, "/words")}`;
+  const homeUrl = `${env.appUrl}${localePath(locale, "/")}`;
 
   const definedTerm = {
-    '@type': 'DefinedTerm',
-    '@id': `${wordUrl}#term`,
+    "@type": "DefinedTerm",
+    "@id": `${wordUrl}#term`,
     name: word.lemma,
     alternateName: translation
-      ? [t('word_alternateNameSuffix', { lemma: word.lemma }), translation]
-      : [t('word_alternateNameSuffix', { lemma: word.lemma })],
+      ? [t("word_alternateNameSuffix", { lemma: word.lemma }), translation]
+      : [t("word_alternateNameSuffix", { lemma: word.lemma })],
     termCode: word.id,
     description,
     url: wordUrl,
     inLanguage: locale,
     inDefinedTermSet: {
-      '@type': 'DefinedTermSet',
-      name: t('seo_websiteName'),
-      alternateName: [env.appName, t('seo_websiteAlternateName')],
+      "@type": "DefinedTermSet",
+      name: t("seo_websiteName"),
+      alternateName: [env.appName, t("seo_websiteAlternateName")],
       url: homeUrl,
       inLanguage: locale,
     },
@@ -442,23 +438,23 @@ export function buildWordJsonLd(word: WordDetail, localeInput?: string) {
   };
 
   const breadcrumb = {
-    '@type': 'BreadcrumbList',
-    '@id': `${wordUrl}#breadcrumb`,
+    "@type": "BreadcrumbList",
+    "@id": `${wordUrl}#breadcrumb`,
     itemListElement: [
       {
-        '@type': 'ListItem',
+        "@type": "ListItem",
         position: 1,
-        name: t('word_homeCrumb'),
+        name: t("word_homeCrumb"),
         item: homeUrl,
       },
       {
-        '@type': 'ListItem',
+        "@type": "ListItem",
         position: 2,
-        name: t('word_wordsCrumb'),
+        name: t("word_wordsCrumb"),
         item: wordsIndexUrl,
       },
       {
-        '@type': 'ListItem',
+        "@type": "ListItem",
         position: 3,
         name: word.lemma,
         item: wordUrl,
@@ -467,31 +463,37 @@ export function buildWordJsonLd(word: WordDetail, localeInput?: string) {
   };
 
   return {
-    '@context': 'https://schema.org',
-    '@graph': [definedTerm, breadcrumb],
+    "@context": "https://schema.org",
+    "@graph": [definedTerm, breadcrumb],
   };
 }
 
 const SAMBAS_ADDRESS = {
-  '@type': 'PostalAddress',
-  addressLocality: 'Kabupaten Sambas',
-  addressRegion: 'Kalimantan Barat',
-  addressCountry: 'ID',
+  "@type": "PostalAddress",
+  addressLocality: "Kabupaten Sambas",
+  addressRegion: "Kalimantan Barat",
+  addressCountry: "ID",
 };
 
-function placesBreadcrumb(locale: AppLocale, last?: { name: string; url: string }) {
+function placesBreadcrumb(
+  locale: AppLocale,
+  last?: { name: string; url: string },
+) {
   const t = getFixedT(locale);
-  const listUrl = `${env.appUrl}${localePath(locale, '/wisata')}`;
+  const listUrl = `${env.appUrl}${localePath(locale, "/wisata")}`;
   const crumbs = [
-    { name: t('word_homeCrumb'), item: `${env.appUrl}${localePath(locale, '/')}` },
-    { name: 'Wisata Sambas', item: listUrl },
+    {
+      name: t("word_homeCrumb"),
+      item: `${env.appUrl}${localePath(locale, "/")}`,
+    },
+    { name: "Wisata Sambas", item: listUrl },
     ...(last ? [{ name: last.name, item: last.url }] : []),
   ];
   return {
-    '@type': 'BreadcrumbList',
-    '@id': `${last?.url ?? listUrl}#breadcrumb`,
+    "@type": "BreadcrumbList",
+    "@id": `${last?.url ?? listUrl}#breadcrumb`,
     itemListElement: crumbs.map((c, i) => ({
-      '@type': 'ListItem',
+      "@type": "ListItem",
       position: i + 1,
       ...c,
     })),
@@ -501,21 +503,21 @@ function placesBreadcrumb(locale: AppLocale, last?: { name: string; url: string 
 /** JSON-LD daftar `/wisata`: CollectionPage + ItemList tempat. */
 export function buildPlaceListJsonLd(places: Place[], localeInput?: string) {
   const locale = resolveLocale(localeInput);
-  const listUrl = `${env.appUrl}${localePath(locale, '/wisata')}`;
+  const listUrl = `${env.appUrl}${localePath(locale, "/wisata")}`;
   return {
-    '@context': 'https://schema.org',
-    '@graph': [
+    "@context": "https://schema.org",
+    "@graph": [
       {
-        '@type': 'CollectionPage',
-        '@id': `${listUrl}#collection`,
-        name: 'Wisata Sambas',
+        "@type": "CollectionPage",
+        "@id": `${listUrl}#collection`,
+        name: "Wisata Sambas",
         url: listUrl,
         inLanguage: locale,
-        isPartOf: { '@id': `${env.appUrl}${localePath(locale, '/')}#website` },
+        isPartOf: { "@id": `${env.appUrl}${localePath(locale, "/")}#website` },
         mainEntity: {
-          '@type': 'ItemList',
+          "@type": "ItemList",
           itemListElement: places.map((p, i) => ({
-            '@type': 'ListItem',
+            "@type": "ListItem",
             position: i + 1,
             name: p.name,
             url: `${env.appUrl}${localePath(locale, `/wisata/${encodeURIComponent(p.slug)}`)}`,
@@ -536,13 +538,18 @@ export function buildPlaceJsonLd(
   const locale = resolveLocale(localeInput);
   const url = `${env.appUrl}${localePath(locale, `/wisata/${encodeURIComponent(place.slug)}`)}`;
   return {
-    '@context': 'https://schema.org',
-    '@graph': [
+    "@context": "https://schema.org",
+    "@graph": [
       {
-        '@type': place.category === 'kuliner' ? 'FoodEstablishment' : 'TouristAttraction',
-        '@id': `${url}#place`,
+        "@type":
+          place.category === "kuliner"
+            ? "FoodEstablishment"
+            : "TouristAttraction",
+        "@id": `${url}#place`,
         name: place.name,
-        description: place.shortDescription || `Tempat ${place.category} di Kabupaten Sambas.`,
+        description:
+          place.shortDescription ||
+          `Tempat ${place.category} di Kabupaten Sambas.`,
         url,
         ...(image ? { image } : {}),
         address: SAMBAS_ADDRESS,
@@ -550,7 +557,7 @@ export function buildPlaceJsonLd(
         ...(place.lat !== null && place.lng !== null
           ? {
               geo: {
-                '@type': 'GeoCoordinates',
+                "@type": "GeoCoordinates",
                 latitude: place.lat,
                 longitude: place.lng,
               },
@@ -570,27 +577,105 @@ export function buildPlaceJsonLd(
 export function buildApiPublikJsonLd(localeInput?: string) {
   const locale = resolveLocale(localeInput);
   const t = getFixedT(locale);
-  const pageUrl = `${env.appUrl}${localePath(locale, '/api-publik')}`;
+  const pageUrl = `${env.appUrl}${localePath(locale, "/api-publik")}`;
 
   return {
-    '@context': 'https://schema.org',
-    '@type': 'TechArticle',
-    '@id': `${pageUrl}#article`,
-    headline: t('seo_apiPublikTitle'),
-    description: t('seo_apiPublikDescription'),
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "@id": `${pageUrl}#article`,
+    headline: t("seo_apiPublikTitle"),
+    description: t("seo_apiPublikDescription"),
     url: pageUrl,
     inLanguage: locale,
     about: {
-      '@type': 'WebAPI',
-      name: 'SambasKu Words API',
-      description: t('seo_apiPublikDescription'),
+      "@type": "WebAPI",
+      name: "SambasKu Words API",
+      description: t("seo_apiPublikDescription"),
       documentation: pageUrl,
-      url: 'https://api.sambasku.com/api/v1',
+      url: "https://api.sambasku.com/api/v1",
     },
     isPartOf: {
-      '@type': 'WebSite',
-      name: t('seo_websiteName'),
-      url: `${env.appUrl}${localePath(locale, '/')}`,
+      "@type": "WebSite",
+      name: t("seo_websiteName"),
+      url: `${env.appUrl}${localePath(locale, "/")}`,
     },
+  };
+}
+
+export interface EncyclopediaArticleSeoInput {
+  slug: string;
+  title: string;
+  excerpt: string;
+  coverUrl?: string | null;
+  publishedAt?: string | null;
+  updatedAt?: string | null;
+  authorName?: string | null;
+}
+
+/** JSON-LD Article untuk detail artikel ensiklopedia. */
+export function buildEncyclopediaArticleJsonLd(
+  article: EncyclopediaArticleSeoInput,
+  localeInput?: string,
+) {
+  const locale = resolveLocale(localeInput);
+  const t = getFixedT(locale);
+  const url = `${env.appUrl}${localePath(locale, `/ensiklopedia/${encodeURIComponent(article.slug)}`)}`;
+  const listUrl = `${env.appUrl}${localePath(locale, "/ensiklopedia")}`;
+  const homeUrl = `${env.appUrl}${localePath(locale, "/")}`;
+
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Article",
+        "@id": `${url}#article`,
+        isPartOf: { "@id": `${homeUrl}#website` },
+        headline: article.title,
+        description: article.excerpt,
+        url,
+        inLanguage: locale,
+        mainEntityOfPage: url,
+        ...(article.coverUrl ? { image: article.coverUrl } : {}),
+        ...(article.publishedAt ? { datePublished: article.publishedAt } : {}),
+        dateModified: article.updatedAt ?? article.publishedAt ?? undefined,
+        author: {
+          "@type": "Person",
+          name: article.authorName || "Kontributor SambasKu",
+        },
+        publisher: {
+          "@type": "Organization",
+          name: "SambasKu",
+          url: env.appUrl,
+          logo: {
+            "@type": "ImageObject",
+            url: `${env.appUrl}/favicon-192.png`,
+          },
+        },
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${url}#breadcrumb`,
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: t("word_homeCrumb"),
+            item: homeUrl,
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: "Ensiklopedia Sambas",
+            item: listUrl,
+          },
+          {
+            "@type": "ListItem",
+            position: 3,
+            name: article.title,
+            item: url,
+          },
+        ],
+      },
+    ],
   };
 }

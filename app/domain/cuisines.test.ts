@@ -45,8 +45,23 @@ describe('parseApiCuisine', () => {
     assert.equal(cuisineCover(c)?.url, 'https://upload.wikimedia.org/bubur-2.jpg');
   });
 
-  it('item tanpa field wajib di-skip', () => {
-    assert.equal(parseApiCuisine({ id: 'x', slug: 'y', name: 'Z' }), null);
+  it('item tanpa id, slug, atau nama di-skip', () => {
+    assert.equal(parseApiCuisine({ id: 'x', slug: 'y' }), null);
+    assert.equal(parseApiCuisine({ slug: 'y', name: 'Z' }), null);
+  });
+
+  it('deskripsi dan asal daerah kosong tetap ter-parse', () => {
+    const c = parseApiCuisine({
+      id: 'cu_3',
+      slug: 'amplang',
+      name: 'Amplang',
+      origin_region: null,
+      description: null,
+    });
+    assert.ok(c);
+    assert.equal(c.name, 'Amplang');
+    assert.equal(c.description, '');
+    assert.equal(c.region, '');
   });
 
   it('gambar non-https dibuang', () => {

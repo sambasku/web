@@ -117,6 +117,11 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 }
 
 
+// Parity API/mobile `isVerifierRole`.
+const VERIFIER_ROLES = ['admin', 'editor', 'root', 'reviewer'];
+const isVerifierRole = (role?: string | null) =>
+  !!role && VERIFIER_ROLES.includes(role);
+
 function attributionLabel(person: {
   username: string;
   display_name?: string;
@@ -523,9 +528,7 @@ export default function WordDetailPage() {
                   })}
                 </Text>
                 <VerifierMark
-                  show={['admin', 'editor', 'root', 'reviewer'].includes(
-                    word.verified_by.role,
-                  )}
+                  show={isVerifierRole(word.verified_by.role)}
                   size={14}
                   label={t('word_verifierBadge')}
                 />
@@ -533,18 +536,32 @@ export default function WordDetailPage() {
             ) : (
               <>
                 {word.created_by?.username ? (
-                  <Text size="xs" c="dimmed">
-                    {t('word_createdBy', {
-                      username: attributionLabel(word.created_by),
-                    })}
-                  </Text>
+                  <Group gap={6} wrap="wrap">
+                    <Text size="xs" c="dimmed">
+                      {t('word_createdBy', {
+                        username: attributionLabel(word.created_by),
+                      })}
+                    </Text>
+                    <VerifierMark
+                      show={isVerifierRole(word.created_by.role)}
+                      size={14}
+                      label={t('word_verifierBadge')}
+                    />
+                  </Group>
                 ) : null}
                 {word.is_verified && word.verified_by?.username ? (
-                  <Text size="xs" c="dimmed">
-                    {t('word_verifiedBy', {
-                      username: attributionLabel(word.verified_by),
-                    })}
-                  </Text>
+                  <Group gap={6} wrap="wrap">
+                    <Text size="xs" c="dimmed">
+                      {t('word_verifiedBy', {
+                        username: attributionLabel(word.verified_by),
+                      })}
+                    </Text>
+                    <VerifierMark
+                      show={isVerifierRole(word.verified_by.role)}
+                      size={14}
+                      label={t('word_verifierBadge')}
+                    />
+                  </Group>
                 ) : null}
               </>
             )}

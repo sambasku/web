@@ -3,7 +3,6 @@ import { Link, useLoaderData } from 'react-router';
 import {
   Anchor,
   Badge,
-  Breadcrumbs,
   Container,
   Divider,
   Group,
@@ -153,17 +152,23 @@ export default function KulinerDetailPage() {
   return (
     <Container size="lg" py="xl">
       <Stack gap="lg">
-        <Breadcrumbs separator="/">
+        <Group gap={6} wrap="wrap">
           <Anchor component={Link} to={lp('/')} size="xs" c="dimmed">
             {t('word_homeCrumb')}
           </Anchor>
+          <Text size="xs" c="dimmed">
+            /
+          </Text>
           <Anchor component={Link} to={lp('/kuliner')} size="xs" c="dimmed">
             {t('kuliner_heading')}
           </Anchor>
-          <Text size="xs" fw={500} lineClamp={1}>
+          <Text size="xs" c="dimmed">
+            /
+          </Text>
+          <Text size="xs" fw={500}>
             {c.name}
           </Text>
-        </Breadcrumbs>
+        </Group>
 
         <Stack gap="xs">
           <Group gap="xs">
@@ -237,9 +242,11 @@ export default function KulinerDetailPage() {
           </Text>
         ) : null}
 
-        <Text size="md" lh={1.7} maw={760}>
-          {c.description}
-        </Text>
+        {c.description ? (
+          <Text size="md" lh={1.7} maw={760}>
+            {c.description}
+          </Text>
+        ) : null}
 
         {c.ingredients.length > 0 ? (
           <Paper withBorder p="md" radius="md">
