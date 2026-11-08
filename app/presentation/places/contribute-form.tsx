@@ -22,9 +22,11 @@ import { inSambas, PlaceMap } from './place-map';
 const TYPES: Array<{ value: PlaceType; label: string }> = [
   { value: 'sejarah', label: 'Sejarah' },
   { value: 'alam', label: 'Alam' },
+  { value: 'religi', label: 'Religi' },
+  { value: 'tirta', label: 'Tirta' },
+  { value: 'agro', label: 'Agro' },
+  { value: 'bahari', label: 'Bahari' },
   { value: 'budaya', label: 'Budaya' },
-  { value: 'pantai', label: 'Pantai' },
-  { value: 'belanja', label: 'Belanja' },
 ];
 
 function slugify(name: string): string {

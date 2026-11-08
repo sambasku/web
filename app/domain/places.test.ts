@@ -48,16 +48,16 @@ test('placeLabel: wisata tanpa type fallback Wisata', () => {
   );
 });
 
-test('placeTypeLabels lengkap lima type', () => {
+test('placeTypeLabels lengkap tujuh kategori', () => {
   assert.deepEqual(Object.keys(placeTypeLabels).sort(), [
-    'alam', 'belanja', 'budaya', 'pantai', 'sejarah',
+    'agro', 'alam', 'bahari', 'budaya', 'religi', 'sejarah', 'tirta',
   ]);
 });
 
 test('mapPlace: entri tanpa koordinat tetap lolos (lat/lng null)', () => {
   const place = mapPlace({
     id: 'x', slug: 'pantai-camar-bulan', name: 'Pantai Camar Bulan',
-    category: 'wisata', type: 'pantai', lat: null, lng: null,
+    category: 'wisata', type: 'bahari', lat: null, lng: null,
     short_description: 'Pantai di Paloh.',
     images: [], related: [], sources: [],
   });
