@@ -173,11 +173,11 @@
     },
     {
       "question": "Bagaimana kontribusi di aplikasi mobile?",
-      "answer": "Warga mengusulkan kata baru atau perbaikan. Di aplikasi, usulan langsung tayang dengan label Menunggu pengecekan. Kontributor bisa mengajukan diri jadi verifikator. Cari kata dengan cepat, usulkan yang baru, dan simpan kata favorit biar gampang dibaca ulang."
+      "answer": "Warga mengusulkan kata baru atau perbaikan. Usulan masuk antrean verifikator dulu; yang sudah disetujui baru tayang di kamus publik. Status usulanmu sendiri terlihat di Usulan saya. Kontributor bisa mengajukan diri jadi verifikator."
     },
     {
       "question": "Apa arti badge Terverifikasi dan Menunggu pengecekan?",
-      "answer": "Chip Terverifikasi artinya entri sudah dicek. Chip Menunggu pengecekan artinya kata belum dicek tim SambasKu, jadi arti atau terjemahannya bisa saja kurang pas. Kata hari ini hanya diambil dari yang sudah published dan Terverifikasi."
+      "answer": "Chip Terverifikasi artinya entri sudah dicek dan boleh tayang di kamus publik. Kata yang belum diverifikasi tidak muncul di search, daftar A-Z, atau detail publik - hanya di Usulan saya milik pengusul dan antrean verifikator."
     },
     {
       "question": "Siapa yang merawat kamus ini?",

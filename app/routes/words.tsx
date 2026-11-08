@@ -70,9 +70,8 @@ export async function loader({ request }: Route.LoaderArgs) {
         letter: letter || undefined,
         wordType,
         category,
-        // Browse A-Z (termasuk ?letter=): hanya terverifikasi (selaras copy + sitemap).
-        // Pencarian `q`: semua yang tayang supaya lemma draf masih ketemu.
-        isVerified: q ? undefined : true,
+        // Gate publik: published + verified saja (server juga memaksa).
+        isVerified: true,
         cursor,
         limit: 25,
         signal: request.signal,
