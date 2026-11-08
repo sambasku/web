@@ -19,6 +19,7 @@ const OWN_HOSTS = new Set([
   'sambasku.com',
   'www.sambasku.com',
   'api.sambasku.com',
+  'cloudflare.sambasku.com',
   'render.sambasku.com',
   'sambasku-staging.iamutaki.com',
   'sambasku-web-staging.ibnuul.workers.dev',

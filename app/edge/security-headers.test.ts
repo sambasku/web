@@ -16,7 +16,7 @@ import {
  */
 const PROD_TIER = [
   'https://api.sambasku.com/api/v1',
-  'https://render.sambasku.com/api/v1',
+  'https://cloudflare.sambasku.com/api/v1',
 ];
 
 const PROD_HEADERS = buildSecurityHeaders({
@@ -30,9 +30,9 @@ describe('apiConnectOriginsFrom', () => {
       apiConnectOriginsFrom([
         'https://api.sambasku.com/api/v1',
         'https://api.sambasku.com/api/v1',
-        'https://render.sambasku.com/api/v1',
+        'https://cloudflare.sambasku.com/api/v1',
       ]),
-      ['https://api.sambasku.com', 'https://render.sambasku.com'],
+      ['https://api.sambasku.com', 'https://cloudflare.sambasku.com'],
     );
   });
 
@@ -71,9 +71,16 @@ describe('buildCsp', () => {
       apiConnectOrigins: apiConnectOriginsFrom(PROD_TIER),
       isProd: true,
     });
-    for (const origin of ['https://api.sambasku.com', 'https://render.sambasku.com']) {
+    for (const origin of [
+      'https://api.sambasku.com',
+      'https://cloudflare.sambasku.com',
+    ]) {
       assert.ok(csp.includes(origin), `connect-src tidak memuat ${origin}`);
     }
+    assert.ok(
+      !csp.includes('https://render.sambasku.com'),
+      'connect-src tidak boleh memuat Render',
+    );
   });
 
   it('CSP mengizinkan host GA4 gtag termasuk subdomain regional', () => {
@@ -136,7 +143,8 @@ describe('public/_headers (BH-06)', () => {
     if (name.toLowerCase() === 'content-security-policy') {
       return (
         trimCsp(onFile) === trimCsp(PROD_HEADERS[name]) &&
-        onFile.includes('https://render.sambasku.com')
+        onFile.includes('https://cloudflare.sambasku.com') &&
+        !onFile.includes('https://render.sambasku.com')
       );
     }
     return onFile === PROD_HEADERS[name];

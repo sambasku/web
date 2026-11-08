@@ -12,6 +12,10 @@
           "/hapus-akun/*",
           "/users/*",
           "/wisata/*",
+          "/acara",
+          "/acara/*",
+          "/id/acara",
+          "/id/acara/*",
           "/oauth/github",
           "/oauth/github/*"
         ]

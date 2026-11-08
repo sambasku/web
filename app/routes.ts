@@ -68,6 +68,8 @@ export default [
   route("acara/:slug", "routes/legacy-redirect.tsx", { id: "legacy-acara" }),
   route("usaha", "routes/legacy-redirect.tsx", { id: "legacy-usaha-list" }),
   route("usaha/:slug", "routes/legacy-redirect.tsx", { id: "legacy-usaha" }),
+  route("layanan", "routes/legacy-redirect.tsx", { id: "legacy-layanan-list" }),
+  route("layanan/:slug", "routes/legacy-redirect.tsx", { id: "legacy-layanan" }),
   route("ensiklopedia", "routes/legacy-redirect.tsx", {
     id: "legacy-ensiklopedia",
   }),
@@ -105,6 +107,9 @@ export default [
     route("usaha", "routes/usaha.tsx"),
     route("usaha/kontribusi", "routes/usaha.kontribusi.tsx"),
     route("usaha/:slug", "routes/usaha.$slug.tsx"),
+    route("layanan", "routes/layanan.tsx"),
+    route("layanan/kontribusi", "routes/layanan.kontribusi.tsx"),
+    route("layanan/:slug", "routes/layanan.$slug.tsx"),
     route("wisata", "routes/wisata.tsx"),
     route("wisata/usulan", "routes/wisata.usulan.tsx"),
     route("wisata/kontribusi", "routes/wisata.kontribusi.tsx"),
