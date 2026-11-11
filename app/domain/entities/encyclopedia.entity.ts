@@ -88,6 +88,9 @@ export interface ArticleDetailResponse extends EncyclopediaArticle {
 
 export interface SubmitContributionPayload {
   kind: "new" | "edit";
+  /** ULID artikel (mode edit). Opsional: articleSlug di-resolve di use case. */
+  article_id?: string;
+  /** Compat URL query - di-resolve ke article_id sebelum POST. */
   articleSlug?: string;
   title: string;
   excerpt: string;

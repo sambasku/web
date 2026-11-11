@@ -109,10 +109,25 @@ export async function submitEncyclopediaContribution(
   payload: SubmitContributionPayload,
   signal?: AbortSignal,
 ): Promise<UnwrappedResult<SubmitContributionResponse>> {
+  const { articleSlug, article_id: articleIdIn, ...rest } = payload;
+  let articleId = articleIdIn;
+  if (rest.kind === "edit" && !articleId) {
+    if (!articleSlug) {
+      throw new Error(
+        "Data artikel belum termuat. Tutup lalu buka usulan perbaikan lagi.",
+      );
+    }
+    const detail = await getEncyclopediaArticle(articleSlug, signal);
+    articleId = detail.data.id;
+  }
+  const body = {
+    ...rest,
+    ...(rest.kind === "edit" ? { article_id: articleId } : {}),
+  };
   return apiClient<SubmitContributionResponse>("/encyclopedia/contributions", {
     method: "POST",
     signal,
-    body: JSON.stringify(payload),
+    body: JSON.stringify(body),
   });
 }
 
