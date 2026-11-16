@@ -3,7 +3,7 @@
 * Mirip mobile EventPhotosPage.
 */
 import { useState } from 'react';
-import { Link, useLoaderData, useSearchParams } from 'react-router';
+import { Link, useLoaderData } from 'react-router';
 import {
 Anchor,
 Button,
@@ -32,8 +32,6 @@ ImageLightbox,
 LightboxTrigger,
 useImageLightbox,
 } from '@/presentation/components/image-lightbox';
-
-const PAGE_SIZE = 12;
 
 export function meta({ params }: Route.MetaArgs) {
   const locale = isAppLocale(params.locale) ? params.locale : DEFAULT_LOCALE;
@@ -173,7 +171,6 @@ export default function EventPhotosPage() {
                 label={openAria}
                 onOpen={() => lightbox.open(lightboxImages, i)}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={displayImageUrl(img.url, { width: 480 }) ?? img.url}
                   alt={img.attribution?.name ?? `${event.name} - foto ${i + 1}`}
