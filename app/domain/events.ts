@@ -6,6 +6,7 @@
  */
 
 import { apiClient, AppError } from '@/infrastructure/api/api-client';
+import { authHeaders } from '@/infrastructure/auth/access-token';
 import {
   mapEvent,
   type ApiEvent,
@@ -74,12 +75,53 @@ export async function fetchEventBySlug(
   signal?: AbortSignal,
 ): Promise<Event | null> {
   try {
-    const res = await apiClient<ApiEvent>(`/events/${encodeURIComponent(slug)}`, { signal });
+    const res = await apiClient<ApiEvent>(`/events/${encodeURIComponent(slug)}`, {
+      signal,
+      headers: authHeaders(),
+    });
     return mapEvent(res.data);
   } catch (error) {
     if (error instanceof AppError && error.statusCode === 404) return null;
     throw error;
   }
+}
+
+export interface EventGoingState {
+  eventId: string;
+  goingCount: number;
+  viewerGoing: boolean;
+}
+
+export async function markEventGoing(eventId: string): Promise<EventGoingState> {
+  const res = await apiClient<{
+    event_id: string;
+    going_count: number;
+    viewer_going: boolean;
+  }>(`/events/${encodeURIComponent(eventId)}/going`, {
+    method: 'POST',
+    headers: authHeaders(),
+  });
+  return {
+    eventId: res.data.event_id,
+    goingCount: res.data.going_count,
+    viewerGoing: res.data.viewer_going,
+  };
+}
+
+export async function unmarkEventGoing(eventId: string): Promise<EventGoingState> {
+  const res = await apiClient<{
+    event_id: string;
+    going_count: number;
+    viewer_going: boolean;
+  }>(`/events/${encodeURIComponent(eventId)}/going`, {
+    method: 'DELETE',
+    headers: authHeaders(),
+  });
+  return {
+    eventId: res.data.event_id,
+    goingCount: res.data.going_count,
+    viewerGoing: res.data.viewer_going,
+  };
 }
 
 /** Katalog kategori acara (published). */

@@ -69,6 +69,8 @@ export interface Event {
   publishedAt: string | null;
   createdAt: string;
   updatedAt: string | null;
+  goingCount: number;
+  viewerGoing: boolean;
 }
 
 export interface ApiEvent {
@@ -99,6 +101,8 @@ export interface ApiEvent {
   published_at?: string | null;
   created_at: string;
   updated_at?: string | null;
+  going_count?: number;
+  viewer_going?: boolean;
 }
 
 export function mapEvent(row: ApiEvent): Event {
@@ -130,6 +134,8 @@ export function mapEvent(row: ApiEvent): Event {
     publishedAt: row.published_at ?? null,
     createdAt: row.created_at,
     updatedAt: row.updated_at ?? null,
+    goingCount: typeof row.going_count === 'number' ? row.going_count : 0,
+    viewerGoing: row.viewer_going === true,
   };
 }
 

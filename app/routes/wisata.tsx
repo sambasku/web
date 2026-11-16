@@ -43,7 +43,7 @@ import { displayImageUrl } from '@/presentation/utils/display-image-url';
 
 const THUMB = 88;
 
-const FILTERS = ['semua', 'alam', 'budaya', 'pantai', 'sejarah', 'belanja', 'kuliner'] as const;
+const FILTERS = ['semua', 'sejarah', 'alam', 'religi', 'tirta', 'agro', 'bahari', 'budaya', 'kuliner'] as const;
 type Filter = (typeof FILTERS)[number];
 
 const filterLabel = (f: Filter) =>
@@ -59,7 +59,7 @@ export function meta({ loaderData, params }: Route.MetaArgs) {
     ...buildMetaTags({
       title: 'Wisata Sambas - Tempat Wisata & Kuliner di Kabupaten Sambas',
       description:
-        'Daftar tempat wisata Sambas, Kalimantan Barat: situs sejarah, alam, budaya, pantai, sampai kuliner khas. Lengkap dengan foto, peta, dan sumber.',
+        'Daftar tempat wisata Sambas, Kalimantan Barat: situs sejarah, alam, religi, bahari, sampai kuliner khas. Lengkap dengan foto, peta, dan sumber.',
       path: localePath(locale, '/wisata'),
       locale,
     }),

@@ -81,7 +81,7 @@ jobs:
           # connect-src CSP tidak lagi ditulis manual: public/_headers
           # di-generate dari app/edge/security-headers.ts memakai env yang
           # sama dengan build ini, jadi tidak bisa drift (pentest BH-06).
-          VITE_API_BASE_URL_FALLBACKS: https://render.sambasku.com/api/v1
+          VITE_API_BASE_URL_FALLBACKS: https://cloudflare.sambasku.com/api/v1
           VITE_APP_URL: https://sambasku.com
           VITE_APP_NAME: SambasKu
           # GA4 Measurement ID (publik, ikut di bundle JS).
@@ -113,12 +113,15 @@ jobs:
           CSP="$(curl -fsSI https://sambasku.com/ | tr -d '\r\n' | grep -i 'content-security-policy:')"
           echo "$CSP"
           if [ -z "$CSP" ]; then echo "::error::Header CSP tidak ditemukan"; exit 1; fi
-          for host in https://render.sambasku.com; do
+          for host in https://api.sambasku.com https://cloudflare.sambasku.com; do
             if ! echo "$CSP" | grep -q "$host"; then
-              echo "::error::CSP tidak memuat host fallback $host"
+              echo "::error::CSP tidak memuat host API $host"
               exit 1
             fi
           done
+          if echo "$CSP" | grep -q 'render.sambasku.com'; then
+            echo "::error::CSP masih memuat Render yang sudah dieliminasi"; exit 1
+          fi
           if echo "$CSP" | grep -q 'unsafe-eval'; then
             echo "::error::CSP produksi masih memuat unsafe-eval"; exit 1
           fi

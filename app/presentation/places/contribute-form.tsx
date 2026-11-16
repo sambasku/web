@@ -22,9 +22,11 @@ import { inSambas, PlaceMap } from './place-map';
 const TYPES: Array<{ value: PlaceType; label: string }> = [
   { value: 'sejarah', label: 'Sejarah' },
   { value: 'alam', label: 'Alam' },
+  { value: 'religi', label: 'Religi' },
+  { value: 'tirta', label: 'Tirta' },
+  { value: 'agro', label: 'Agro' },
+  { value: 'bahari', label: 'Bahari' },
   { value: 'budaya', label: 'Budaya' },
-  { value: 'pantai', label: 'Pantai' },
-  { value: 'belanja', label: 'Belanja' },
 ];
 
 function slugify(name: string): string {
@@ -225,6 +227,11 @@ export function ContributeForm({
         setDone(true);
         return;
       }
+      if (mode === 'edit' && !place) {
+        throw new Error(
+          'Data tempat belum termuat. Tutup lalu buka usulan perubahan lagi.',
+        );
+      }
       const slug = place?.slug || slugify(name);
       if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
         throw new Error('Nama perlu punya huruf atau angka supaya bisa disimpan.');
@@ -235,7 +242,7 @@ export function ContributeForm({
         category,
         short_description: description.trim(),
       };
-      if (mode === 'edit' && place) payload.place_id = place.id;
+      if (mode === 'edit') payload.place_id = place!.id;
       if (type) payload.type = type;
       if (point && inSambas(point.lat, point.lng)) {
         payload.lat = point.lat;

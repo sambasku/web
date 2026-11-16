@@ -3,8 +3,6 @@ import { Link, useLoaderData } from 'react-router';
 import {
   Anchor,
   Badge,
-  Box,
-  Breadcrumbs,
   Button,
   Container,
   Divider,
@@ -47,6 +45,7 @@ import {
 import { safeExternalUrl } from '@/presentation/utils/safe-external-url';
 import { displayImageUrl } from '@/presentation/utils/display-image-url';
 import { EventStatusBadge } from '@/presentation/events/event-card';
+import { EventGoingSection } from '@/presentation/events/event-going-section';
 
 export function meta({ params, loaderData }: Route.MetaArgs) {
   const locale = isAppLocale(params.locale) ? params.locale : DEFAULT_LOCALE;
@@ -204,19 +203,23 @@ export default function EventDetailPage() {
       ) : null}
 
       <Stack gap={0} px="md">
-        <Box pt={12}>
-          <Breadcrumbs separator="/">
-            <Anchor component={Link} to={lp('/')} size="xs" c="dimmed">
-              {t('word_homeCrumb')}
-            </Anchor>
-            <Anchor component={Link} to={lp('/acara')} size="xs" c="dimmed">
-              {t('event_heading')}
-            </Anchor>
-            <Text size="xs" fw={500} lineClamp={1}>
-              {event.name}
-            </Text>
-          </Breadcrumbs>
-        </Box>
+        <Group gap={6} wrap="wrap" pt={12}>
+          <Anchor component={Link} to={lp('/')} size="xs" c="dimmed">
+            {t('word_homeCrumb')}
+          </Anchor>
+          <Text size="xs" c="dimmed">
+            /
+          </Text>
+          <Anchor component={Link} to={lp('/acara')} size="xs" c="dimmed">
+            {t('event_heading')}
+          </Anchor>
+          <Text size="xs" c="dimmed">
+            /
+          </Text>
+          <Text size="xs" fw={500}>
+            {event.name}
+          </Text>
+        </Group>
 
         <Title order={1} fw={800} fz={{ base: 22, sm: 30 }} lh={1.25} mt={8}>
           {event.name}
@@ -235,6 +238,8 @@ export default function EventDetailPage() {
             </Badge>
           ) : null}
         </Group>
+
+        <EventGoingSection event={event} />
 
         {event.occurrenceStatus === 'cancelled' ? (
           <Paper withBorder radius="md" p="sm" mt={12} bg="red.0">

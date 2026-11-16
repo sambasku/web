@@ -27,7 +27,14 @@ export interface PlaceRelated {
 }
 
 export type PlaceCategory = string;
-export type PlaceType = 'sejarah' | 'alam' | 'budaya' | 'pantai' | 'belanja';
+export type PlaceType =
+  | 'sejarah'
+  | 'alam'
+  | 'religi'
+  | 'tirta'
+  | 'agro'
+  | 'bahari'
+  | 'budaya';
 
 export interface Place {
   id: string;
@@ -141,9 +148,11 @@ export function placeCover(p: Place): PlaceImage | null {
 export const placeTypeLabels: Record<PlaceType, string> = {
   sejarah: 'Sejarah',
   alam: 'Alam',
+  religi: 'Religi',
+  tirta: 'Tirta',
+  agro: 'Agro',
+  bahari: 'Bahari',
   budaya: 'Budaya',
-  pantai: 'Pantai',
-  belanja: 'Belanja',
 };
 
 /** Label kategori saja (badge detail). Bukan type - supaya tidak dobel dengan placeTypeLabels. */

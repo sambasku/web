@@ -240,10 +240,10 @@ export default function WordDetailPage() {
               <Badge
                 size="sm"
                 variant="light"
-                color={word.is_verified ? 'teal' : 'yellow'}
-                leftSection={word.is_verified ? <CheckCircle2 size={13} /> : undefined}
+                color="teal"
+                leftSection={<CheckCircle2 size={13} />}
               >
-                {word.is_verified ? 'Terverifikasi' : 'Menunggu pengecekan'}
+                {t('common_verified')}
               </Badge>
               <WordTypeBadge type={word.word_type} />
               <UsageLabelsBadges labels={word.usage_labels} />
@@ -252,11 +252,6 @@ export default function WordDetailPage() {
             <Text size="sm" c="dimmed">
               {t('word_leadSentence', { lemma: word.lemma })}
             </Text>
-            {!word.is_verified ? (
-              <Text size="sm" c="dimmed">
-                {t('word_unverifiedNotice')}
-              </Text>
-            ) : null}
 
             {/* Notasi IPA (teks) + audio multi-take dari word_audios */}
             {word.pronunciations.length > 0 && (

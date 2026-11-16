@@ -18,6 +18,7 @@ import {
   LibraryBig,
   MapPin,
   Search,
+  Phone,
   Store,
   UtensilsCrossed,
 } from "lucide-react";
@@ -118,6 +119,14 @@ export default function EksplorasiPage() {
       desc: t("explore_cardEncyclopediaDesc"),
       image: undefined,
       color: "indigo",
+    },
+    {
+      to: lp("/layanan"),
+      icon: Phone,
+      title: t("explore_cardLayanan"),
+      desc: t("explore_cardLayananDesc"),
+      image: undefined,
+      color: "red",
     },
     {
       to: lp("/search"),

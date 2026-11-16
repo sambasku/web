@@ -133,6 +133,7 @@ export function buildSitemapItems(input: {
     { bare: "/ensiklopedia", priority: "0.9", changefreq: "weekly" },
     { bare: "/acara", priority: "0.85", changefreq: "weekly" },
     { bare: "/usaha", priority: "0.85", changefreq: "weekly" },
+    { bare: "/layanan", priority: "0.85", changefreq: "weekly" },
     { bare: "/faq", priority: "0.85", changefreq: "monthly" },
     { bare: "/api-publik", priority: "0.8", changefreq: "monthly" },
     { bare: "/ruang-diskusi", priority: "0.75", changefreq: "daily" },
