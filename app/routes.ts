@@ -103,6 +103,7 @@ export default [
     route("acara", "routes/acara.tsx"),
     route("acara/usulan", "routes/acara.usulan.tsx"),
     route("acara/kontribusi", "routes/acara.kontribusi.tsx"),
+    route("acara/:slug/foto", "routes/acara.$slug.foto.tsx"),
     route("acara/:slug", "routes/acara.$slug.tsx"),
     route("usaha", "routes/usaha.tsx"),
     route("usaha/kontribusi", "routes/usaha.kontribusi.tsx"),
