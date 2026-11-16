@@ -3,6 +3,8 @@ import { describe, it } from 'node:test';
 import {
   lemmaAltFromLocalizedPath,
   resolveOgImageSize,
+  wordOgCardPath,
+  wordOgCardUrl,
 } from './og-image-meta.ts';
 
 describe('resolveOgImageSize', () => {
@@ -25,6 +27,16 @@ describe('resolveOgImageSize', () => {
       resolveOgImageSize(
         'https://sambasku.com/og/words/a%20b',
         'https://sambasku.com/og/words/a%20b',
+      ),
+      { width: 1200, height: 630 },
+    );
+  });
+
+  it('kartu /og/home selalu 1200x630', () => {
+    assert.deepEqual(
+      resolveOgImageSize(
+        'https://sambasku.com/og/home',
+        'https://sambasku.com/og/home',
       ),
       { width: 1200, height: 630 },
     );
@@ -58,5 +70,16 @@ describe('lemmaAltFromLocalizedPath', () => {
     assert.equal(lemmaAltFromLocalizedPath('/id'), null);
     assert.equal(lemmaAltFromLocalizedPath('/id/words'), null);
     assert.equal(lemmaAltFromLocalizedPath('/id/faq'), null);
+  });
+});
+
+describe('wordOgCardPath / wordOgCardUrl', () => {
+  it('meng-encode lemma untuk path dan URL absolut', () => {
+    assert.equal(wordOgCardPath('Abang'), '/og/words/Abang');
+    assert.equal(wordOgCardPath('a b'), '/og/words/a%20b');
+    assert.equal(
+      wordOgCardUrl('https://sambasku.com/', 'Abang'),
+      'https://sambasku.com/og/words/Abang',
+    );
   });
 });

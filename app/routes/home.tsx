@@ -18,7 +18,11 @@ import {
 import { Sparkles, PlusCircle, Languages } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { Route } from './+types/home';
-import { buildHomeJsonLd, buildMetaTags } from '../application/utils/seo';
+import {
+  HOME_NAV_HUBS,
+  buildHomeJsonLd,
+  buildMetaTags,
+} from '../application/utils/seo';
 import { env } from '../infrastructure/config/env';
 import { SearchBar } from '../presentation/components/word/search-bar';
 import { WordOfTheDaySection } from '../presentation/components/word/word-of-the-day-section';
@@ -41,6 +45,10 @@ export function meta({ params }: Route.MetaArgs) {
       description: t('seo_homeDescription'),
       path: localePath(locale, '/'),
       locale,
+      image: `${env.appUrl}/og/home`,
+      imageWidth: 1200,
+      imageHeight: 630,
+      imageAlt: t('seo_homeTitle'),
     }),
     ...(env.isProd ? [{ 'script:ld+json': buildHomeJsonLd(locale) }] : []),
   ];
@@ -92,6 +100,25 @@ export default function Home() {
           >
             {t('home_ctaButton')}
           </Button>
+        </Stack>
+
+        <Stack gap="sm">
+          <Title order={2} size="h5" c="dimmed" tt="uppercase" fw={600} ta="center">
+            {t('home_hubsHeading')}
+          </Title>
+          <Group gap="xs" justify="center">
+            {HOME_NAV_HUBS.map((hub) => (
+              <Button
+                key={hub.bare}
+                component={Link}
+                to={lp(hub.bare)}
+                variant="light"
+                size="compact-sm"
+              >
+                {t(hub.labelKey)}
+              </Button>
+            ))}
+          </Group>
         </Stack>
 
         <WordOfTheDaySection />

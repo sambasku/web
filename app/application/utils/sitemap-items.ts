@@ -1,4 +1,5 @@
 import type { SitemapItem } from "./sitemap.ts";
+import { wordOgCardPath } from "./og-image-meta.ts";
 
 /** Kunci objek di bucket R2 `sambasku-web-sitemap`. */
 export const SITEMAP_OBJECT_KEY = "sitemap.xml";
@@ -159,6 +160,13 @@ export function buildSitemapItems(input: {
           priority: "0.35",
           changefreq: "weekly",
           lastmod: lastmodOf(word.updatedAt),
+          // Kartu OG per lemma - sinyal Google Images (og:image meta saja lemah).
+          images: [
+            {
+              path: wordOgCardPath(word.lemma),
+              title: word.lemma,
+            },
+          ],
         }) satisfies SitemapItem,
     ),
   ];

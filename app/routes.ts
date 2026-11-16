@@ -10,8 +10,8 @@ export default [
   route("sitemap.xml", "routes/sitemap[.]xml.ts"),
   route("sitemap-static.xml", "routes/sitemap-static[.]xml.ts"),
   route("sitemap-words/:letter", "routes/sitemap-words.$letter.ts"),
-  // Kartu OG per kata: di luar pohon locale (segmen statis 'og' menang
-  // dari :locale dalam ranking route).
+  // Kartu OG: di luar pohon locale (segmen statis 'og' menang dari :locale).
+  route("og/home", "routes/og.home[.]png.ts"),
   route("og/words/:lemma", "routes/og.words[.]png.ts"),
   route("robots.txt", "routes/robots[.]txt.ts"),
   route("rss.xml", "routes/rss[.]xml.ts"),

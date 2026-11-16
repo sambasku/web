@@ -5,21 +5,23 @@ import { useTranslation } from 'react-i18next';
 import { Logo } from './logo';
 import { useLocalePath } from '@/application/i18n/use-locale';
 import { withSambaskuUtm } from '@/presentation/utils/external-link';
+import { HOME_NAV_HUBS } from '@/application/utils/seo';
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
   const { t } = useTranslation();
   const lp = useLocalePath();
 
+  // Hub sitelinks dulu (sama HOME_NAV_HUBS), lalu utilitas.
   const links = [
-    { to: lp('/eksplorasi'), label: t('explore_heading') },
-    { to: lp('/words'), label: t('nav_words') },
+    ...HOME_NAV_HUBS.map((hub) => ({
+      to: lp(hub.bare),
+      label: t(hub.labelKey),
+    })),
     { to: lp('/kontribusi'), label: t('nav_contribute') },
     { to: lp('/ruang-diskusi'), label: t('nav_ask') },
-    { to: lp('/faq'), label: t('nav_faq') },
-    { to: lp('/api-publik'), label: t('nav_apiPublik') },
     { to: lp('/privacy-policy'), label: t('nav_privacy') },
-  ] as const;
+  ];
 
   return (
     <Container size="md" py="md" component="footer">
