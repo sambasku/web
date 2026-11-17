@@ -2,6 +2,7 @@ import { Link, useLoaderData } from 'react-router';
 import {
   Anchor,
   Avatar,
+  Badge,
   Card,
   Container,
   Group,
@@ -100,6 +101,13 @@ export default function PublicProfilePage() {
             <Text c="dimmed" size="sm">
               @{profile.username}
             </Text>
+            {profile.speaker_status ? (
+              <Badge variant="light" color="teal" size="sm" radius="sm">
+                {profile.speaker_status === 'native'
+                  ? 'Penutur Sambas'
+                  : 'Belajar Sambas'}
+              </Badge>
+            ) : null}
             {profile.bio ? <Text size="sm">{profile.bio}</Text> : null}
           </Stack>
         </Group>

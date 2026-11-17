@@ -2,6 +2,8 @@ export interface PublicProfile {
   username: string;
   display_name: string;
   bio: string | null;
+  /** Self-declare: native | learner | null (#258). */
+  speaker_status: 'native' | 'learner' | null;
   role: string;
   is_verifier: boolean;
   joined_at: string;
