@@ -56,6 +56,8 @@ import {
   AnalyticsEvents,
   trackEvent,
 } from '@/infrastructure/analytics/analytics';
+import { recordWordViewOnce } from '@/domain/word-view-beacon';
+import { sendWordView } from '@/domain/words';
 
 export function meta({ loaderData, params }: Route.MetaArgs) {
   const locale = isAppLocale(params.locale) ? params.locale : DEFAULT_LOCALE;
@@ -155,7 +157,8 @@ export default function WordDetailPage() {
       word_id: word.id,
       source: stateSource ?? 'direct',
     });
-  }, [word.id, location.state]);
+    recordWordViewOnce(word.lemma, sendWordView);
+  }, [word.id, word.lemma, location.state]);
 
   // Saat pindah ke kata terkait (route sama, :id beda) loader berjalan -
   // tampilkan skeleton agar data kata lama tidak tampil sesaat.
