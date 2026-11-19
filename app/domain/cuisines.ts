@@ -88,3 +88,10 @@ export async function fetchCuisineBySlug(
     return all?.find((c) => c.slug === slug) ?? null;
   }
 }
+
+/** Catat 1 view detail kuliner (best-effort, tidak ganggu render). */
+export function sendCuisineView(slug: string): void {
+  void apiClient(`/culinary/cuisines/${encodeURIComponent(slug)}/view`, {
+    method: 'POST',
+  }).catch(() => {});
+}

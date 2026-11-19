@@ -50,6 +50,13 @@ export async function getEncyclopediaArticle(
   return res;
 }
 
+/** Catat 1 view artikel ensiklopedia (best-effort, tidak ganggu render). */
+export function sendArticleView(slug: string): void {
+  void apiClient(`/encyclopedia/articles/${encodeURIComponent(slug)}/view`, {
+    method: "POST",
+  }).catch(() => {});
+}
+
 export async function searchEncyclopediaArticles(
   q: string,
   signal?: AbortSignal,
