@@ -30,8 +30,9 @@ const BLUR_IDLE_MS = 600;
 
 /**
  * Kotak pencarian + typeahead: saran lemma muncul setelah 2 karakter dengan
- * debounce 300 ms (`record_miss=false`). Commit miss hanya via Enter / Cari /
- * blur idle → navigasi `/search` (`record_miss` default true di loader).
+ * debounce 300 ms. Typeahead pakai `record_miss=false`; bila saran kosong
+ * setelah settle, fire-and-forget commit miss (tanpa wajib Enter). Enter /
+ * Cari / blur idle tetap navigasi `/search`.
  */
 export function SearchBar({
   initialQuery = '',
@@ -79,6 +80,18 @@ export function SearchBar({
       setSuggestions(res.data);
       setActive(-1);
       setOpen(res.data.length > 0);
+      // Saran kosong setelah jeda = user sudah "mencari"; catat miss tanpa
+      // menunggu Enter / navigasi /search.
+      if (res.data.length === 0) {
+        void searchWords({
+          q: trimmed,
+          limit: 1,
+          searchIn: direction,
+          recordMiss: true,
+        }).catch(() => {
+          /* best-effort */
+        });
+      }
     } catch {
       // dibatalkan (request baru) atau gagal jaringan: biarkan saran terakhir
     }

@@ -104,8 +104,8 @@ export function buildEventJsonLd(
     description: event.description || labels.descFallback,
     url,
     inLanguage: locale,
-    startDate: event.startsAt,
-    endDate: event.endsAt,
+    ...(event.startsAt ? { startDate: event.startsAt } : {}),
+    ...(event.endsAt ? { endDate: event.endsAt } : {}),
     eventStatus:
       event.occurrenceStatus === 'cancelled'
         ? 'https://schema.org/EventCancelled'

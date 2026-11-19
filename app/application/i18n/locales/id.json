@@ -375,7 +375,7 @@
   "event_contributeFieldSourceAttribution": "Nama sumber",
   "event_contributeFieldSourceAttributionDesc": "Opsional. Misalnya nama akun atau panitia.",
   "event_contributeSubmit": "Kirim usulan",
-  "event_contributeRequired": "Nama, deskripsi, kategori, waktu, dan lokasi wajib diisi.",
+  "event_contributeRequired": "Nama, kategori, dan tanggal mulai wajib diisi.",
   "event_usulanTitle": "Usulan saya",
   "event_usulanIntro": "Status usulan acara yang kamu kirim.",
   "event_usulanEmpty": "Belum ada usulan dari web. Usulan web masuk tanpa akun, jadi tidak ada daftar pribadi di sini.",
@@ -524,5 +524,8 @@
   "layanan_submit": "Kirim usulan",
   "layanan_sent": "Usulan terkirim. Nomor baru tayang setelah diperiksa.",
   "layanan_whatsapp": "WhatsApp",
-  "layanan_map": "Buka peta"
+  "layanan_map": "Buka peta",
+  "event_contributeFieldOptional": "Opsional",
+  "event_contributeFieldStartsTime": "Jam mulai",
+  "event_contributeFieldEndsTime": "Jam selesai"
 }

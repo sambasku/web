@@ -17,7 +17,7 @@ export function formatDateId(dateInput: string | Date | null | undefined): strin
   return `${day} ${month} ${year}`;
 }
 
-/** Tanggal + jam, mis. "5 Okt 2026, 09.30". Tanpa jam kalau tidak ada. */
+/** Tanggal + jam, mis. "5 Okt 2026, 09.30". Jam 00.00 disembunyikan (all-day). */
 export function formatDateTimeId(
   dateInput: string | Date | null | undefined,
 ): string {
@@ -27,6 +27,9 @@ export function formatDateTimeId(
   const day = d.getDate();
   const month = MONTH_NAMES_ID[d.getMonth()];
   const year = d.getFullYear();
+  if (d.getHours() === 0 && d.getMinutes() === 0) {
+    return `${day} ${month} ${year}`;
+  }
   const hh = String(d.getHours()).padStart(2, '0');
   const mm = String(d.getMinutes()).padStart(2, '0');
   return `${day} ${month} ${year}, ${hh}.${mm}`;

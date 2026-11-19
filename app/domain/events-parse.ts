@@ -45,8 +45,8 @@ export interface Event {
   description: string;
   categoryId: string;
   category: EventCategoryRef | null;
-  startsAt: string;
-  endsAt: string;
+  startsAt: string | null;
+  endsAt: string | null;
   occurrenceStatus: EventOccurrenceStatus;
   locationText: string;
   lat: number | null;
@@ -80,8 +80,8 @@ export interface ApiEvent {
   description: string;
   category_id: string;
   category?: EventCategoryRef | null;
-  starts_at: string;
-  ends_at: string;
+  starts_at: string | null;
+  ends_at: string | null;
   occurrence_status?: EventOccurrenceStatus;
   location_text: string;
   lat?: number | null;
@@ -113,8 +113,8 @@ export function mapEvent(row: ApiEvent): Event {
     description: row.description,
     categoryId: row.category_id,
     category: row.category ?? null,
-    startsAt: row.starts_at,
-    endsAt: row.ends_at,
+    startsAt: row.starts_at ?? null,
+    endsAt: row.ends_at ?? null,
     occurrenceStatus: row.occurrence_status ?? 'upcoming',
     locationText: row.location_text ?? '',
     lat: row.lat ?? null,
