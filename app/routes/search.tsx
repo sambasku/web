@@ -70,6 +70,8 @@ export async function loader({ request }: Route.LoaderArgs) {
       searchIn,
       wordType,
       cursor,
+      // Halaman hasil = commit (boleh rekam search-miss).
+      recordMiss: true,
       signal: request.signal,
     });
     return {

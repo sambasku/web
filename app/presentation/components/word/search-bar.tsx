@@ -25,12 +25,12 @@ export interface SearchBarProps {
   autoFocus?: boolean;
 }
 
+const BLUR_IDLE_MS = 600;
+
 /**
  * Kotak pencarian + typeahead: saran lemma muncul setelah 2 karakter dengan
- * debounce 300 ms. Tidak ada auto-select saat kursor lewat overlay - `active`
- * hanya bergerak lewat ArrowDown/ArrowUp, jadi Enter tanpa panah selalu
- * membuka halaman /search penuh. Memilih saran (klik atau panah + Enter)
- * langsung ke halaman kata.
+ * debounce 300 ms (`record_miss=false`). Commit miss hanya via Enter / Cari /
+ * blur idle → navigasi `/search` (`record_miss` default true di loader).
  */
 export function SearchBar({
   initialQuery = '',
@@ -43,10 +43,18 @@ export function SearchBar({
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(-1);
   const abortRef = useRef<AbortController | null>(null);
+  const blurTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const navigate = useNavigate();
   const { t } = useTranslation();
   const lp = useLocalePath();
   const clickOutsideRef = useClickOutside(() => setOpen(false));
+
+  const clearBlurTimer = () => {
+    if (blurTimerRef.current != null) {
+      clearTimeout(blurTimerRef.current);
+      blurTimerRef.current = null;
+    }
+  };
 
   const fetchSuggestions = useDebouncedCallback(async (query: string) => {
     abortRef.current?.abort();
@@ -63,6 +71,7 @@ export function SearchBar({
         q: trimmed,
         limit: 6,
         searchIn: direction,
+        recordMiss: false,
         signal: ctrl.signal,
       });
       setSuggestions(res.data);
@@ -74,10 +83,22 @@ export function SearchBar({
   }, 300);
 
   const goWord = (word: WordSummary) => {
+    clearBlurTimer();
     setOpen(false);
     navigate(lp(`/words/${encodeURIComponent(word.lemma)}`), {
       state: { analyticsSource: 'search' },
     });
+  };
+
+  const goSearchPage = (query: string) => {
+    clearBlurTimer();
+    setOpen(false);
+    navigate(
+      lp(
+        '/search',
+        `?q=${encodeURIComponent(query)}&search_in=${direction}`,
+      ),
+    );
   };
 
   const handleSearch = (e: React.FormEvent) => {
@@ -88,13 +109,7 @@ export function SearchBar({
     }
     const query = q.trim();
     if (!query) return;
-    setOpen(false);
-    navigate(
-      lp(
-        '/search',
-        `?q=${encodeURIComponent(query)}&search_in=${direction}`,
-      ),
-    );
+    goSearchPage(query);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -110,6 +125,17 @@ export function SearchBar({
     }
   };
 
+  const handleBlur = () => {
+    clearBlurTimer();
+    blurTimerRef.current = setTimeout(() => {
+      const query = q.trim();
+      // Hanya commit ke /search bila tidak sedang memilih saran.
+      if (query.length >= 2 && !open) {
+        goSearchPage(query);
+      }
+    }, BLUR_IDLE_MS);
+  };
+
   return (
     <form onSubmit={handleSearch} style={{ width: '100%' }}>
       <Stack gap="xs" w="100%" maw={640} mx="auto">
@@ -122,7 +148,11 @@ export function SearchBar({
               fetchSuggestions(e.target.value);
             }}
             onKeyDown={handleKeyDown}
-            onFocus={() => suggestions.length > 0 && setOpen(true)}
+            onFocus={() => {
+              clearBlurTimer();
+              if (suggestions.length > 0) setOpen(true);
+            }}
+            onBlur={handleBlur}
             placeholder={
               direction === 'lemma' ? t('search_placeholderLemma') : t('search_placeholderTranslation')
             }
@@ -180,7 +210,15 @@ export function SearchBar({
                   component={Link}
                   to={lp(`/words/${encodeURIComponent(word.lemma)}`)}
                   state={{ analyticsSource: 'search' }}
-                  onClick={() => setOpen(false)}
+                  onMouseDown={(e) => {
+                    // Cegah blur-idle navigate ke /search saat klik saran.
+                    e.preventDefault();
+                    clearBlurTimer();
+                  }}
+                  onClick={() => {
+                    clearBlurTimer();
+                    setOpen(false);
+                  }}
                   role="option"
                   aria-selected={i === active}
                   w="100%"

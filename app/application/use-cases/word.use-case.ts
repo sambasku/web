@@ -7,6 +7,11 @@ export interface SearchWordsParams {
   cursor?: string;
   searchIn?: 'lemma' | 'translation';
   wordType?: string;
+  /**
+   * false = typeahead/explore (jangan rekam search-miss).
+   * true / omit = commit (Enter / Cari / halaman /search).
+   */
+  recordMiss?: boolean;
   signal?: AbortSignal;
 }
 
@@ -33,6 +38,9 @@ export async function searchWords(
   if (params.cursor) query.set('cursor', params.cursor);
   if (params.searchIn) query.set('search_in', params.searchIn);
   if (params.wordType) query.set('word_type', params.wordType);
+  if (params.recordMiss !== undefined) {
+    query.set('record_miss', params.recordMiss ? '1' : '0');
+  }
 
   return apiClient<WordSummary[]>(`/words/search?${query.toString()}`, {
     signal: params.signal,

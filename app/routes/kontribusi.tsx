@@ -108,9 +108,12 @@ const EMPTY_KBBI: KbbiSuggestion[] = [];
 const EMPTY_WORDS: WordSummary[] = [];
 
 function searchSimilarLemmas(q: string): Promise<WordSummary[]> {
-  return searchWords({ q, searchIn: 'lemma', limit: 5 }).then(
-    (res) => res.data,
-  );
+  return searchWords({
+    q,
+    searchIn: 'lemma',
+    limit: 5,
+    recordMiss: false,
+  }).then((res) => res.data);
 }
 
 /**
