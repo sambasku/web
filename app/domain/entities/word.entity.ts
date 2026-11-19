@@ -72,6 +72,15 @@ export interface WordMeaning {
   is_have_definition: boolean;
   is_have_translation: boolean;
   order_index: number;
+  /** Trust per makna (G1). Default true bila field absen. */
+  is_verified?: boolean;
+  needs_review?: boolean;
+  verified_at?: string | null;
+  verified_by?: {
+    username: string;
+    display_name?: string | null;
+    role: string;
+  } | null;
   translations: WordTranslation[];
   examples: WordExample[];
 }

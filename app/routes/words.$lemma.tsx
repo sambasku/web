@@ -238,14 +238,42 @@ export default function WordDetailPage() {
               <Title order={1} fw={800}>
                 {word.lemma}
               </Title>
-              <Badge
-                size="sm"
-                variant="light"
-                color="teal"
-                leftSection={<CheckCircle2 size={13} />}
-              >
-                {t('common_verified')}
-              </Badge>
+              {(() => {
+                const meanings = word.meanings ?? [];
+                const verifiedCount = meanings.filter((m) => m.is_verified !== false).length;
+                const summary =
+                  meanings.length === 0
+                    ? 'pending'
+                    : verifiedCount === meanings.length
+                      ? 'all'
+                      : verifiedCount > 0
+                        ? 'partial'
+                        : 'pending';
+                if (summary === 'all') {
+                  return (
+                    <Badge
+                      size="sm"
+                      variant="light"
+                      color="teal"
+                      leftSection={<CheckCircle2 size={13} />}
+                    >
+                      {t('common_verified')}
+                    </Badge>
+                  );
+                }
+                if (summary === 'partial') {
+                  return (
+                    <Badge size="sm" variant="light" color="yellow">
+                      {t('word_lemmaTrustPartial')}
+                    </Badge>
+                  );
+                }
+                return (
+                  <Badge size="sm" variant="light" color="gray">
+                    {t('common_pendingReview')}
+                  </Badge>
+                );
+              })()}
               <WordTypeBadge type={word.word_type} />
               <UsageLabelsBadges labels={word.usage_labels} />
             </Group>
@@ -322,6 +350,20 @@ export default function WordDetailPage() {
                           meaning.word_class.code,
                           meaning.word_class.name,
                         )}
+                      </Badge>
+                    )}
+                    {meaning.is_verified !== false ? (
+                      <Badge
+                        size="sm"
+                        variant="light"
+                        color="teal"
+                        leftSection={<CheckCircle2 size={12} />}
+                      >
+                        {t('common_verified')}
+                      </Badge>
+                    ) : (
+                      <Badge size="sm" variant="light" color="gray">
+                        {t('common_pendingReview')}
                       </Badge>
                     )}
                   </Group>
