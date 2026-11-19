@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { Link, useLocation, useNavigate } from 'react-router';
 import {
   ActionIcon,
   Box,
@@ -15,6 +15,7 @@ import {
 import { useClickOutside, useDebouncedCallback } from '@mantine/hooks';
 import { Search, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { stripLocalePrefix } from '@/application/i18n/locales';
 import { useLocalePath } from '@/application/i18n/use-locale';
 import { searchWords } from '@/application/use-cases/word.use-case';
 import type { WordSummary } from '@/domain/entities/word.entity';
@@ -45,6 +46,7 @@ export function SearchBar({
   const abortRef = useRef<AbortController | null>(null);
   const blurTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation();
   const lp = useLocalePath();
   const clickOutsideRef = useClickOutside(() => setOpen(false));
@@ -93,12 +95,26 @@ export function SearchBar({
   const goSearchPage = (query: string) => {
     clearBlurTimer();
     setOpen(false);
-    navigate(
-      lp(
-        '/search',
-        `?q=${encodeURIComponent(query)}&search_in=${direction}`,
-      ),
+    const nextPath = lp(
+      '/search',
+      `?q=${encodeURIComponent(query)}&search_in=${direction}`,
     );
+    const { path: currentPath } = stripLocalePrefix(location.pathname);
+    const currentQ = new URLSearchParams(location.search).get('q')?.trim() ?? '';
+    const currentIn =
+      (new URLSearchParams(location.search).get('search_in') as
+        | 'lemma'
+        | 'translation'
+        | null) || 'lemma';
+    // Sudah di /search dengan q+arah sama → jangan navigasi ulang (blur idle).
+    if (
+      currentPath === '/search' &&
+      currentQ === query &&
+      currentIn === direction
+    ) {
+      return;
+    }
+    navigate(nextPath);
   };
 
   const handleSearch = (e: React.FormEvent) => {
@@ -130,7 +146,7 @@ export function SearchBar({
     blurTimerRef.current = setTimeout(() => {
       const query = q.trim();
       // Hanya commit ke /search bila tidak sedang memilih saran.
-      if (query.length >= 2 && !open) {
+      if (query.length >= 3 && !open) {
         goSearchPage(query);
       }
     }, BLUR_IDLE_MS);
