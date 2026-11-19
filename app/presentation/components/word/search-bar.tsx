@@ -146,7 +146,7 @@ export function SearchBar({
     blurTimerRef.current = setTimeout(() => {
       const query = q.trim();
       // Hanya commit ke /search bila tidak sedang memilih saran.
-      if (query.length >= 3 && !open) {
+      if (query.length >= 2 && !open) {
         goSearchPage(query);
       }
     }, BLUR_IDLE_MS);
