@@ -169,6 +169,9 @@ jobs:
 
       # API publik + CDN. Gagal = jangan timpa objek R2 kemarin.
       - name: Bangun sitemap.xml
+        env:
+          SITEMAP_API_BASE_URL: https://api.sambasku.com/api/v1
+          SITEMAP_API_BASE_URL_FALLBACKS: https://cloudflare.sambasku.com/api/v1
         run: node --experimental-strip-types scripts/generate-sitemap.ts build/sitemap.xml
 
       # wrangler-action memasang wrangler lewat package manager repo

@@ -566,47 +566,68 @@ export default function WordDetailPage() {
             {word.created_by?.username &&
             word.verified_by?.username &&
             word.created_by.username === word.verified_by.username ? (
-              <Group gap={6} wrap="wrap">
-                <Text size="xs" c="dimmed">
-                  {t('word_createdVerifiedBy', {
-                    username: attributionLabel(word.created_by),
-                  })}
-                </Text>
-                <VerifierMark
-                  show={isVerifierRole(word.verified_by.role)}
-                  size={14}
-                  label={t('word_verifierBadge')}
-                />
-              </Group>
+              <Text size="xs" c="dimmed">
+                {t('word_createdVerifiedByBefore')}{' '}
+                <span
+                  style={{
+                    whiteSpace: 'nowrap',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 4,
+                    verticalAlign: 'middle',
+                  }}
+                >
+                  {attributionLabel(word.created_by)}
+                  <VerifierMark
+                    show={isVerifierRole(word.verified_by.role)}
+                    size={14}
+                    label={t('word_verifierBadge')}
+                  />
+                </span>
+              </Text>
             ) : (
               <>
                 {word.created_by?.username ? (
-                  <Group gap={6} wrap="wrap">
-                    <Text size="xs" c="dimmed">
-                      {t('word_createdBy', {
-                        username: attributionLabel(word.created_by),
-                      })}
-                    </Text>
-                    <VerifierMark
-                      show={isVerifierRole(word.created_by.role)}
-                      size={14}
-                      label={t('word_verifierBadge')}
-                    />
-                  </Group>
+                  <Text size="xs" c="dimmed">
+                    {t('word_createdByBefore')}{' '}
+                    <span
+                      style={{
+                        whiteSpace: 'nowrap',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 4,
+                        verticalAlign: 'middle',
+                      }}
+                    >
+                      {attributionLabel(word.created_by)}
+                      <VerifierMark
+                        show={isVerifierRole(word.created_by.role)}
+                        size={14}
+                        label={t('word_verifierBadge')}
+                      />
+                    </span>
+                  </Text>
                 ) : null}
                 {word.is_verified && word.verified_by?.username ? (
-                  <Group gap={6} wrap="wrap">
-                    <Text size="xs" c="dimmed">
-                      {t('word_verifiedBy', {
-                        username: attributionLabel(word.verified_by),
-                      })}
-                    </Text>
-                    <VerifierMark
-                      show={isVerifierRole(word.verified_by.role)}
-                      size={14}
-                      label={t('word_verifierBadge')}
-                    />
-                  </Group>
+                  <Text size="xs" c="dimmed">
+                    {t('word_verifiedByBefore')}{' '}
+                    <span
+                      style={{
+                        whiteSpace: 'nowrap',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 4,
+                        verticalAlign: 'middle',
+                      }}
+                    >
+                      {attributionLabel(word.verified_by)}
+                      <VerifierMark
+                        show={isVerifierRole(word.verified_by.role)}
+                        size={14}
+                        label={t('word_verifierBadge')}
+                      />
+                    </span>
+                  </Text>
                 ) : null}
               </>
             )}

@@ -25,12 +25,9 @@ import {
   mapPlace,
   type ApiPlace,
 } from '../app/domain/places-parse.ts';
+import { fetchSitemapJson } from './sitemap-http.ts';
 
 const APP_URL = 'https://sambasku.com';
-const API_BASE = 'https://api.sambasku.com/api/v1';
-const WORDS_URL = `${API_BASE}/words`;
-const PLACES_URL = `${API_BASE}/places`;
-const CUISINES_API_URL = `${API_BASE}/culinary/cuisines`;
 const CUISINES_CDN_URL =
   'https://cdn.jsdelivr.net/gh/sambasku/data@main/cuisines.json';
 const PAGE_SIZE = 100;
@@ -57,15 +54,17 @@ interface CuisinesApiPayload {
   data?: { items?: unknown[] };
 }
 
+function apiListUrl(path: string): URL {
+  return new URL(path, 'http://sitemap.local');
+}
+
 async function fetchWordPage(cursor?: string) {
   if (cursor) await new Promise((resolve) => setTimeout(resolve, PAGE_GAP_MS));
-  const url = new URL(WORDS_URL);
+  const url = apiListUrl('/words');
   url.searchParams.set('is_verified', 'true');
   url.searchParams.set('limit', String(PAGE_SIZE));
   if (cursor) url.searchParams.set('cursor', cursor);
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`GET /words gagal: HTTP ${res.status}`);
-  const body = (await res.json()) as WordsPayload;
+  const body = await fetchSitemapJson<WordsPayload>(url, { label: 'GET /words' });
   if (!body.success || !Array.isArray(body.data)) {
     throw new Error('GET /words tidak mengembalikan daftar kata');
   }
@@ -86,12 +85,12 @@ async function fetchPlaceSlugs(): Promise<string[] | null> {
     const slugs: string[] = [];
     let before: string | undefined;
     for (let page = 0; page < PLACES_PAGE_CAP; page++) {
-      const url = new URL(PLACES_URL);
+      const url = apiListUrl('/places');
       url.searchParams.set('limit', String(PLACES_PAGE_SIZE));
       if (before) url.searchParams.set('before', before);
-      const res = await fetch(url);
-      if (!res.ok) return null;
-      const body = (await res.json()) as PlacesPayload;
+      const body = await fetchSitemapJson<PlacesPayload>(url, {
+        label: 'GET /places',
+      });
       if (!body.success || !Array.isArray(body.data?.items)) return null;
       for (const row of body.data.items) {
         const place = mapPlace(row);
@@ -110,17 +109,18 @@ async function fetchPlaceSlugs(): Promise<string[] | null> {
 /** Slug kuliner: API dulu, CDN cadangan (sama pola domain). Null = keduanya gagal. */
 async function fetchCuisineSlugs(): Promise<string[] | null> {
   try {
-    const res = await fetch(`${CUISINES_API_URL}?limit=100`);
-    if (res.ok) {
-      const body = (await res.json()) as CuisinesApiPayload;
-      const items = body.data?.items;
-      if (body.success && Array.isArray(items)) {
-        const parsed = items
-          .map(parseApiCuisine)
-          .filter((c): c is NonNullable<typeof c> => c !== null)
-          .map((c) => c.slug);
-        if (parsed.length > 0) return parsed;
-      }
+    const url = apiListUrl('/culinary/cuisines');
+    url.searchParams.set('limit', '100');
+    const body = await fetchSitemapJson<CuisinesApiPayload>(url, {
+      label: 'GET /culinary/cuisines',
+    });
+    const items = body.data?.items;
+    if (body.success && Array.isArray(items)) {
+      const parsed = items
+        .map(parseApiCuisine)
+        .filter((c): c is NonNullable<typeof c> => c !== null)
+        .map((c) => c.slug);
+      if (parsed.length > 0) return parsed;
     }
   } catch {
     // jatuh ke CDN
