@@ -105,12 +105,18 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   try {
     if (ULID_RE.test(lemma)) {
       const word = await getWordDetail(lemma, request.signal);
+      if ((word.meanings ?? []).length === 0) {
+        throw new Response('Kata tidak ditemukan', { status: 404 });
+      }
       throw redirect(
         localePath(locale, `/words/${encodeURIComponent(word.lemma)}`),
         301,
       );
     }
     const word = await getWordByLemma(lemma, request.signal);
+    if ((word.meanings ?? []).length === 0) {
+      throw new Response('Kata tidak ditemukan', { status: 404 });
+    }
     return { word };
   } catch (error) {
     if (error instanceof Response) throw error; // redirect 301 lolos

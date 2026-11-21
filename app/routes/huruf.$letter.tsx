@@ -83,6 +83,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
       letter,
       cursor,
       limit: 50,
+      isVerified: true,
       signal: request.signal,
     });
     return {

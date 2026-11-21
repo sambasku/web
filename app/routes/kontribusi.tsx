@@ -34,6 +34,7 @@ import {
 import { useLocalePath } from '@/application/i18n/use-locale';
 
 import {
+  getWordByLemma,
   lookupKbbi,
   searchWords,
   type KbbiSuggestion,
@@ -107,13 +108,35 @@ const KBBI_CODE_ALIASES: Record<string, string> = { a: 'adj', p: 'part' };
 const EMPTY_KBBI: KbbiSuggestion[] = [];
 const EMPTY_WORDS: WordSummary[] = [];
 
-function searchSimilarLemmas(q: string): Promise<WordSummary[]> {
-  return searchWords({
-    q,
+async function searchSimilarLemmas(q: string): Promise<WordSummary[]> {
+  const trimmed = q.trim();
+  const res = await searchWords({
+    q: trimmed,
     searchIn: 'lemma',
     limit: 5,
     recordMiss: false,
-  }).then((res) => res.data);
+  });
+  const items = res.data ?? [];
+  if (!trimmed) return items;
+  const key = trimmed.toLowerCase();
+  if (items.some((w) => w.lemma.trim().toLowerCase() === key)) return items;
+  try {
+    const pending = await getWordByLemma(trimmed);
+    const summary: WordSummary = {
+      id: pending.id,
+      lemma: pending.lemma,
+      language_id: pending.language_id,
+      language_code: 'sbs',
+      word_type: pending.word_type,
+      usage_labels: pending.usage_labels,
+      is_verified: pending.is_verified,
+      status: pending.status,
+      sense: pending.meanings?.[0]?.definition ?? null,
+    };
+    return [summary, ...items];
+  } catch {
+    return items;
+  }
 }
 
 /**
