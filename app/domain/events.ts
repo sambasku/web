@@ -135,3 +135,44 @@ export async function fetchEventCategories(
     return [];
   }
 }
+
+/** Foto galeri acara (user-generated). */
+export interface EventImage {
+  id: string;
+  url: string;
+  attribution: { name: string; provider: string } | null;
+}
+
+export interface EventImagePage {
+  items: EventImage[];
+  total: number;
+  nextOffset: number | null;
+}
+
+/** Halaman galeri foto acara. Null = API gagal. */
+export async function fetchEventImages(
+  slug: string,
+  offset = 0,
+  signal?: AbortSignal,
+): Promise<EventImagePage | null> {
+  try {
+    const res = await apiClient<{
+      items: { id: string; url: string; attribution?: { name: string; provider: string } | null }[];
+      total: number;
+      next_offset: number | null;
+    }>(`/events/${encodeURIComponent(slug)}/images?offset=${offset}`, { signal });
+    return {
+      items: (res.data.items ?? []).map((img) => ({
+        id: img.id,
+        url: img.url,
+        attribution: img.attribution?.name
+          ? { name: img.attribution.name, provider: img.attribution.provider ?? '' }
+          : null,
+      })),
+      total: res.data.total,
+      nextOffset: res.data.next_offset,
+    };
+  } catch {
+    return null;
+  }
+}

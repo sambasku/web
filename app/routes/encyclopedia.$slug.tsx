@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Link, useLoaderData } from "react-router";
 import {
   Anchor,
@@ -18,7 +19,14 @@ import { useTranslation } from "react-i18next";
 import DOMPurify from "dompurify";
 import { marked } from "marked";
 import type { Route } from "./+types/encyclopedia.$slug";
-import { getEncyclopediaArticle } from "../application/use-cases/encyclopedia.use-case";
+import {
+  getEncyclopediaArticle,
+  sendArticleView,
+} from "../application/use-cases/encyclopedia.use-case";
+import {
+  recordSlugViewOnce,
+  SLUG_VIEW_PREFIX,
+} from "@/domain/slug-view-beacon";
 import {
   buildMetaTags,
   buildEncyclopediaArticleJsonLd,
@@ -85,6 +93,10 @@ export default function EncyclopediaDetailPage() {
   const article = useLoaderData<typeof loader>();
   const { t } = useTranslation();
   const lp = useLocalePath();
+
+  useEffect(() => {
+    recordSlugViewOnce(SLUG_VIEW_PREFIX.article, article.slug, sendArticleView);
+  }, [article.slug]);
 
   const renderMarkdown = (md: string) => {
     if (!md) return { __html: "" };

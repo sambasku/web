@@ -88,6 +88,13 @@ export async function fetchUsahaBySlug(
   }
 }
 
+/** Catat 1 view detail usaha (best-effort, tidak ganggu render). */
+export function sendUsahaView(slug: string): void {
+  void apiClient(`/usaha/${encodeURIComponent(slug)}/view`, {
+    method: 'POST',
+  }).catch(() => {});
+}
+
 /** Katalog kategori usaha (published). */
 export async function fetchUsahaCategories(
   signal?: AbortSignal,

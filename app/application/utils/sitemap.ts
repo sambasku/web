@@ -24,6 +24,13 @@ export function xmlEscape(value: string): string {
     .replace(/'/g, '&apos;');
 }
 
+export interface SitemapImage {
+  /** Path absolut situs, mis. `/og/words/capal`. */
+  path: string;
+  /** Opsional - judul gambar di Google Images. */
+  title?: string;
+}
+
 export interface SitemapItem {
   /** Path tanpa prefix locale, mis. '/words' atau '/huruf/k'. */
   bare: string;
@@ -31,6 +38,8 @@ export interface SitemapItem {
   changefreq: string;
   /** YYYY-MM-DD. Kosong = jangan tulis lastmod (tanggal tidak diketahui). */
   lastmod?: string;
+  /** Gambar terkait URL (Google image sitemap extension). */
+  images?: readonly SitemapImage[];
 }
 
 /** Baris xhtml:link hreflang (per locale seoIndex + x-default). */
@@ -59,9 +68,30 @@ export function priorityForLocale(
   return Math.min(n * 0.5, 0.4).toFixed(1);
 }
 
+function imageEntriesXml(
+  appUrl: string,
+  images: readonly SitemapImage[] | undefined,
+): string {
+  if (!images?.length) return '';
+  const base = appUrl.replace(/\/$/, '');
+  return images
+    .map((img) => {
+      const loc = img.path.startsWith('http')
+        ? img.path
+        : `${base}${img.path.startsWith('/') ? img.path : `/${img.path}`}`;
+      const title = img.title
+        ? `\n      <image:title>${xmlEscape(img.title)}</image:title>`
+        : '';
+      return `    <image:image>
+      <image:loc>${xmlEscape(loc)}</image:loc>${title}
+    </image:image>`;
+    })
+    .join('\n');
+}
+
 /**
  * urlset lengkap: setiap item × setiap locale seoIndex, tiap URL membawa
- * pasangan hreflang-nya.
+ * pasangan hreflang-nya. Lemma boleh membawa image:image (kartu OG).
  */
 export function buildUrlsetXml(appUrl: string, items: SitemapItem[]): string {
   const urls = items
@@ -74,22 +104,25 @@ export function buildUrlsetXml(appUrl: string, items: SitemapItem[]): string {
           priority: priorityForLocale(item.priority, locale),
           changefreq: item.changefreq,
           lastmod: item.lastmod,
+          images: item.images,
         };
       }),
     )
-    .map(
-      (u) => `  <url>
+    .map((u) => {
+      const imagesXml = imageEntriesXml(appUrl, u.images);
+      return `  <url>
     <loc>${xmlEscape(u.loc)}</loc>
 ${xhtmlAlternates(appUrl, u.bare)}
 ${u.lastmod ? `    <lastmod>${xmlEscape(u.lastmod)}</lastmod>\n` : ''}    <changefreq>${u.changefreq}</changefreq>
-    <priority>${u.priority}</priority>
-  </url>`,
-    )
+    <priority>${u.priority}</priority>${imagesXml ? `\n${imagesXml}` : ''}
+  </url>`;
+    })
     .join('\n');
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
 ${urls}
 </urlset>`;
 }

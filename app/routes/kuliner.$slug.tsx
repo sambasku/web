@@ -21,7 +21,12 @@ import type { Route } from './+types/kuliner.$slug';
 import {
   fetchCuisineBySlug,
   cuisineCover,
+  sendCuisineView,
 } from '@/domain/cuisines';
+import {
+  recordSlugViewOnce,
+  SLUG_VIEW_PREFIX,
+} from '@/domain/slug-view-beacon';
 import { buildCuisineJsonLd } from '@/application/utils/cuisine-seo';
 import { buildMetaTags } from '@/application/utils/seo';
 import { env } from '@/infrastructure/config/env';
@@ -147,6 +152,7 @@ export default function KulinerDetailPage() {
 
   useEffect(() => {
     trackEvent(AnalyticsEvents.cuisineOpen, { slug: c.slug });
+    recordSlugViewOnce(SLUG_VIEW_PREFIX.cuisine, c.slug, sendCuisineView);
   }, [c.slug]);
 
   return (

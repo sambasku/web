@@ -31,6 +31,9 @@ describe('buildSitemapItems', () => {
     assert.ok(items.some((item) => item.bare === '/huruf/c'));
     assert.equal(items.find((item) => item.bare === '/words/capal')?.lastmod, '2026-10-05');
     assert.equal(items.find((item) => item.bare === '/words/capal')?.priority, '0.35');
+    assert.deepEqual(items.find((item) => item.bare === '/words/capal')?.images, [
+      { path: '/og/words/capal', title: 'capal' },
+    ]);
     assert.ok(Number(items.find((item) => item.bare === '/')?.priority) >
       Number(items.find((item) => item.bare === '/words/capal')?.priority));
     assert.equal(items.some((item) => item.bare === '/hapus-akun'), false);

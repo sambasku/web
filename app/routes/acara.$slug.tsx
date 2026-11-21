@@ -30,7 +30,7 @@ import {
 } from '@/application/i18n/locales';
 import { getFixedT } from '@/application/i18n/i18n-instance';
 import { useLocalePath } from '@/application/i18n/use-locale';
-import { fetchEventBySlug } from '@/domain/events';
+import { fetchEventBySlug, fetchEventImages } from '@/domain/events';
 import { formatDateTimeId } from '@/application/utils/formatters';
 import { env } from '@/infrastructure/config/env';
 import {
@@ -96,7 +96,17 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   if (!slug) throw new Response('Slug tidak valid', { status: 400 });
 
   try {
-    return { slug, event: await fetchEventBySlug(slug, request.signal) };
+    // Foto acara: halaman pertama untuk pratinjau 3 foto (pola wisata).
+    const [event, imagePage] = await Promise.all([
+      fetchEventBySlug(slug, request.signal),
+      fetchEventImages(slug, 0, request.signal),
+    ]);
+    return {
+      slug,
+      event,
+      images: imagePage?.items ?? [],
+      imagesTotal: imagePage?.total ?? 0,
+    };
   } catch {
     throw new Response('Gagal memuat data acara', { status: 503 });
   }
@@ -128,7 +138,7 @@ function SafeExtLink({
 }
 
 export default function EventDetailPage() {
-  const { event } = useLoaderData<typeof loader>();
+  const { event, images, imagesTotal } = useLoaderData<typeof loader>();
   const lp = useLocalePath();
   const { t } = useTranslation();
   const lightbox = useImageLightbox();
@@ -305,6 +315,57 @@ export default function EventDetailPage() {
             ) : null}
           </Stack>
         </Paper>
+
+        {images.length > 0 ? (
+          <Stack gap={8} mt={20}>
+            <Text fw={700}>{t('event_photosSectionTitle')}</Text>
+            <SimpleGrid cols={3} spacing={4}>
+              {images.slice(0, 3).map((img, i) => {
+                const src = displayImageUrl(img.url, { width: 480 }) ?? img.url;
+                const alt = img.attribution?.name ?? `${event.name} - foto ${i + 1}`;
+                return (
+                  <LightboxTrigger
+                    key={img.id}
+                    label={openAria}
+                    onOpen={() =>
+                      lightbox.open(
+                        images.map((im) => ({
+                          src: displayImageUrl(im.url, { width: 1200 }) ?? im.url,
+                          alt: im.attribution?.name ?? event.name,
+                        })),
+                        i,
+                      )
+                    }
+                  >
+                    <img
+                      src={src}
+                      alt={alt}
+                      loading="lazy"
+                      style={{
+                        width: '100%',
+                        aspectRatio: '1',
+                        objectFit: 'cover',
+                        borderRadius: 8,
+                        display: 'block',
+                        cursor: 'pointer',
+                      }}
+                    />
+                  </LightboxTrigger>
+                );
+              })}
+            </SimpleGrid>
+            {imagesTotal > 3 ? (
+              <Anchor
+                component={Link}
+                to={lp(`/acara/${encodeURIComponent(event.slug)}/foto`)}
+                size="sm"
+                fw={600}
+              >
+                {t('event_seeMorePhotos', { count: imagesTotal })}
+              </Anchor>
+            ) : null}
+          </Stack>
+        ) : null}
 
         {event.description ? (
           <Text size="sm" lh={1.6} mt={14}>

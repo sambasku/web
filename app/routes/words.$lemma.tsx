@@ -37,6 +37,7 @@ import { pickSafePrimaryImageUrl } from '@/domain/image-content-warnings';
 import { WordTypeBadge } from '@/presentation/components/word/word-type-badge';
 import { UsageLabelsBadges } from '@/presentation/components/word/usage-labels-badges';
 import { WordImagesGallery } from '@/presentation/components/word/word-images-gallery';
+import { WordOgCard } from '@/presentation/components/word/word-og-card';
 import { SearchBar } from '@/presentation/components/word/search-bar';
 import { VerifierMark } from '@/presentation/components/verifier-mark';
 import '@/presentation/styles/fonts-italic.css';
@@ -55,6 +56,8 @@ import {
   AnalyticsEvents,
   trackEvent,
 } from '@/infrastructure/analytics/analytics';
+import { recordWordViewOnce } from '@/domain/word-view-beacon';
+import { sendWordView } from '@/domain/words';
 
 export function meta({ loaderData, params }: Route.MetaArgs) {
   const locale = isAppLocale(params.locale) ? params.locale : DEFAULT_LOCALE;
@@ -154,7 +157,8 @@ export default function WordDetailPage() {
       word_id: word.id,
       source: stateSource ?? 'direct',
     });
-  }, [word.id, location.state]);
+    recordWordViewOnce(word.lemma, sendWordView);
+  }, [word.id, word.lemma, location.state]);
 
   // Saat pindah ke kata terkait (route sama, :id beda) loader berjalan -
   // tampilkan skeleton agar data kata lama tidak tampil sesaat.
@@ -237,14 +241,42 @@ export default function WordDetailPage() {
               <Title order={1} fw={800}>
                 {word.lemma}
               </Title>
-              <Badge
-                size="sm"
-                variant="light"
-                color="teal"
-                leftSection={<CheckCircle2 size={13} />}
-              >
-                {t('common_verified')}
-              </Badge>
+              {(() => {
+                const meanings = word.meanings ?? [];
+                const verifiedCount = meanings.filter((m) => m.is_verified !== false).length;
+                const summary =
+                  meanings.length === 0
+                    ? 'pending'
+                    : verifiedCount === meanings.length
+                      ? 'all'
+                      : verifiedCount > 0
+                        ? 'partial'
+                        : 'pending';
+                if (summary === 'all') {
+                  return (
+                    <Badge
+                      size="sm"
+                      variant="light"
+                      color="teal"
+                      leftSection={<CheckCircle2 size={13} />}
+                    >
+                      {t('common_verified')}
+                    </Badge>
+                  );
+                }
+                if (summary === 'partial') {
+                  return (
+                    <Badge size="sm" variant="light" color="yellow">
+                      {t('word_lemmaTrustPartial')}
+                    </Badge>
+                  );
+                }
+                return (
+                  <Badge size="sm" variant="light" color="gray">
+                    {t('common_pendingReview')}
+                  </Badge>
+                );
+              })()}
               <WordTypeBadge type={word.word_type} />
               <UsageLabelsBadges labels={word.usage_labels} />
             </Group>
@@ -288,11 +320,15 @@ export default function WordDetailPage() {
           <Divider />
         </Stack>
 
-        <WordImagesGallery
-          wordId={word.id}
-          images={word.images}
-          lemma={word.lemma}
-        />
+        {word.images.length > 0 ? (
+          <WordImagesGallery
+            wordId={word.id}
+            images={word.images}
+            lemma={word.lemma}
+          />
+        ) : (
+          <WordOgCard lemma={word.lemma} />
+        )}
 
         {/* Meanings & Translations */}
         <Stack gap="md">
@@ -317,6 +353,20 @@ export default function WordDetailPage() {
                           meaning.word_class.code,
                           meaning.word_class.name,
                         )}
+                      </Badge>
+                    )}
+                    {meaning.is_verified !== false ? (
+                      <Badge
+                        size="sm"
+                        variant="light"
+                        color="teal"
+                        leftSection={<CheckCircle2 size={12} />}
+                      >
+                        {t('common_verified')}
+                      </Badge>
+                    ) : (
+                      <Badge size="sm" variant="light" color="gray">
+                        {t('common_pendingReview')}
                       </Badge>
                     )}
                   </Group>

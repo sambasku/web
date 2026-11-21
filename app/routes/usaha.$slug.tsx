@@ -29,7 +29,11 @@ import {
 } from '@/application/i18n/locales';
 import { getFixedT } from '@/application/i18n/i18n-instance';
 import { useLocalePath } from '@/application/i18n/use-locale';
-import { fetchUsahaBySlug } from '@/domain/usaha';
+import { fetchUsahaBySlug, sendUsahaView } from '@/domain/usaha';
+import {
+  recordSlugViewOnce,
+  SLUG_VIEW_PREFIX,
+} from '@/domain/slug-view-beacon';
 import { usahaKindLabel, usahaLocationLine } from '@/domain/usaha-parse';
 import { env } from '@/infrastructure/config/env';
 import {
@@ -124,6 +128,7 @@ export default function UsahaDetailPage() {
   useEffect(() => {
     if (!usaha) return;
     trackEvent(AnalyticsEvents.usahaOpen, { slug: usaha.slug });
+    recordSlugViewOnce(SLUG_VIEW_PREFIX.usaha, usaha.slug, sendUsahaView);
   }, [usaha]);
 
   const catalogLightbox = useMemo((): ImageLightboxItem[] => {

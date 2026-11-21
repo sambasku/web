@@ -79,4 +79,24 @@ describe('buildUrlsetXml', () => {
     ]);
     assert.equal(without.includes('<lastmod>'), false);
   });
+
+  it('lemma dengan images menulis image:image + namespace', () => {
+    const xml = buildUrlsetXml(APP_URL, [
+      {
+        bare: '/words/capal',
+        priority: '0.35',
+        changefreq: 'weekly',
+        images: [{ path: '/og/words/capal', title: 'capal' }],
+      },
+    ]);
+    assert.ok(
+      xml.includes(
+        'xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"',
+      ),
+    );
+    assert.ok(xml.includes('<image:loc>https://sambasku.com/og/words/capal</image:loc>'));
+    assert.ok(xml.includes('<image:title>capal</image:title>'));
+    // Satu lemma × 2 locale = 2 blok image.
+    assert.equal((xml.match(/<image:image>/g) ?? []).length, 2);
+  });
 });

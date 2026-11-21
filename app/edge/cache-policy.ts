@@ -130,20 +130,22 @@ export function serveLastGood(pathname: string, cachedStatus: number): boolean {
 export const LLMS_FULL_PATH = '/llms-full.txt';
 const LLMS_FULL_FRESH_S = 86400;
 
-/// Kartu OG per kata: mahal dirender (resvg) dan isinya stabil per deploy,
-/// jadi jendela segar sehari penuh. Karakter segmen sama dengan guard route.
+/// Kartu OG (/og/home, /og/words/:lemma): mahal dirender (resvg) dan isinya
+/// stabil per deploy, jadi jendela segar sehari penuh.
 /** Regex cache-policy untuk route OG kata.
  * Charset sama dengan isValidLemma + '%' untuk bentuk ter-encode
  * (canonicalCachePath sengaja tidak mem-decode: %2F dalam segmen
  * adalah data, bukan separator). '/' TIDAK termasuk: di pathname itu
- * separator segmen — slash dalam lemma selalu tampil sebagai %2F.
+ * separator segmen - slash dalam lemma selalu tampil sebagai %2F.
  * Lemma nyata: spasi, apostrof lurus/curly, hyphen, titik.
  */
+const OG_HOME_PATH = '/og/home';
 const OG_WORDS_RE = /^\/og\/words\/[\p{L}\p{N}% '’\-.]{1,100}$/u;
 const OG_FRESH_S = 86400;
 
 export function isOgImagePath(pathname: string): boolean {
-  return OG_WORDS_RE.test(canonicalCachePath(pathname));
+  const canonical = canonicalCachePath(pathname);
+  return canonical === OG_HOME_PATH || OG_WORDS_RE.test(canonical);
 }
 
 export function freshSeconds(pathname: string): number {

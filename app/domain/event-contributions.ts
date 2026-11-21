@@ -24,8 +24,8 @@ export interface EventContributionPayload {
   description: string;
   category_id: string;
   starts_at: string;
-  ends_at: string;
-  location_text: string;
+  ends_at?: string | null;
+  location_text?: string;
   lat?: number | null;
   lng?: number | null;
   maps_url?: string | null;
@@ -56,11 +56,11 @@ export interface EventContribution {
 
 export interface SubmitEventContributionInput {
   name: string;
-  description: string;
+  description?: string;
   category_id: string;
   starts_at: string;
-  ends_at: string;
-  location_text: string;
+  ends_at?: string | null;
+  location_text?: string;
   lat?: number | null;
   lng?: number | null;
   organizer?: string | null;

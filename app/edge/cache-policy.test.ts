@@ -251,9 +251,18 @@ describe('og image', () => {
     assert.equal(isCacheableRequest('GET', '/og/words/x', '?v=2'), false);
   });
 
+  it('path /og/home cacheable dengan jendela segar sehari', () => {
+    assert.equal(isOgImagePath('/og/home'), true);
+    assert.equal(isCacheableRequest('GET', '/og/home'), true);
+    assert.equal(freshSeconds('/og/home'), 86400);
+    assert.equal(isCacheableRequest('GET', '/og/home', '?v=2'), false);
+    assert.equal(isOgImagePath('/og/home/extra'), false);
+  });
+
   it('404 kartu OG ikut negative cache pendek', () => {
     assert.ok(cacheTtlSeconds('/og/words/tidak-ada', 404) > 0);
     assert.equal(cacheTtlSeconds('/og/words/capal', 200) > 0, true);
     assert.equal(cacheTtlSeconds('/og/words/a/b', 404), 0);
+    assert.ok(cacheTtlSeconds('/og/home', 404) > 0);
   });
 });

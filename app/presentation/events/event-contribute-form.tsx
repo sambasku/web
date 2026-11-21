@@ -50,8 +50,10 @@ export function EventContributeForm() {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [categoryId, setCategoryId] = useState<string | null>(null);
-  const [startsAt, setStartsAt] = useState('');
-  const [endsAt, setEndsAt] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [startTime, setStartTime] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [endTime, setEndTime] = useState('');
   const [locationText, setLocationText] = useState('');
   const [organizer, setOrganizer] = useState('');
   const [sourceUrl, setSourceUrl] = useState('');
@@ -104,8 +106,30 @@ export function EventContributeForm() {
       .catch(() => {});
   }, [regionId]);
 
+  function combineLocal(date: string, time: string): string | null {
+    if (!date) return null;
+    const hm = time.trim() || '00:00';
+    const dt = new Date(`${date}T${hm}:00`);
+    if (Number.isNaN(dt.getTime())) return null;
+    return dt.toISOString();
+  }
+
   async function submit() {
-    if (!name.trim() || !description.trim() || !categoryId || !startsAt || !endsAt || !locationText.trim()) {
+    if (!name.trim() || !categoryId || !startDate) {
+      setError(t('event_contributeRequired'));
+      return;
+    }
+    const startsIso = combineLocal(startDate, startTime);
+    if (!startsIso) {
+      setError(t('event_contributeRequired'));
+      return;
+    }
+    const endsIso = endDate ? combineLocal(endDate, endTime) : null;
+    if (endDate && !endsIso) {
+      setError(t('event_contributeRequired'));
+      return;
+    }
+    if (endsIso && new Date(endsIso).getTime() < new Date(startsIso).getTime()) {
       setError(t('event_contributeRequired'));
       return;
     }
@@ -122,8 +146,8 @@ export function EventContributeForm() {
         name: name.trim(),
         description: description.trim(),
         category_id: categoryId,
-        starts_at: new Date(startsAt).toISOString(),
-        ends_at: new Date(endsAt).toISOString(),
+        starts_at: startsIso,
+        ...(endsIso ? { ends_at: endsIso } : {}),
         location_text: locationText.trim(),
         lat: point && inSambas(point.lat, point.lng) ? point.lat : null,
         lng: point && inSambas(point.lat, point.lng) ? point.lng : null,
@@ -187,7 +211,7 @@ export function EventContributeForm() {
             />
             <Textarea
               label={t('event_contributeFieldDescription')}
-              required
+              description={t('event_contributeFieldOptional')}
               minRows={4}
               value={description}
               onChange={(e) => setDescription(e.currentTarget.value)}
@@ -209,24 +233,39 @@ export function EventContributeForm() {
             <Text fw={600}>{t('event_timeLabel')}</Text>
             <Group grow align="flex-start">
               <TextInput
-                type="datetime-local"
+                type="date"
                 label={t('event_contributeFieldStartsAt')}
                 required
-                value={startsAt}
-                onChange={(e) => setStartsAt(e.currentTarget.value)}
+                value={startDate}
+                onChange={(e) => setStartDate(e.currentTarget.value)}
               />
               <TextInput
-                type="datetime-local"
+                type="time"
+                label={t('event_contributeFieldStartsTime')}
+                description={t('event_contributeFieldOptional')}
+                value={startTime}
+                onChange={(e) => setStartTime(e.currentTarget.value)}
+              />
+            </Group>
+            <Group grow align="flex-start">
+              <TextInput
+                type="date"
                 label={t('event_contributeFieldEndsAt')}
-                required
-                value={endsAt}
-                onChange={(e) => setEndsAt(e.currentTarget.value)}
+                description={t('event_contributeFieldOptional')}
+                value={endDate}
+                onChange={(e) => setEndDate(e.currentTarget.value)}
+              />
+              <TextInput
+                type="time"
+                label={t('event_contributeFieldEndsTime')}
+                description={t('event_contributeFieldOptional')}
+                value={endTime}
+                onChange={(e) => setEndTime(e.currentTarget.value)}
               />
             </Group>
             <TextInput
               label={t('event_contributeFieldLocation')}
-              description="Opsional. Nama tempat atau alamat acara."
-              required
+              description={t('event_contributeFieldOptional')}
               value={locationText}
               onChange={(e) => setLocationText(e.currentTarget.value)}
             />

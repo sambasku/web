@@ -14,6 +14,7 @@ import {
 import {
   lemmaAltFromLocalizedPath,
   resolveOgImageSize,
+  wordOgCardUrl,
 } from "./og-image-meta.ts";
 
 export interface SeoMetaProps {
@@ -168,7 +169,7 @@ const PLAY_STORE_URL =
 const GITHUB_URL = "https://github.com/sambasku";
 
 /** Hub yang ingin muncul sebagai sitelinks brand, bukan halaman lemma. */
-const HOME_NAV_HUBS: ReadonlyArray<{ bare: string; labelKey: string }> = [
+export const HOME_NAV_HUBS: ReadonlyArray<{ bare: string; labelKey: string }> = [
   { bare: "/eksplorasi", labelKey: "explore_heading" },
   { bare: "/words", labelKey: "explore_cardWords" },
   { bare: "/wisata", labelKey: "explore_cardWisata" },
@@ -411,7 +412,11 @@ export function buildWordJsonLd(word: WordDetail, localeInput?: string) {
   const t = getFixedT(locale);
   const { description } = buildWordSeoCopy(word, locale);
   const translation = firstIndonesianTranslation(word);
-  const primaryImage = pickSafePrimaryImageUrl(word.images);
+  // Foto kata diutamakan; tanpa foto = kartu OG supaya Google Images punya
+  // gambar yang terikat DefinedTerm (og:image meta saja tidak cukup).
+  const primaryImage =
+    pickSafePrimaryImageUrl(word.images) ??
+    wordOgCardUrl(env.appUrl, word.lemma);
   const wordUrl = `${env.appUrl}${localePath(locale, `/words/${encodeURIComponent(word.lemma)}`)}`;
   const wordsIndexUrl = `${env.appUrl}${localePath(locale, "/words")}`;
   const homeUrl = `${env.appUrl}${localePath(locale, "/")}`;
@@ -427,6 +432,7 @@ export function buildWordJsonLd(word: WordDetail, localeInput?: string) {
     description,
     url: wordUrl,
     inLanguage: locale,
+    image: primaryImage,
     inDefinedTermSet: {
       "@type": "DefinedTermSet",
       name: t("seo_websiteName"),
@@ -434,7 +440,6 @@ export function buildWordJsonLd(word: WordDetail, localeInput?: string) {
       url: homeUrl,
       inLanguage: locale,
     },
-    ...(primaryImage ? { image: primaryImage } : {}),
   };
 
   const breadcrumb = {

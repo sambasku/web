@@ -92,7 +92,7 @@ export default function LayananListPage() {
   const { items, regions, region } = useLoaderData<typeof loader>();
   const { t } = useTranslation();
   const lp = useLocalePath();
-  const [params, setParams] = useSearchParams();
+  const [, setParams] = useSearchParams();
   const [remembered, setRemembered] = useState<string | null>(region);
 
   useEffect(() => {

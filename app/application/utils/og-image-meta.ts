@@ -26,10 +26,21 @@ export function resolveOgImageSize(
   } catch {
     return null;
   }
-  if (/^\/og\/words\/[^/]+$/.test(pathname)) {
+  if (pathname === '/og/home' || /^\/og\/words\/[^/]+$/.test(pathname)) {
     return { width: OG_CARD_WIDTH, height: OG_CARD_HEIGHT };
   }
   return null;
+}
+
+/** Path kartu OG per lemma (`/og/words/...`), siap untuk <img> / sitemap. */
+export function wordOgCardPath(lemma: string): string {
+  return `/og/words/${encodeURIComponent(lemma)}`;
+}
+
+/** URL absolut kartu OG - JSON-LD, og:image, image sitemap. */
+export function wordOgCardUrl(appUrl: string, lemma: string): string {
+  const base = appUrl.replace(/\/$/, '');
+  return `${base}${wordOgCardPath(lemma)}`;
 }
 
 /** Lemma dari path ber-locale `/id/words/:lemma`, untuk alt kartu OG. */
