@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Link, useLoaderData } from 'react-router';
 import { Anchor, Button, Container, Group, Image, Stack, Text, Title } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
@@ -6,7 +7,11 @@ import { buildMetaTags } from '@/application/utils/seo';
 import { DEFAULT_LOCALE, isAppLocale, localePath } from '@/application/i18n/locales';
 import { getFixedT } from '@/application/i18n/i18n-instance';
 import { useLocalePath } from '@/application/i18n/use-locale';
-import { fetchLayananBySlug } from '@/domain/layanan';
+import { fetchLayananBySlug, sendLayananView } from '@/domain/layanan';
+import {
+  recordSlugViewOnce,
+  SLUG_VIEW_PREFIX,
+} from '@/domain/slug-view-beacon';
 import { withSambaskuUtm } from '@/presentation/utils/external-link';
 
 export function meta({ params, loaderData }: Route.MetaArgs) {
@@ -38,6 +43,11 @@ export default function LayananDetailPage() {
   const { item } = useLoaderData<typeof loader>();
   const { t } = useTranslation();
   const lp = useLocalePath();
+
+  useEffect(() => {
+    recordSlugViewOnce(SLUG_VIEW_PREFIX.layanan, item.slug, sendLayananView);
+  }, [item.slug]);
+
   const map = item.mapsUrl
     ? withSambaskuUtm(item.mapsUrl)
     : item.lat != null && item.lng != null

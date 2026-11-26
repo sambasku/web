@@ -10,13 +10,14 @@ import {
   SimpleGrid,
   Stack,
   Text,
+  ThemeIcon,
   Title,
 } from '@mantine/core';
 import {
   ArrowBigDown,
   ArrowBigUp,
   ArrowLeft,
-  Languages,
+  MessagesSquare,
   Pin,
 } from 'lucide-react';
 import type { Route } from './+types/ruang-diskusi.$id';
@@ -184,7 +185,9 @@ export default function RuangDiskusiDetailPage() {
 
         <Stack gap="md">
           <Group gap="xs">
-            <Languages size={20} />
+            <ThemeIcon variant="light" size="md" radius="sm">
+              <MessagesSquare size={16} />
+            </ThemeIcon>
             <Title order={1} fw={800} size="h2">
               Ruang Diskusi
             </Title>
