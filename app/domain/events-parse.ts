@@ -164,3 +164,27 @@ export function eventSourceTypeLabel(type: EventSourceType | null): string | nul
   if (!type) return null;
   return SOURCE_TYPE_LABELS[type] ?? null;
 }
+
+/** Kunci tanggal kalender WIB (UTC+7). `en-CA` = YYYY-MM-DD. */
+function jakartaDateKey(instant: Date): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Jakarta',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(instant);
+}
+
+/**
+ * Hari acara (WIB) sudah tiba. `startsAt` null atau tidak valid = belum.
+ * Pagi hari-H tetap true walau jam mulai masih nanti.
+ */
+export function eventDateReached(
+  startsAt: string | null,
+  now: Date = new Date(),
+): boolean {
+  if (!startsAt) return false;
+  const start = new Date(startsAt);
+  if (Number.isNaN(start.getTime())) return false;
+  return jakartaDateKey(now) >= jakartaDateKey(start);
+}

@@ -15,6 +15,7 @@ import {
 } from './events-parse';
 
 export {
+  eventDateReached,
   eventOccurrenceLabel,
   eventSourceTypeLabel,
   mapEvent,

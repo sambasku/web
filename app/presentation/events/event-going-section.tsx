@@ -2,6 +2,7 @@ import { useState, useTransition } from 'react';
 import { Button, Group, Text } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import {
+  eventDateReached,
   markEventGoing,
   unmarkEventGoing,
   type Event,
@@ -12,17 +13,19 @@ function goingLabel(
   t: (key: string, opts?: Record<string, unknown>) => string,
   count: number,
   viewerGoing: boolean,
+  reached: boolean,
 ): string {
+  const tense = reached ? 'Attend' : 'Plan';
   if (viewerGoing) {
-    if (count <= 1) return t('event_goingCountYou');
-    return t('event_goingCountYouAndOthers', { others: count - 1 });
+    if (count <= 1) return t(`event_goingCountYou${tense}`);
+    return t(`event_goingCountYouAndOthers${tense}`, { others: count - 1 });
   }
-  if (count <= 0) return t('event_goingCountZero');
-  if (count === 1) return t('event_goingCountOne');
-  return t('event_goingCountMany', { count });
+  if (count <= 0) return t(`event_goingCountZero${tense}`);
+  if (count === 1) return t(`event_goingCountOne${tense}`);
+  return t(`event_goingCountMany${tense}`, { count });
 }
 
-/** Soft RSVP "berencana datang" di detail acara. */
+/** Kehadiran di detail acara. Tense ikut tanggal WIB. */
 export function EventGoingSection({ event }: { event: Event }) {
   const { t } = useTranslation();
   const [pending, startTransition] = useTransition();
@@ -32,6 +35,7 @@ export function EventGoingSection({ event }: { event: Event }) {
 
   const canToggle =
     event.occurrenceStatus === 'upcoming' || event.occurrenceStatus === 'ongoing';
+  const reached = eventDateReached(event.startsAt);
 
   if (!canToggle && goingCount === 0 && !viewerGoing) {
     return null;
@@ -40,7 +44,7 @@ export function EventGoingSection({ event }: { event: Event }) {
   const onToggle = () => {
     if (!canToggle || pending) return;
     if (!readAccessToken()) {
-      setError(t('event_goingLoginGate'));
+      setError(t(reached ? 'event_goingLoginGateAttend' : 'event_goingLoginGatePlan'));
       return;
     }
     setError(null);
@@ -52,7 +56,7 @@ export function EventGoingSection({ event }: { event: Event }) {
         setGoingCount(result.goingCount);
         setViewerGoing(result.viewerGoing);
       } catch {
-        setError(t('event_goingToggleFailed'));
+        setError(t(reached ? 'event_goingToggleFailedAttend' : 'event_goingToggleFailedPlan'));
       }
     });
   };
@@ -60,7 +64,7 @@ export function EventGoingSection({ event }: { event: Event }) {
   return (
     <Group justify="space-between" align="center" mt={12} gap="sm" wrap="wrap">
       <Text size="sm" c="dimmed">
-        {goingLabel(t, goingCount, viewerGoing)}
+        {goingLabel(t, goingCount, viewerGoing, reached)}
       </Text>
       {canToggle ? (
         <Button
@@ -69,7 +73,9 @@ export function EventGoingSection({ event }: { event: Event }) {
           loading={pending}
           onClick={onToggle}
         >
-          {viewerGoing ? t('event_goingCtaUnmark') : t('event_goingCtaMark')}
+          {viewerGoing
+            ? t(reached ? 'event_goingCtaUnmarkAttend' : 'event_goingCtaUnmarkPlan')
+            : t(reached ? 'event_goingCtaMarkAttend' : 'event_goingCtaMarkPlan')}
         </Button>
       ) : null}
       {error ? (

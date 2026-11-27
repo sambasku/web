@@ -6,16 +6,13 @@
         "appID": "RM7CJ5K9SU.com.iamutaki.sambasku",
         "paths": [
           "/words/*",
+          "/id/words/*",
           "/reset-password",
           "/reset-password/*",
           "/hapus-akun",
           "/hapus-akun/*",
           "/users/*",
           "/wisata/*",
-          "/acara",
-          "/acara/*",
-          "/id/acara",
-          "/id/acara/*",
           "/oauth/github",
           "/oauth/github/*"
         ]
