@@ -13,6 +13,7 @@ export const SLUG_VIEW_PREFIX = {
   usaha: 'usaha-view',
   cuisine: 'cuisine-view',
   article: 'article-view',
+  layanan: 'layanan-view',
 } as const;
 
 /** Kunci dedupe per slug di storage browser. */

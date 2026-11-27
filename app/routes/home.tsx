@@ -15,7 +15,7 @@ import {
   Text,
   Title,
 } from '@mantine/core';
-import { Sparkles, PlusCircle, Languages } from 'lucide-react';
+import { Sparkles, PlusCircle, MessagesSquare } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { Route } from './+types/home';
 import {
@@ -198,7 +198,7 @@ export default function Home() {
                 gap="md"
               >
                 <Group gap="sm" wrap="nowrap" maw={480}>
-                  <Languages size={22} style={{ flexShrink: 0 }} />
+                  <MessagesSquare size={22} style={{ flexShrink: 0 }} />
                   <Stack gap={2}>
                     <Text size="sm" fw={600}>
                       {t('home_askTitle')}

@@ -18,6 +18,7 @@ import {
   LibraryBig,
   MapPin,
   Search,
+  MessagesSquare,
   Phone,
   Store,
   UtensilsCrossed,
@@ -138,7 +139,7 @@ export default function EksplorasiPage() {
     },
     {
       to: lp("/ruang-diskusi"),
-      icon: Compass,
+      icon: MessagesSquare,
       title: t("explore_cardDiskusi"),
       desc: t("explore_cardDiskusiDesc"),
       image: undefined,

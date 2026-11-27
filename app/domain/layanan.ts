@@ -118,3 +118,10 @@ export async function submitLayanan(body: Record<string, unknown>): Promise<void
     body: JSON.stringify(body),
   });
 }
+
+/** Catat 1 view detail layanan (best-effort, tidak ganggu render). */
+export function sendLayananView(slug: string): void {
+  void apiClient(`/layanan/${encodeURIComponent(slug)}/view`, {
+    method: 'POST',
+  }).catch(() => {});
+}

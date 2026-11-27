@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
+  eventDateReached,
   eventOccurrenceLabel,
   eventSourceTypeLabel,
   mapEvent,
@@ -91,6 +92,14 @@ describe('label helper', () => {
     assert.equal(eventOccurrenceLabel('ongoing'), 'Sedang berlangsung');
     assert.equal(eventOccurrenceLabel('completed'), 'Sudah selesai');
     assert.equal(eventOccurrenceLabel('cancelled'), 'Dibatalkan');
+  });
+
+  it('tanggal kehadiran WIB: sebelum, pagi hari-H, sesudah, null', () => {
+    const startsAt = '2026-10-01T09:00:00.000Z';
+    assert.equal(eventDateReached(startsAt, new Date('2026-09-30T16:00:00Z')), false);
+    assert.equal(eventDateReached(startsAt, new Date('2026-10-01T01:00:00Z')), true);
+    assert.equal(eventDateReached(startsAt, new Date('2026-10-02T00:00:00Z')), true);
+    assert.equal(eventDateReached(null, new Date('2026-10-01T01:00:00Z')), false);
   });
 
   it('label platform sumber, null kalau tidak ada', () => {

@@ -10,9 +10,10 @@ import {
   SimpleGrid,
   Stack,
   Text,
+  ThemeIcon,
   Title,
 } from '@mantine/core';
-import { Languages, Smartphone } from 'lucide-react';
+import { MessagesSquare, Smartphone } from 'lucide-react';
 import type { Route } from './+types/ruang-diskusi';
 import { listPublishedDiscussions } from '@/application/use-cases/discussion.use-case';
 import { buildMetaTags, buildDiscussionFaqJsonLd } from '@/application/utils/seo';
@@ -158,7 +159,9 @@ export default function RuangDiskusiFeedPage() {
       <Stack gap="xl">
         <Stack gap="sm">
           <Group gap="xs">
-            <Languages size={22} />
+            <ThemeIcon variant="light" size="md" radius="sm">
+              <MessagesSquare size={16} />
+            </ThemeIcon>
             <Title order={1} fw={800}>
               Ruang Diskusi
             </Title>
@@ -174,7 +177,7 @@ export default function RuangDiskusiFeedPage() {
           variant="light"
           color="teal"
           title={t('diskusi_alertTitle')}
-          icon={<Languages size={16} />}
+          icon={<MessagesSquare size={16} />}
         >
           {t('diskusi_alertBody')}
         </Alert>
